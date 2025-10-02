@@ -276,6 +276,31 @@ export default function ChatbotPill() {
         .exit-bottom {
           animation: slideOutBottom 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
         }
+        
+        /* Thinking text animation */
+        @keyframes thinkingPulse {
+          0%, 100% {
+            opacity: 0.5;
+          }
+          50% {
+            opacity: 1;
+          }
+        }
+        
+        @keyframes thinkingFadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .thinking-text {
+          animation: thinkingPulse 1.5s ease-in-out infinite, thinkingFadeIn 0.4s ease-out forwards;
+        }
       `}</style>
       
       {/* Chatbot Pill Button */}
@@ -403,16 +428,21 @@ export default function ChatbotPill() {
               {isLoading && !isStreaming && (
                 <div className="flex justify-start">
                   <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 max-w-[85%] sm:max-w-[75%] message-appear">
-                    <div className="flex items-center space-x-1.5">
-                      <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" />
-                      <span
-                        className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "150ms" }}
-                      />
-                      <span
-                        className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: "300ms" }}
-                      />
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" />
+                        <span
+                          className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"
+                          style={{ animationDelay: "150ms" }}
+                        />
+                        <span
+                          className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"
+                          style={{ animationDelay: "300ms" }}
+                        />
+                      </div>
+                      <span className="thinking-text text-xs sm:text-sm text-gray-500 font-medium">
+                        Thinking...
+                      </span>
                     </div>
                   </div>
                 </div>
