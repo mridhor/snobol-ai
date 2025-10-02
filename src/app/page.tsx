@@ -96,8 +96,8 @@ const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => 
 
 export default function Homepage() {
   return (
-    <div className="bg-white content-stretch flex flex-col gap-[20px] items-center relative size-full" data-name="Homepage" data-node-id="1:2">
-      <div className="box-border content-stretch flex flex-col gap-8 md:gap-20 items-center px-4 md:px-12 lg:px-24 py-8 md:py-12 relative shrink-0 w-full" data-name="Header" data-node-id="1:154">
+    <div className="bg-white min-h-screen flex flex-col" data-name="Homepage" data-node-id="1:2">
+      <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-24 py-8 md:py-12" data-name="Header" data-node-id="1:154">
         <div className="relative shrink-0 w-full max-w-6xl" data-node-id="1:180">
           <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex flex-col gap-8 md:gap-20 items-center relative">
             <div className="content-stretch flex gap-2 items-center justify-center relative shrink-0" data-name="Heading 1" data-node-id="1:155">
@@ -127,7 +127,7 @@ export default function Homepage() {
           </div>
         </div>
       </div>
-      <div className="border-t border-gray-200 box-border content-stretch flex flex-col items-center py-8 md:py-12 px-4 md:px-8 lg:px-24 relative shrink-0 w-full" data-name="Footer" data-node-id="1:146">
+      <div className="border-t border-gray-200 box-border content-stretch flex flex-col items-center py-8 md:py-12 px-4 md:px-8 lg:px-24 w-full mt-auto" data-name="Footer" data-node-id="1:146">
         <div className="box-border content-stretch flex flex-col md:flex-row gap-4 md:gap-0 items-center justify-between w-full max-w-6xl" data-name="Container" data-node-id="1:147">
           <div className="flex-shrink-0" data-name="Link" data-node-id="1:148">
             <p className="font-['Inter:Regular',_sans-serif] font-normal leading-5 text-[#666666] text-sm" data-node-id="1:149">
