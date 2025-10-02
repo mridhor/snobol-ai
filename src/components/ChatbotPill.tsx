@@ -46,6 +46,24 @@ export default function ChatbotPill() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Keep scrolling during streaming to follow the response
+  useEffect(() => {
+    if (isStreaming) {
+      // Use instant scroll during streaming for better follow effect
+      const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
+      };
+      
+      // Scroll immediately
+      scrollToBottom();
+      
+      // Continue scrolling at intervals during streaming
+      const scrollInterval = setInterval(scrollToBottom, 100);
+      
+      return () => clearInterval(scrollInterval);
+    }
+  }, [isStreaming, messages]);
+
   // Auto-resize textarea as user types
   useEffect(() => {
     const textarea = textareaRef.current;
