@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
       })),
     ];
 
-    // Call OpenAI API
+    // Call OpenAI API✅
       const openai = getOpenAIClient();
       const completion = await openai.chat.completions.create({
         model: "gpt-5", // Full GPT-5 model (higher quality, more nuanced replies)
