@@ -103,7 +103,8 @@ export async function POST(req: NextRequest) {
 
     // Call OpenAI API
     const openai = getOpenAIClient();
-    const completion = await openai.chat.completions.create({      model: "gpt-5-nano", // Using GPT-5 Nano for speed and cost-effectiveness
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5-nano", // Using GPT-5 Nano for speed and cost-effectiveness
       messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
       temperature: 1,
       max_completion_tokens: 500,
@@ -112,10 +113,14 @@ export async function POST(req: NextRequest) {
       presence_penalty: 0,
     });
 
+    // Log the completion for debugging
+    console.log("OpenAI Response:", JSON.stringify(completion, null, 2));
+
     // Extract the assistant's response
     const assistantMessage = completion.choices[0]?.message?.content;
 
     if (!assistantMessage) {
+      console.error("No assistant message in response. Full completion:", completion);
       return NextResponse.json(
         { error: "No response from AI" },
         { status: 500 }
