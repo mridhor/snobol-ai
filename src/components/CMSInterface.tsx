@@ -101,7 +101,7 @@ export default function CMSInterface({ onSave }: CMSInterfaceProps) {
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-medium text-gray-900">{section.label}</h3>
-                    <p className="text-sm text-gray-700 mt-1">
+                    <p className="text-sm text-gray-500 mt-1">
                       {getContent(section.id, "No content").substring(0, 50)}...
                     </p>
                   </div>
@@ -134,7 +134,7 @@ export default function CMSInterface({ onSave }: CMSInterfaceProps) {
                     <textarea
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
-                      className="w-full h-32 p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+                      className="w-full h-32 p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                       placeholder="Enter HTML content..."
                     />
                     <div className="text-xs text-gray-500">
@@ -146,7 +146,7 @@ export default function CMSInterface({ onSave }: CMSInterfaceProps) {
                     type="text"
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                     placeholder="Enter text content..."
                   />
                 )}
@@ -171,7 +171,7 @@ export default function CMSInterface({ onSave }: CMSInterfaceProps) {
               <div className="mt-4">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Preview:</h3>
                 <div className="p-3 border border-gray-200 rounded-md bg-gray-50">
-                  <div className="text-gray-900" dangerouslySetInnerHTML={{ __html: editValue || "No content" }} />
+                  <div dangerouslySetInnerHTML={{ __html: editValue || "No content" }} />
                 </div>
               </div>
             </div>
@@ -189,11 +189,11 @@ export default function CMSInterface({ onSave }: CMSInterfaceProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>
             <span className="text-gray-600">Total Sections:</span>
-            <span className="ml-2 font-medium text-gray-900">{contentSections.length}</span>
+            <span className="ml-2 font-medium">{contentSections.length}</span>
           </div>
           <div>
             <span className="text-gray-600">Last Updated:</span>
-            <span className="ml-2 font-medium text-gray-900">
+            <span className="ml-2 font-medium">
               {Object.values(content).length > 0 
                 ? new Date(Math.max(...Object.values(content).map(c => new Date(c.updatedAt).getTime()))).toLocaleDateString()
                 : "Never"
@@ -202,7 +202,7 @@ export default function CMSInterface({ onSave }: CMSInterfaceProps) {
           </div>
           <div>
             <span className="text-gray-600">Updated By:</span>
-            <span className="ml-2 font-medium text-gray-900">
+            <span className="ml-2 font-medium">
               {Object.values(content).length > 0 
                 ? Object.values(content).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0].updatedBy
                 : "System"
