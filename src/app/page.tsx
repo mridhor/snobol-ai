@@ -131,7 +131,6 @@ export default function Homepage() {
               </div>
             </div>
           </div>
-        </div>
       </div>
       <div className="border-t border-gray-200 box-border content-stretch flex flex-col items-center py-8 md:py-12 px-4 md:px-8 lg:px-24 w-full mt-auto" data-name="Footer" data-node-id="1:146">
         <div className="box-border content-stretch flex flex-col md:flex-row gap-4 md:gap-0 items-center justify-between w-full max-w-6xl" data-name="Container" data-node-id="1:147">
