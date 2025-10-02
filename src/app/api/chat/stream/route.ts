@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
       model: "gpt-5-mini",
       messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
       temperature: 1,
-      max_completion_tokens: 2000,
+      max_completion_tokens: 800,
       tools: AI_TOOLS,
       tool_choice: "auto",
       stream: true,
@@ -242,7 +242,7 @@ export async function POST(req: NextRequest) {
                 model: "gpt-5-nano",
                 messages: messagesWithTools,
                 temperature: 1,
-                max_completion_tokens: 1000,
+                max_completion_tokens: 800,
                 stream: true,
               });
               
