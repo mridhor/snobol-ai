@@ -681,7 +681,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
             const updated = [...prev];
             updated[updated.length - 1] = {
               role: "assistant",
-              content: "I am receiving a lot of requests right now. Please wait a moment and try again, or email us at hello@snobol.com."
+              content: "I am receiving a lot of requests right now. Please wait a moment and try again, or email us at hello@snobol.ai"
             };
             return updated;
           });
@@ -691,7 +691,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
             const updated = [...prev];
             updated[updated.length - 1] = {
               role: "assistant",
-              content: "I apologize, but I am having trouble responding right now. Please try again or contact us at hello@snobol.com for assistance."
+              content: "I apologize, but I am having trouble responding right now. Please try again or contact us at hello@snobol.ai for assistance."
             };
             return updated;
           });
