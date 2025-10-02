@@ -161,146 +161,99 @@ function getDiverseTickerExamples(): string {
 }
 
 /**
- * Get stock quote using TradingView data endpoints (free, no API key needed)
- * Using TradingView's public symbol search and quotes API
+ * Get stock quote using Yahoo Finance (free, no API key needed)
  */
 async function getStockQuote(symbol: string): Promise<string> {
   try {
-    // Enhanced search with support for multiple asset types and international markets
-    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}?interval=1d&range=1d`;
+    const response = await fetch(url);
+    const data = await response.json();
     
-    const searchResponse = await fetch(searchUrl);
-    const searchData = await searchResponse.json();
-    
-    if (!searchData || searchData.length === 0) {
-      return `Could not find data for symbol "${symbol}". Please verify the ticker symbol is correct.
-
-${getDiverseTickerExamples()}`;
+    if (!data.chart?.result?.[0]) {
+      return `Could not find stock data for symbol "${symbol}". Please verify the ticker symbol is correct.`;
     }
     
-    // Get the first result (most relevant)
-    const symbolInfo = searchData[0];
-    const tradingViewSymbol = symbolInfo.symbol;
-    const exchange = symbolInfo.exchange;
-    const fullSymbol = `${exchange}:${tradingViewSymbol}`;
+    const result = data.chart.result[0];
+    const meta = result.meta;
+    const quote = result.indicators?.quote?.[0] || {};
     
-    // Get quotes using TradingView's get_quotes API
-    const quotesUrl = `https://data.tradingview.com/v1/get_quotes/?symbols=${fullSymbol}`;
-    
-    const quotesResponse = await fetch(quotesUrl);
-    const quotesData = await quotesResponse.json();
-    
-    if (!quotesData || !quotesData.data || quotesData.data.length === 0) {
-      return `Could not fetch quote data for "${symbol}". Please verify the ticker symbol.`;
-    }
-    
-    const quote = quotesData.data[0];
-    
-    const currentPrice = quote.lp || quote.c;
-    const previousClose = quote.prev_close_price;
-    const change = currentPrice - previousClose;
+    const currentPrice = meta.regularMarketPrice || quote.close?.[0];
+    const previousClose = meta.previousClose;
+    const change = (currentPrice ?? 0) - (previousClose ?? 0);
     const changePercent = previousClose ? ((change / previousClose) * 100).toFixed(2) : '0.00';
     
-    const dayHigh = quote.h;
-    const dayLow = quote.l;
-    const volume = quote.v;
-    const marketCap = quote.market_cap_basic;
-    
-    // Determine asset type for better formatting
-    const assetType = getAssetType(symbolInfo);
-    const priceSymbol = getPriceSymbol(assetType, exchange);
+    const dayHigh = quote.high?.[0] || meta.dayHigh;
+    const dayLow = quote.low?.[0] || meta.dayLow;
+    const volume = quote.volume?.[0];
     
     return `
-**${tradingViewSymbol}** - ${symbolInfo.description || tradingViewSymbol}
-**Type:** ${assetType} | **Exchange:** ${exchange}
+**${meta.symbol}** - ${meta.longName || meta.shortName || 'N/A'}
 
-**Current Price:** ${priceSymbol}${currentPrice?.toFixed(2)}
-**Change:** ${priceSymbol}${change.toFixed(2)} (${changePercent}%)
-**Day Range:** ${priceSymbol}${dayLow?.toFixed(2)} - ${priceSymbol}${dayHigh?.toFixed(2)}
+**Current Price:** $${currentPrice?.toFixed(2)}
+**Change:** $${change.toFixed(2)} (${changePercent}%)
+**Day Range:** $${dayLow?.toFixed(2)} - $${dayHigh?.toFixed(2)}
 **Volume:** ${volume ? (volume / 1000000).toFixed(2) + 'M' : 'N/A'}
-${marketCap ? `**Market Cap:** ${(marketCap / 1e9).toFixed(2)}B` : ''}
+**Market:** ${meta.exchangeName || 'N/A'}
 
-*Data as of ${new Date().toLocaleString()}*
+*Data as of ${meta.regularMarketTime ? new Date(meta.regularMarketTime * 1000).toLocaleString() : new Date().toLocaleString()}*
     `.trim();
   } catch (error) {
     console.error('Stock quote error:', error);
-    return `Unable to fetch data for "${symbol}". Please verify the ticker symbol is correct.
-
-${getDiverseTickerExamples()}`;
+    // Fallback: provide a brief note sourced via web search
+    const fallback = await searchWeb(`${symbol} stock price today site:finance.yahoo.com`);
+    return `Unable to fetch structured quote for "${symbol}" right now. Here's a quick reference from web search:\n\n${fallback}`;
   }
 }
 
 /**
- * Analyze company/asset using TradingView data endpoints
+ * Analyze company using Yahoo Finance (with DuckDuckGo fallback)
  */
 async function analyzeCompany(symbol: string): Promise<string> {
   try {
-    // Enhanced search with support for multiple asset types
-    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
+    const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol.toUpperCase()}?modules=assetProfile,summaryProfile,financialData,defaultKeyStatistics,price`;
+    const response = await fetch(url);
+    const data = await response.json();
     
-    const searchResponse = await fetch(searchUrl);
-    const searchData = await searchResponse.json();
-    
-    if (!searchData || searchData.length === 0) {
-      return `Could not find data for "${symbol}". Please verify the ticker symbol.
-
-${getDiverseTickerExamples()}`;
+    if (!data.quoteSummary?.result?.[0]) {
+      // Fallback to web search summary
+      const web = await searchWeb(`${symbol} company overview financial profile`);
+      return `Basic overview for ${symbol} (web search):\n\n${web}`;
     }
     
-    // Get the first result (most relevant)
-    const symbolInfo = searchData[0];
-    const tradingViewSymbol = symbolInfo.symbol;
-    const exchange = symbolInfo.exchange;
-    const fullSymbol = `${exchange}:${tradingViewSymbol}`;
-    
-    // Get detailed quotes using TradingView's get_quotes API
-    const quotesUrl = `https://data.tradingview.com/v1/get_quotes/?symbols=${fullSymbol}`;
-    
-    const quotesResponse = await fetch(quotesUrl);
-    const quotesData = await quotesResponse.json();
-    
-    if (!quotesData || !quotesData.data || quotesData.data.length === 0) {
-      return `Could not fetch data for "${symbol}". Please verify the ticker symbol.`;
-    }
-    
-    const quote = quotesData.data[0];
-    const assetType = getAssetType(symbolInfo);
-    const priceSymbol = getPriceSymbol(assetType, exchange);
+    const info = data.quoteSummary.result[0];
+    const profile = info.assetProfile || info.summaryProfile || {};
+    const financial = info.financialData || {};
+    const stats = info.defaultKeyStatistics || {};
+    const price = info.price || {};
     
     const analysis = `
-**${symbolInfo.description || tradingViewSymbol}**
+**${profile.longName || price.longName || symbol}**
 
-**Type:** ${assetType}
-**Exchange:** ${exchange}
-**Country:** ${symbolInfo.country || 'N/A'}
+**Sector:** ${profile.sector || 'N/A'}
+**Industry:** ${profile.industry || 'N/A'}
+**Employees:** ${profile.fullTimeEmployees?.toLocaleString() || 'N/A'}
 
-**Current Metrics:**
-- Current Price: ${priceSymbol}${quote.lp?.toFixed(2) || 'N/A'}
-- Day High: ${priceSymbol}${quote.h?.toFixed(2) || 'N/A'}
-- Day Low: ${priceSymbol}${quote.l?.toFixed(2) || 'N/A'}
-- Volume: ${quote.v ? (quote.v / 1000000).toFixed(2) + 'M' : 'N/A'}
-${quote.market_cap_basic ? `- Market Cap: ${(quote.market_cap_basic / 1e9).toFixed(2)}B` : ''}
+**Financial Health:**
+- Market Cap: $${price.marketCap ? (price.marketCap / 1e9).toFixed(2) : 'N/A'}B
+- Revenue (TTM): $${financial.totalRevenue ? (financial.totalRevenue / 1e9).toFixed(2) : 'N/A'}B
+- Profit Margin: ${financial.profitMargins ? (financial.profitMargins * 100).toFixed(2) : 'N/A'}%
+- Debt/Equity: ${financial.debtToEquity?.toFixed(2) || 'N/A'}
+- Current Ratio: ${financial.currentRatio?.toFixed(2) || 'N/A'}
 
-**Price Performance:**
-- Change: ${priceSymbol}${(quote.lp - quote.prev_close_price)?.toFixed(2) || 'N/A'}
-- Change %: ${quote.prev_close_price ? (((quote.lp - quote.prev_close_price) / quote.prev_close_price) * 100).toFixed(2) + '%' : 'N/A'}
-- Previous Close: ${priceSymbol}${quote.prev_close_price?.toFixed(2) || 'N/A'}
+**Valuation:**
+- P/E Ratio: ${stats.trailingPE?.toFixed(2) || stats.forwardPE?.toFixed(2) || 'N/A'}
+- Price/Book: ${stats.priceToBook?.toFixed(2) || 'N/A'}
+- 52-Week Range: $${stats.fiftyTwoWeekLow?.toFixed(2) || 'N/A'} - $${stats.fiftyTwoWeekHigh?.toFixed(2) || 'N/A'}
 
-**Trading Information:**
-- Open: ${priceSymbol}${quote.o?.toFixed(2) || 'N/A'}
-- High: ${priceSymbol}${quote.h?.toFixed(2) || 'N/A'}
-- Low: ${priceSymbol}${quote.l?.toFixed(2) || 'N/A'}
-- Volume: ${quote.v ? quote.v.toLocaleString() : 'N/A'}
-
-*Data provided by TradingView*
+**About:**
+${profile.longBusinessSummary ? String(profile.longBusinessSummary).slice(0, 400) + '...' : 'No description available'}
     `.trim();
     
     return analysis;
   } catch (error) {
     console.error('Analysis error:', error);
-    return `Unable to analyze "${symbol}". Please verify the ticker symbol is correct.
-
-${getDiverseTickerExamples()}`;
+    const web = await searchWeb(`${symbol} company overview financial profile`);
+    return `Analysis temporarily unavailable from Yahoo Finance. Here's a quick overview from web search:\n\n${web}`;
   }
 }
 

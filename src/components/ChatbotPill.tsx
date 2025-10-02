@@ -904,7 +904,11 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                         </div>
                       ) : (
                         <div 
-                          className={`bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] break-words relative ${
+                          className={`bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 ${
+                            message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol
+                              ? 'max-w-full'
+                              : 'max-w-[85%] sm:max-w-[75%]'
+                          } break-words relative ${
                             isStreaming && index === messages.length - 1 && message.content !== "" ? '' : 'message-appear'
                           }`}
                           style={{ 
