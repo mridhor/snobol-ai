@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     // Call OpenAI API to generate suggestions
     const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
-      model: "gpt-5-nano",
+      model: "gpt-4.1-nano",
       messages: [
         { role: "system", content: SUGGESTION_PROMPT },
         { 

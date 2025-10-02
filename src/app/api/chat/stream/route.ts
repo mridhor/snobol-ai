@@ -231,7 +231,7 @@ export async function POST(req: NextRequest) {
               
               // Make follow-up streaming call with tool results
               const followupStream = await openai.chat.completions.create({
-                model: "gpt-5-mini",
+                model: "gpt-5-nano",
                 messages: messagesWithTools,
                 temperature: 1,
                 max_completion_tokens: 1000,
