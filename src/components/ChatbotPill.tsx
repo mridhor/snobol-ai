@@ -223,7 +223,7 @@ export default function ChatbotPill() {
       {isOpen && (
         <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-sm animate-in fade-in duration-300 ease-out">
           {/* Header */}
-          <div className="absolute top-0 left-0 right-0 z-10 border-b border-gray-200/60 bg-white/70 backdrop-blur-sm">
+          <div className="absolute top-0 left-0 right-0 z-10 bg-white/70 backdrop-blur-sm">
             <div className="max-w-3xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Image 
@@ -340,7 +340,7 @@ export default function ChatbotPill() {
 
           {/* Input Area */}
           <div 
-            className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200/50 pt-3 sm:pt-4"
+            className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md pt-3 sm:pt-4"
             style={{ 
               paddingBottom: 'max(1rem, env(safe-area-inset-bottom))'
             }}
