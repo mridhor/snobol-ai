@@ -194,7 +194,7 @@ export default function ChatbotPill() {
     setTimeout(() => {
       setIsOpen(false);
       setIsClosing(false);
-    }, 400); // Match animation duration
+    }, 250); // Match animation duration
   };
 
   return (
@@ -239,7 +239,7 @@ export default function ChatbotPill() {
           }
           to {
             opacity: 0;
-            transform: scale(0.98);
+            transform: scale(0.96);
           }
         }
         
@@ -250,7 +250,7 @@ export default function ChatbotPill() {
           }
           to {
             opacity: 0;
-            transform: translateY(-8px);
+            transform: translateY(-12px);
           }
         }
         
@@ -261,20 +261,20 @@ export default function ChatbotPill() {
           }
           to {
             opacity: 0;
-            transform: translateY(8px);
+            transform: translateY(12px);
           }
         }
         
         .exit-overlay {
-          animation: fadeOutZoom 0.4s cubic-bezier(0.4, 0, 1, 1) forwards;
+          animation: fadeOutZoom 0.25s cubic-bezier(0.4, 0, 1, 1) forwards;
         }
         
         .exit-top {
-          animation: slideOutTop 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+          animation: slideOutTop 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
         }
         
         .exit-bottom {
-          animation: slideOutBottom 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+          animation: slideOutBottom 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
         }
       `}</style>
       
@@ -323,7 +323,7 @@ export default function ChatbotPill() {
 
           {/* Messages */}
           <div className={`h-full pt-12 sm:pt-14 pb-28 sm:pb-32 overflow-y-auto ${
-            isClosing ? 'animate-out fade-out duration-300' : 'animate-in fade-in duration-600 delay-150 ease-out'
+            isClosing ? 'animate-out fade-out duration-200' : 'animate-in fade-in duration-600 delay-150 ease-out'
           }`}>
             <div className="max-w-3xl mx-auto px-3 sm:px-4 space-y-4 sm:space-y-6 py-4 sm:py-6">
               {messages.map((message, index) => {
