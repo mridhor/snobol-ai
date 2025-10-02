@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,10 +12,49 @@ import {
   TooltipItem,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { ContentBlock } from "../lib/content";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
 
 export default function Home() {
+  const [content, setContent] = useState<Record<string, ContentBlock>>({});
+  const [loading, setLoading] = useState(true);
+
+  // Fetch content from the content management system
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const response = await fetch('/api/content');
+        const data = await response.json();
+        
+        if (data.success) {
+          setContent(data.content);
+        }
+      } catch (error) {
+        console.error('Error fetching content:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, []);
+
+  // Helper function to get content safely
+  const getContent = (id: string, fallback: string = '') => {
+    return content[id]?.html || fallback;
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   const labels = [
     "2013", "2014", "2015", "2016", "2017",
