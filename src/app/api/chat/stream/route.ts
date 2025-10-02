@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     const stream = await openai.chat.completions.create({
       model: "gpt-5", // Full GPT-5 model (higher quality, more nuanced replies)
       messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
-      temperature: 1, // lower than 1 for more consistent, brand-safe tone
+      temperature: 0.7, // balanced for consistent, brand-safe tone
       max_completion_tokens: 2000, // generous output cap
       stream: true,
     });
@@ -88,8 +88,33 @@ export async function POST(req: NextRequest) {
     const readable = new ReadableStream({
       async start(controller) {
         try {
+          let reasoningContent = "";
+          let hasStartedContent = false;
+          const startTime = Date.now();
+          
           for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content || "";
+            const delta = chunk.choices[0]?.delta as any;
+            const reasoning = delta?.reasoning_content || "";
+            const content = delta?.content || "";
+            
+            // Collect reasoning tokens
+            if (reasoning) {
+              reasoningContent += reasoning;
+            }
+            
+            // When content starts, send reasoning metadata first
+            if (content && !hasStartedContent && reasoningContent) {
+              hasStartedContent = true;
+              const thinkingTime = Date.now() - startTime;
+              const metadata = JSON.stringify({
+                type: "reasoning",
+                reasoning: reasoningContent,
+                thinkingTime: thinkingTime,
+              });
+              controller.enqueue(encoder.encode(`[REASONING]${metadata}[/REASONING]`));
+            }
+            
+            // Stream content
             if (content) {
               controller.enqueue(encoder.encode(content));
             }

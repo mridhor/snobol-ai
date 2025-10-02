@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Image from "next/image";
@@ -9,6 +9,8 @@ import Image from "next/image";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  reasoning?: string;
+  thinkingTime?: number;
 }
 
 export default function ChatbotPill() {
@@ -24,6 +26,7 @@ export default function ChatbotPill() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedThinking, setExpandedThinking] = useState<Set<number>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastRequestTime = useRef<number>(0);
@@ -130,6 +133,7 @@ export default function ChatbotPill() {
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
         let accumulatedContent = "";
+        let reasoningData: { reasoning: string; thinkingTime: number } | null = null;
 
         if (reader) {
           // Now set streaming to true and hide loading dots
@@ -145,14 +149,35 @@ export default function ChatbotPill() {
 
             // Decode the chunk and add to accumulated content
             const chunk = decoder.decode(value, { stream: true });
-            accumulatedContent += chunk;
+            
+            // Check for reasoning metadata (using [\s\S] instead of 's' flag for wider compatibility)
+            const reasoningMatch = chunk.match(/\[REASONING\]([\s\S]*?)\[\/REASONING\]/);
+            if (reasoningMatch) {
+              try {
+                const metadata = JSON.parse(reasoningMatch[1]);
+                reasoningData = {
+                  reasoning: metadata.reasoning,
+                  thinkingTime: metadata.thinkingTime
+                };
+              } catch (e) {
+                console.error("Failed to parse reasoning metadata:", e);
+              }
+              // Remove the reasoning tags from content
+              accumulatedContent += chunk.replace(/\[REASONING\][\s\S]*?\[\/REASONING\]/, "");
+            } else {
+              accumulatedContent += chunk;
+            }
 
-            // Update the last message with accumulated content
+            // Update the last message with accumulated content and reasoning
             setMessages(prev => {
               const updated = [...prev];
               updated[updated.length - 1] = {
                 role: "assistant",
-                content: accumulatedContent
+                content: accumulatedContent,
+                ...(reasoningData && {
+                  reasoning: reasoningData.reasoning,
+                  thinkingTime: reasoningData.thinkingTime
+                })
               };
               return updated;
             });
@@ -397,6 +422,46 @@ export default function ChatbotPill() {
                         }`}
                         style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
                       >
+                      {/* Thinking Process Section */}
+                      {message.reasoning && message.thinkingTime && (
+                        <div className="mb-3 sm:mb-4 border-b border-gray-200 pb-3">
+                          <button
+                            onClick={() => {
+                              setExpandedThinking(prev => {
+                                const next = new Set(prev);
+                                if (next.has(index)) {
+                                  next.delete(index);
+                                } else {
+                                  next.add(index);
+                                }
+                                return next;
+                              });
+                            }}
+                            className="flex items-center justify-between w-full text-left hover:opacity-70 transition-opacity"
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs sm:text-sm font-medium text-gray-600">
+                                Thinking process
+                              </span>
+                              <span className="text-[10px] sm:text-xs text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">
+                                {(message.thinkingTime / 1000).toFixed(1)}s
+                              </span>
+                            </div>
+                            {expandedThinking.has(index) ? (
+                              <ChevronUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
+                            ) : (
+                              <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
+                            )}
+                          </button>
+                          
+                          {expandedThinking.has(index) && (
+                            <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-600 bg-gray-50 rounded-lg p-2 sm:p-3 whitespace-pre-wrap animate-in slide-in-from-top-2 fade-in duration-200">
+                              {message.reasoning}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
