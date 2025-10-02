@@ -352,9 +352,9 @@ export default function ChatbotPill() {
           }`}>
             <div className="max-w-3xl mx-auto px-3 sm:px-4 space-y-4 sm:space-y-6 py-4 sm:py-6">
               {messages.map((message, index) => {
-                // Hide the empty streaming message while loading dots are showing
-                const isEmptyStreamingMessage = message.role === "assistant" && message.content === "" && isStreaming && index === messages.length - 1;
-                if (isEmptyStreamingMessage && isLoading) {
+                // Hide the empty assistant message during loading or if it's still empty during streaming
+                const isEmptyAssistantMessage = message.role === "assistant" && message.content === "" && index === messages.length - 1;
+                if (isEmptyAssistantMessage && (isLoading || isStreaming)) {
                   return null;
                 }
                 
@@ -426,9 +426,9 @@ export default function ChatbotPill() {
               })}
 
               {isLoading && !isStreaming && (
-                <div className="flex justify-start">
-                  <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 max-w-[85%] sm:max-w-[75%] message-appear">
-                    <div className="flex flex-col gap-2">
+                <div className="flex flex-col items-start gap-2">
+                  <div className="flex justify-start">
+                    <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 max-w-[85%] sm:max-w-[75%] message-appear">
                       <div className="flex items-center space-x-1.5">
                         <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" />
                         <span
@@ -440,11 +440,11 @@ export default function ChatbotPill() {
                           style={{ animationDelay: "300ms" }}
                         />
                       </div>
-                      <span className="thinking-text text-xs sm:text-sm text-gray-500 font-medium">
-                        Thinking...
-                      </span>
                     </div>
                   </div>
+                  <span className="thinking-text text-xs sm:text-sm text-gray-500 font-medium ml-3 sm:ml-4">
+                    Thinking...
+                  </span>
                 </div>
               )}
 
