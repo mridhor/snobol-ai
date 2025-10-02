@@ -33,10 +33,12 @@ export default function ChatbotPill() {
   const [isClosing, setIsClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedThinking, setExpandedThinking] = useState<Set<number>>(new Set());
+  const [loadingDuration, setLoadingDuration] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastRequestTime = useRef<number>(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const loadingStartTime = useRef<number>(0);
 
   // Suggestion templates organized by topic (fallback only)
   const suggestionTemplates = {
@@ -153,6 +155,16 @@ export default function ChatbotPill() {
     return shuffled.slice(0, 3);
   };
 
+  // Helper to find the last assistant message index with suggestions
+  const getLastAssistantMessageWithSuggestions = () => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "assistant" && messages[i].suggestions && messages[i].suggestions!.length > 0) {
+        return i;
+      }
+    }
+    return -1;
+  };
+
   // Prevent body scroll when overlay is open
   useEffect(() => {
     if (isOpen) {
@@ -196,6 +208,34 @@ export default function ChatbotPill() {
       textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
   }, [inputValue]);
+
+  // Track loading duration
+  useEffect(() => {
+    if (isLoading) {
+      loadingStartTime.current = Date.now();
+      setLoadingDuration(0);
+      
+      const interval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - loadingStartTime.current) / 1000);
+        setLoadingDuration(elapsed);
+      }, 1000);
+      
+      return () => clearInterval(interval);
+    } else {
+      setLoadingDuration(0);
+    }
+  }, [isLoading]);
+
+  // Format duration for display
+  const formatDuration = (seconds: number): string => {
+    if (seconds < 60) {
+      return `(${seconds}s)`;
+    } else {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return `(${minutes}m ${remainingSeconds}s)`;
+    }
+  };
 
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputValue.trim();
@@ -574,6 +614,10 @@ export default function ChatbotPill() {
                   return null;
                 }
                 
+                // Check if this is the last assistant message with suggestions
+                const lastAssistantWithSuggestions = getLastAssistantMessageWithSuggestions();
+                const isLatestSuggestion = index === lastAssistantWithSuggestions;
+                
                 return (
                   <div key={index}>
                     <div
@@ -688,7 +732,11 @@ export default function ChatbotPill() {
                             key={suggestionIndex}
                             onClick={() => handleSuggestionClick(suggestion, index)}
                             disabled={isLoading || isStreaming}
-                            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white hover:bg-gray-900 text-gray-700 hover:text-white rounded-full text-xs sm:text-sm transition-all duration-200 border border-gray-200 hover:border-gray-900 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
+                              isLatestSuggestion
+                                ? 'bg-white hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm'
+                                : 'bg-gray-50 hover:bg-gray-900 text-gray-400 hover:text-white border border-gray-100 hover:border-gray-900 opacity-60 hover:opacity-100 hover:shadow-sm'
+                            }`}
                           >
                             <span className="line-clamp-1">{suggestion}</span>
                           </button>
@@ -717,9 +765,10 @@ export default function ChatbotPill() {
                       </div>
                     </div>
                   </div>
-                  <span className="thinking-text text-xs sm:text-sm text-gray-500 font-medium ml-3 sm:ml-4">
-                    Thinking...
-                  </span>
+                  <div className="thinking-text text-xs sm:text-sm text-gray-500 font-medium ml-3 sm:ml-4 flex items-center gap-1.5">
+                    <span>Thinking...</span>
+                    <span className="text-gray-400">{formatDuration(loadingDuration)}</span>
+                  </div>
                 </div>
               )}
 
