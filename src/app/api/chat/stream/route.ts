@@ -1,11 +1,23 @@
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
+import { AI_TOOLS } from "@/lib/aiTools";
+import { executeFunction } from "@/lib/functionExecutors";
 
 // Type extension for GPT-5 reasoning support
 interface DeltaWithReasoning {
   content?: string | null;
   reasoning_content?: string | null;
   role?: string;
+}
+
+// Type for tool calls
+interface ToolCall {
+  id: string;
+  type: string;
+  function: {
+    name: string;
+    arguments: string;
+  };
 }
 
 // Initialize OpenAI client lazily
@@ -24,6 +36,20 @@ Your focus is only on:
 - Market behavior
 - Risk management
 - Snobol AI's crisis-investing philosophy (stay calm when others panic)
+
+**TOOLS AVAILABLE:**
+You have access to real-time tools to provide accurate, current information:
+- **search_web**: Search for current financial news and information
+- **get_stock_quote**: Get live stock prices and market data
+- **analyze_company**: Analyze company financials and business health
+- **show_stock_chart**: Display interactive price charts for stocks
+
+**When to use tools:**
+- Use search_web when you need current news or recent events
+- Use get_stock_quote when asked about current stock prices
+- Use analyze_company when asked to evaluate a company's financial health
+- Use show_stock_chart when asked to "show chart", "display chart", or visualize stock performance
+- After using tools, explain the data in simple, beginner-friendly terms
 
 Rules for your behavior:
 1. **Strict domain**: Only answer finance, investing, and Snobol AI related questions. 
@@ -80,13 +106,15 @@ export async function POST(req: NextRequest) {
       })),
     ];
 
-    // Call OpenAI API with streaming
+    // Call OpenAI API with streaming and function calling
     const openai = getOpenAIClient();
     const stream = await openai.chat.completions.create({
-      model: "gpt-5-mini", // Full GPT-5 model (higher quality, more nuanced replies)
+      model: "gpt-5-mini",
       messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
-      temperature: 1, // must be 1 for reasoning to work
-      max_completion_tokens: 2000, // generous output cap
+      temperature: 1,
+      max_completion_tokens: 2000,
+      tools: AI_TOOLS,
+      tool_choice: "auto",
       stream: true,
     });
 
@@ -98,11 +126,35 @@ export async function POST(req: NextRequest) {
           let reasoningContent = "";
           let hasStartedContent = false;
           const startTime = Date.now();
+          let toolCalls: ToolCall[] = [];
           
           for await (const chunk of stream) {
-            const delta = chunk.choices[0]?.delta as DeltaWithReasoning;
+            const delta = chunk.choices[0]?.delta as DeltaWithReasoning & { tool_calls?: any[] };
+            const finishReason = chunk.choices[0]?.finish_reason;
             const reasoning = delta?.reasoning_content || "";
             const content = delta?.content || "";
+            
+            // Handle tool calls streaming
+            if (delta?.tool_calls) {
+              for (const toolCallDelta of delta.tool_calls) {
+                const index = toolCallDelta.index;
+                
+                if (!toolCalls[index]) {
+                  toolCalls[index] = {
+                    id: toolCallDelta.id || '',
+                    type: 'function',
+                    function: { name: '', arguments: '' }
+                  };
+                }
+                
+                if (toolCallDelta.function?.name) {
+                  toolCalls[index].function.name += toolCallDelta.function.name;
+                }
+                if (toolCallDelta.function?.arguments) {
+                  toolCalls[index].function.arguments += toolCallDelta.function.arguments;
+                }
+              }
+            }
             
             // Collect reasoning tokens
             if (reasoning) {
@@ -125,9 +177,73 @@ export async function POST(req: NextRequest) {
             if (content) {
               controller.enqueue(encoder.encode(content));
             }
+            
+            // Handle tool call execution
+            if (finishReason === 'tool_calls' && toolCalls.length > 0) {
+              console.log('Tool calls detected:', toolCalls.map(tc => tc.function.name));
+              
+              // Execute all tool calls in parallel
+              const toolResults = await Promise.all(
+                toolCalls.map(async (toolCall) => {
+                  try {
+                    const args = JSON.parse(toolCall.function.arguments);
+                    const result = await executeFunction(toolCall.function.name, args);
+                    return {
+                      tool_call_id: toolCall.id,
+                      role: "tool" as const,
+                      content: result,
+                    };
+                  } catch (error) {
+                    console.error(`Error executing ${toolCall.function.name}:`, error);
+                    return {
+                      tool_call_id: toolCall.id,
+                      role: "tool" as const,
+                      content: `Error: Unable to execute ${toolCall.function.name}`,
+                    };
+                  }
+                })
+              );
+              
+              // Build new message history with tool results
+              const messagesWithTools = [
+                ...(openaiMessages as OpenAI.ChatCompletionMessageParam[]),
+                {
+                  role: "assistant" as const,
+                  tool_calls: toolCalls.map(tc => ({
+                    id: tc.id,
+                    type: "function" as const,
+                    function: {
+                      name: tc.function.name,
+                      arguments: tc.function.arguments
+                    }
+                  }))
+                },
+                ...toolResults
+              ] as OpenAI.ChatCompletionMessageParam[];
+              
+              // Make follow-up streaming call with tool results
+              const followupStream = await openai.chat.completions.create({
+                model: "gpt-5-mini",
+                messages: messagesWithTools,
+                temperature: 1,
+                max_completion_tokens: 2000,
+                stream: true,
+              });
+              
+              // Stream the AI's response using the tool data
+              for await (const followupChunk of followupStream) {
+                const followupDelta = followupChunk.choices[0]?.delta as DeltaWithReasoning;
+                const followupContent = followupDelta?.content || "";
+                
+                if (followupContent) {
+                  controller.enqueue(encoder.encode(followupContent));
+                }
+              }
+            }
           }
           controller.close();
         } catch (error) {
+          console.error('Streaming error:', error);
           controller.error(error);
         }
       },

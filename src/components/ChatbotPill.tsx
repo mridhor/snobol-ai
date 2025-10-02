@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import { MessageCircle, X, Send, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Image from "next/image";
+import StockChart from "./StockChart";
 
 interface Message {
   role: "user" | "assistant";
@@ -12,9 +13,15 @@ interface Message {
   reasoning?: string;
   thinkingTime?: number;
   suggestions?: string[];
+  chartData?: any;
 }
 
-export default function ChatbotPill() {
+export interface ChatbotPillRef {
+  open: () => void;
+  close: () => void;
+}
+
+const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -38,6 +45,12 @@ export default function ChatbotPill() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastRequestTime = useRef<number>(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Expose open and close methods
+  useImperativeHandle(ref, () => ({
+    open: () => setIsOpen(true),
+    close: handleClose
+  }));
 
   // Suggestion templates organized by topic (fallback only)
   const suggestionTemplates = {
@@ -78,10 +91,6 @@ export default function ChatbotPill() {
       "Should I avoid companies with high debt during crises?",
       "How important is a company's cash reserves?",
       "What industries are safer during downturns?",
-      "Analyze Apple's financial health",
-      "Compare Tesla vs traditional automakers",
-      "Evaluate Microsoft's competitive advantages",
-      "Check Amazon's debt levels"
     ],
     market: [
       "Should I invest during a market downturn?",
@@ -342,6 +351,21 @@ export default function ChatbotPill() {
     return shuffled.slice(0, 3);
   };
 
+  // Helper to extract chart data from content
+  const extractChartData = (content: string): { cleanContent: string; chartData: any | null } => {
+    const chartMatch = content.match(/\[CHART_DATA\]([\s\S]*?)\[\/CHART_DATA\]/);
+    if (chartMatch) {
+      try {
+        const chartData = JSON.parse(chartMatch[1]);
+        const cleanContent = content.replace(/\[CHART_DATA\][\s\S]*?\[\/CHART_DATA\]/, '').trim();
+        return { cleanContent, chartData };
+      } catch (e) {
+        console.error('Failed to parse chart data:', e);
+      }
+    }
+    return { cleanContent: content, chartData: null };
+  };
+
   // Helper to find the last assistant message index with suggestions
   const getLastAssistantMessageWithSuggestions = () => {
     for (let i = messages.length - 1; i >= 0; i--) {
@@ -522,9 +546,11 @@ export default function ChatbotPill() {
             // Update the last message with accumulated content and reasoning
             setMessages(prev => {
               const updated = [...prev];
+              const { cleanContent, chartData } = extractChartData(accumulatedContent);
               updated[updated.length - 1] = {
                 role: "assistant",
-                content: accumulatedContent,
+                content: cleanContent,
+                ...(chartData && { chartData }),
                 ...(reasoningData && {
                   reasoning: reasoningData.reasoning,
                   thinkingTime: reasoningData.thinkingTime
@@ -900,6 +926,18 @@ export default function ChatbotPill() {
                         >
                           {message.content}
                         </ReactMarkdown>
+                        
+                        {/* Render Stock Chart if available */}
+                        {message.chartData && message.chartData.type === 'stock_chart' && (
+                          <StockChart
+                            symbol={message.chartData.symbol}
+                            companyName={message.chartData.companyName}
+                            period={message.chartData.period}
+                            currentPrice={message.chartData.currentPrice}
+                            change={message.chartData.change}
+                            data={message.chartData.data}
+                          />
+                        )}
                       </div>
                     )}
                   </div>
@@ -1010,6 +1048,9 @@ export default function ChatbotPill() {
       )}
     </>
   );
-}
+});
 
+ChatbotPill.displayName = 'ChatbotPill';
+
+export default ChatbotPill;
 

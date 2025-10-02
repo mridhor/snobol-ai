@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   LineChart,
   Line,
@@ -12,7 +12,8 @@ import {
 import { formatAreaChartData, ChartData } from "@/utils/chartData";
 import Image from "next/image";
 import snobolLogo from "./snobol-ai-logo.png";
-import ChatbotPill from "@/components/ChatbotPill";
+import ChatbotPill, { ChatbotPillRef } from "@/components/ChatbotPill";
+import { MessageCircle } from "lucide-react";
 
 // Ultra-simple 2-line chart component
 const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => {
@@ -98,6 +99,12 @@ const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => 
 };
 
 export default function Homepage() {
+  const chatbotRef = useRef<ChatbotPillRef>(null);
+
+  const handleOpenChat = () => {
+    chatbotRef.current?.open();
+  };
+
   return (
     <div className="bg-white min-h-screen flex flex-col" data-name="Homepage" data-node-id="1:2">
       {/* Snobol logo at the top */}
@@ -125,9 +132,19 @@ export default function Homepage() {
                   <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159">
                     Imagine a world where AI makes us money better than any human can.
                   </p>
-                  <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black" data-node-id="1:161">
+                  <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-8" data-node-id="1:161">
                     Snobol invests in various crisis.
                   </p>
+                  
+                  {/* Ask Snobol Button */}
+                  <button
+                    onClick={handleOpenChat}
+                    className="group inline-flex items-center gap-2 sm:gap-2.5 bg-white hover:bg-gray-900 text-white pl-3 pr-4 sm:pl-4 sm:pr-5 py-2.5 sm:py-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl border border-gray-200"
+                    aria-label="Open chat"
+                  >
+                    <MessageCircle className="w-5 h-5 text-black group-hover:text-white transition-colors" />
+                    <span className="font-normal text-black text-md group-hover:text-white transition-colors">Ask Snobol</span>
+                  </button>
                 </div>
               </div>
               <div className="flex-1 w-full max-w-lg lg:max-w-none" data-name="Container" data-node-id="1:162">
@@ -157,7 +174,7 @@ export default function Homepage() {
       </div>
 
       {/* Sticky Chatbot Pill */}
-      <ChatbotPill />
+      <ChatbotPill ref={chatbotRef} />
     </div>
   );
 }
