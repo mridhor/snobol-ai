@@ -103,45 +103,57 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Clean up the response text (remove markdown code blocks if present)
+    let cleanedText = suggestionsText.trim();
+    if (cleanedText.startsWith('```')) {
+      cleanedText = cleanedText.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
+    }
+    
     // Parse the JSON response
     try {
-      const suggestions = JSON.parse(suggestionsText);
+      const suggestions = JSON.parse(cleanedText);
       
       // Validate it's an array
       if (!Array.isArray(suggestions)) {
+        console.error("Parsed value is not an array:", typeof suggestions, suggestions);
         throw new Error("Not an array");
+      }
+      
+      // Validate array contains strings
+      const validSuggestions = suggestions.filter(s => typeof s === 'string' && s.trim().length > 0);
+      
+      if (validSuggestions.length === 0) {
+        console.error("No valid string suggestions found:", suggestions);
+        throw new Error("No valid strings");
       }
 
       // If we got exactly 3 suggestions, return them
-      if (suggestions.length === 3) {
-        return NextResponse.json({ suggestions });
+      if (validSuggestions.length === 3) {
+        return NextResponse.json({ suggestions: validSuggestions });
       }
 
       // If we got fewer or more, try to fix it
-      if (suggestions.length > 0) {
-        console.warn(`Got ${suggestions.length} suggestions instead of 3, padding with defaults`);
-        
-        // Take up to 3 suggestions, pad if needed
-        const paddedSuggestions = suggestions.slice(0, 3);
-        
-        // Pad with contrarian defaults if needed
-        const defaults = [
-          "Where is fear greatest right now?",
-          "Is this panic overdone?",
-          "What's the crowd missing?"
-        ];
-        
-        while (paddedSuggestions.length < 3) {
-          paddedSuggestions.push(defaults[paddedSuggestions.length]);
-        }
-        
-        return NextResponse.json({ suggestions: paddedSuggestions });
+      console.warn(`Got ${validSuggestions.length} suggestions instead of 3, padding with defaults`);
+      
+      // Take up to 3 suggestions, pad if needed
+      const paddedSuggestions = validSuggestions.slice(0, 3);
+      
+      // Pad with contrarian defaults if needed
+      const defaults = [
+        "Where is fear greatest right now?",
+        "Is this panic overdone?",
+        "What's the crowd missing?"
+      ];
+      
+      while (paddedSuggestions.length < 3) {
+        paddedSuggestions.push(defaults[paddedSuggestions.length]);
       }
-
-      throw new Error("Empty array");
+      
+      return NextResponse.json({ suggestions: paddedSuggestions });
     } catch (parseError) {
       console.error("Failed to parse suggestions:", parseError);
       console.error("Raw response:", suggestionsText);
+      console.error("Cleaned text:", cleanedText);
       
       // Fallback: try to extract questions manually
       const lines = suggestionsText.split('\n').filter(line => line.trim());

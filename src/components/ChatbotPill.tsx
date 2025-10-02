@@ -450,6 +450,21 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     }
   };
 
+
+  // Handle Escape key to close chatbot
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        handleClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeKey);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isOpen]);
   // Auto scroll to bottom when new messages arrive or loading state changes
   useEffect(() => {
     // Use setTimeout to ensure DOM has updated
