@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
       const completion = await openai.chat.completions.create({
         model: "gpt-5", // Full GPT-5 model (higher quality, more nuanced replies)
         messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
-        temperature: 0.7, // lower than 1 for more consistent, brand-safe tone
+        temperature: 1, // lower than 1 for more consistent, brand-safe tone
         max_completion_tokens: 2000, // generous output cap
         top_p: 1,
       });
