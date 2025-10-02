@@ -75,10 +75,10 @@ export async function POST(req: NextRequest) {
     // Call OpenAI API with streaming
     const openai = getOpenAIClient();
     const stream = await openai.chat.completions.create({
-      model: "gpt-5-nano",
+      model: "gpt-5", // Full GPT-5 model (higher quality, more nuanced replies)
       messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
-      temperature: 1,
-      max_completion_tokens: 2000, // Increased to allow for reasoning tokens + actual response
+      temperature: 0.7, // lower than 1 for more consistent, brand-safe tone
+      max_completion_tokens: 2000, // generous output cap
       stream: true,
     });
 
