@@ -162,9 +162,9 @@ export default function ChatbotPill() {
                 <Image 
                   src="/snobol-ai-logo.png" 
                   alt="Snobol AI" 
-                  width={24} 
+                  width={89} 
                   height={24}
-                  className="w-5 h-5 sm:w-6 sm:h-6"
+                  className="h-5 sm:h-6 w-auto"
                 />
               </div>
               <button
