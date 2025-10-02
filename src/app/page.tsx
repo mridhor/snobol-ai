@@ -97,7 +97,7 @@ const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => 
 export default function Homepage() {
   return (
     <div className="bg-white content-stretch flex flex-col gap-[20px] items-center relative size-full" data-name="Homepage" data-node-id="1:2">
-      <div className="box-border content-stretch flex flex-col gap-[80px] items-start pl-[96px] pr-0 py-[48px] relative shrink-0 w-full" data-name="Header" data-node-id="1:154">
+      <div className="box-border content-stretch flex flex-col gap-[80px] items-center pl-[96px] pr-0 py-[48px] relative shrink-0 w-full" data-name="Header" data-node-id="1:154">
         <div className="relative shrink-0" data-node-id="1:180">
           <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex flex-col gap-[80px] items-start relative">
             <div className="content-stretch flex gap-[10px] items-center justify-center relative shrink-0" data-name="Heading 1" data-node-id="1:155">
