@@ -193,22 +193,22 @@ export default function ChatbotPill() {
                       {message.content}
                     </div>
                   ) : (
-                    <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm text-gray-800 max-w-[85%] sm:max-w-[75%] shadow-sm break-words">
+                    <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] shadow-sm break-words">
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
                           p: ({ children }) => (
-                            <p className="mb-2 sm:mb-3 last:mb-0 leading-relaxed">{children}</p>
+                            <p className="mb-3 sm:mb-4 last:mb-0 leading-relaxed">{children}</p>
                           ),
                           ul: ({ children }) => (
-                            <ul className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3 last:mb-0 ml-0.5 sm:ml-1">{children}</ul>
+                            <ul className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1">{children}</ul>
                           ),
                           ol: ({ children }) => (
-                            <ol className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3 last:mb-0 ml-0.5 sm:ml-1 list-decimal list-inside">{children}</ol>
+                            <ol className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1 list-decimal list-inside">{children}</ol>
                           ),
                           li: ({ children }) => (
-                            <li className="flex items-start gap-1.5 sm:gap-2 leading-relaxed">
-                              <span className="text-gray-500 mt-0.5 select-none text-xs sm:text-sm">•</span>
+                            <li className="flex items-start gap-2 leading-relaxed">
+                              <span className="text-gray-500 mt-1 select-none text-sm">•</span>
                               <span className="flex-1 break-words">{children}</span>
                             </li>
                           ),
@@ -219,16 +219,16 @@ export default function ChatbotPill() {
                             <em className="italic">{children}</em>
                           ),
                           h3: ({ children }) => (
-                            <h3 className="font-semibold text-gray-900 mb-1.5 sm:mb-2 mt-3 sm:mt-4 first:mt-0 text-sm sm:text-base">{children}</h3>
+                            <h3 className="font-bold text-gray-900 mb-2 sm:mb-3 mt-4 sm:mt-5 first:mt-0 text-base sm:text-lg">{children}</h3>
                           ),
                           h4: ({ children }) => (
-                            <h4 className="font-medium text-gray-900 mb-1.5 sm:mb-2 mt-2 sm:mt-3 first:mt-0 text-[13px] sm:text-sm">{children}</h4>
+                            <h4 className="font-semibold text-gray-900 mb-2 sm:mb-2.5 mt-3 sm:mt-4 first:mt-0 text-sm sm:text-base">{children}</h4>
                           ),
                           code: ({ children }) => (
-                            <code className="bg-gray-200 px-1 sm:px-1.5 py-0.5 rounded text-[11px] sm:text-xs font-mono break-all">{children}</code>
+                            <code className="bg-gray-200 px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono break-all">{children}</code>
                           ),
                           blockquote: ({ children }) => (
-                            <blockquote className="border-l-2 border-gray-300 pl-2 sm:pl-3 italic my-1.5 sm:my-2 text-[12px] sm:text-sm">{children}</blockquote>
+                            <blockquote className="border-l-2 border-gray-300 pl-3 italic my-2 sm:my-3 text-sm sm:text-base opacity-90">{children}</blockquote>
                           ),
                         }}
                       >
@@ -274,7 +274,7 @@ export default function ChatbotPill() {
                   {error}
                 </div>
               )}
-              <div className="flex items-end gap-1.5 sm:gap-2 bg-white border border-gray-200 rounded-2xl shadow-sm p-1.5 sm:p-2">
+              <div className="flex items-end gap-2 sm:gap-2.5 bg-white border border-gray-300 rounded-full shadow-sm p-2 sm:p-2.5">
                 <textarea
                   ref={textareaRef}
                   value={inputValue}
@@ -289,7 +289,7 @@ export default function ChatbotPill() {
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim() || isLoading}
-                  className="flex-shrink-0 bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed p-2 sm:p-2.5 rounded-xl transition-colors self-end mb-0.5"
+                  className="flex-shrink-0 bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed p-2 sm:p-2.5 rounded-full transition-colors self-end"
                   aria-label="Send message"
                 >
                   {isLoading ? (
