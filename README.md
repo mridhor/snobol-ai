@@ -6,8 +6,8 @@ A financial AI chatbot built with Next.js, featuring real-time stock analysis, T
 
 - 🤖 **AI-Powered Financial Analysis** - Powered by OpenAI GPT
 - 📊 **TradingView Charts** - Interactive charts for stocks, crypto, commodities, and forex
-- 🔍 **Brave Search Integration** - Privacy-focused web search for financial data
-- 💡 **Value Investing Focus** - Fundamental analysis and business quality assessments
+- 📈 **Alpha Vantage Integration** - Real financial data API for company fundamentals
+- 🎯 **Contrarian Philosophy** - Opportunistic, fear-driven investing approach
 - 📱 **Responsive Design** - Beautiful UI that works on all devices
 
 ## Setup
@@ -16,7 +16,7 @@ A financial AI chatbot built with Next.js, featuring real-time stock analysis, T
 
 1. **Node.js** (v18 or higher)
 2. **OpenAI API Key** - Get from [OpenAI Platform](https://platform.openai.com/)
-3. **Brave Search API Key** - Get free key at [Brave Search API](https://api.search.brave.com/register)
+3. **Alpha Vantage API Key** - Get free key at [Alpha Vantage](https://www.alphavantage.co/support/#api-key)
 
 ### Environment Variables
 
@@ -24,10 +24,10 @@ Create a `.env.local` file in the project root:
 
 ```bash
 OPENAI_API_KEY=your_openai_api_key_here
-BRAVE_SEARCH_API_KEY=your_brave_search_api_key_here
+ALPHA_API_KEY=your_alpha_vantage_api_key_here
 ```
 
-See [BRAVE_SEARCH_SETUP.md](./BRAVE_SEARCH_SETUP.md) for detailed Brave Search setup instructions.
+See [ALPHA_VANTAGE_SETUP.md](./ALPHA_VANTAGE_SETUP.md) for detailed Alpha Vantage setup instructions.
 
 ## Getting Started
 
