@@ -111,14 +111,14 @@ export default function Homepage() {
               priority
             />
           </div>
-        </div>
-      </div>
+            </div>
+                  </div>
       
       {/* Main content centered */}
       <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-24 py-8 md:py-12">
         <div className="relative w-full max-w-6xl">
           <div className="content-stretch flex flex-col lg:flex-row gap-8 lg:gap-24 items-center relative w-full" data-name="Container" data-node-id="1:157">
-              <div className="flex-1 max-w-lg lg:max-w-none" data-name="Paragraph" data-node-id="1:158">
+              <div className="flex-1 max-w-2xl lg:max-w-none" data-name="Paragraph" data-node-id="1:158">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full">
                   <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159">
                     Imagine a world where AI makes us money better than any human can.
