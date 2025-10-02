@@ -18,13 +18,11 @@ interface PerformanceChartProps {
 export const PerformanceChart: React.FC<PerformanceChartProps> = ({ currentPrice, currentSP500Price }) => {
   console.log("PerformanceChart - Rendered with Props:", { currentPrice, currentSP500Price });
 
-  const [currentDate] = useState<string>(
-    new Date().toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })
-  );
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
 
   // Add state to force chart update
   const [chartData, setChartData] = useState<ChartData[]>([]);
@@ -64,7 +62,6 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ currentPrice
   }, [currentPrice, currentSP500Price, currentDate]);
 
   const [fontSize, setFontSize] = useState("12px");
-  const [, setChartWidth] = useState("100%");
   const [chartHeight, setChartHeight] = useState("100%");
   const [chartMinWidth, setChartMinWidth] = useState("320px");
   const [chartMinHeight, setChartMinHeight] = useState("auto");
@@ -75,25 +72,21 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ currentPrice
       const width = window.innerWidth;
       if (width <= 478) {
         setFontSize("14px");
-        setChartWidth("95%");
         setChartHeight("400px");
         setChartMinWidth("280px");
         setChartMinHeight("400px");
       } else if (width <= 767) {
         setFontSize("12px");
-        setChartWidth("90%");
         setChartHeight("300px");
         setChartMinWidth("320px");
         setChartMinHeight("300px");
       } else if (width <= 991) {
         setFontSize("11px");
-        setChartWidth("85%");
         setChartHeight("350px");
         setChartMinWidth("400px");
         setChartMinHeight("350px");
       } else {
         setFontSize("10px");
-        setChartWidth("80%");
         setChartHeight("400px");
         setChartMinWidth("500px");
         setChartMinHeight("400px");
