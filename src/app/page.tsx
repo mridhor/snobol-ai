@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { formatAreaChartData, ChartData } from "@/utils/chartData";
 import Image from "next/image";
+import snobolLogo from "./snobol-ai-logo.png";
 
 // Ultra-simple 2-line chart component
 const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => {
@@ -103,7 +104,7 @@ export default function Homepage() {
         <div className="w-full max-w-6xl">
           <div className="flex gap-2 items-center justify-center">
             <Image
-              src="./snobol-ai-logo.png"
+              src={snobolLogo}
               alt="Snobol"
               width={120}
               height={48}
