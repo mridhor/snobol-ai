@@ -1,7 +1,101 @@
-const imgLineChart = "http://localhost:3845/assets/bd79f3648eb4c0f37da5bd7c4c848acd0cc4782d.svg";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip
+} from "recharts";
+import { formatAreaChartData, ChartData } from "@/utils/chartData";
+
+// Ultra-simple 2-line chart component
+const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => {
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+
+  useEffect(() => {
+    const formattedData = formatAreaChartData();
+    
+    // Add current data point
+    const currentDate = new Date().toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    
+    formattedData.push({
+      date: new Date().getFullYear().toString(),
+      fullDate: currentDate,
+      sp500: currentSP500Price,
+      snobol: currentPrice - currentSP500Price,
+      totalSnobol: currentPrice
+    });
+    
+    setChartData(formattedData);
+  }, [currentPrice, currentSP500Price]);
+
+  return (
+    <div className="w-full h-[280px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart
+          data={chartData}
+          margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+        >
+          <XAxis 
+            dataKey="date"
+            axisLine={false}
+            tickLine={false}
+            tick={false}
+            hide
+          />
+          <YAxis 
+            axisLine={false}
+            tickLine={false}
+            tick={false}
+            hide
+          />
+          <Tooltip
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                const data = payload[0].payload;
+                return (
+                  <div className="bg-white p-2 rounded shadow-sm border text-xs">
+                    <p className="text-gray-600">{data.fullDate}</p>
+                    <p className="font-semibold">${data.totalSnobol?.toFixed(2)}</p>
+                  </div>
+                );
+              }
+              return null;
+            }}
+          />
+          {/* S&P 500 line - light gray */}
+          <Line
+            type="monotone"
+            dataKey="sp500"
+            stroke="#E5E5E5"
+            strokeWidth={1.5}
+            dot={false}
+            activeDot={{ r: 3, fill: "#E5E5E5" }}
+          />
+          {/* Snobol line - black */}
+          <Line
+            type="monotone"
+            dataKey="totalSnobol"
+            stroke="#000000"
+            strokeWidth={1.5}
+            dot={false}
+            activeDot={{ r: 3, fill: "#000000" }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+};
 
 export default function Homepage() {
-    return (
+  return (
     <div className="bg-white content-stretch flex flex-col gap-[20px] items-center relative size-full" data-name="Homepage" data-node-id="1:2">
       <div className="box-border content-stretch flex flex-col gap-[80px] items-start pl-[96px] pr-0 py-[48px] relative shrink-0 w-full" data-name="Header" data-node-id="1:154">
         <div className="relative shrink-0" data-node-id="1:180">
@@ -27,7 +121,7 @@ export default function Homepage() {
               <div className="basis-0 grow h-[280px] min-h-px min-w-px relative shrink-0" data-name="Container" data-node-id="1:162">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-[280px] items-start justify-end relative w-full">
                   <div className="h-[313.6px] relative shrink-0 w-[448px]" data-name="LineChart" data-node-id="1:163">
-                    <img alt="" className="block max-w-none size-full" src={imgLineChart} />
+                    <SimpleLineChart currentPrice={18.49} currentSP500Price={3.30} />
                   </div>
                 </div>
               </div>
