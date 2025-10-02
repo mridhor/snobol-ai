@@ -12,6 +12,7 @@ import {
 import { formatAreaChartData, ChartData } from "@/utils/chartData";
 import Image from "next/image";
 import snobolLogo from "./snobol-ai-logo.png";
+import ChatbotPill from "@/components/ChatbotPill";
 
 // Ultra-simple 2-line chart component
 const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => {
@@ -154,6 +155,9 @@ export default function Homepage() {
 
         </div>
       </div>
+
+      {/* Sticky Chatbot Pill */}
+      <ChatbotPill />
     </div>
   );
 }
