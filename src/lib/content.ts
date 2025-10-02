@@ -214,6 +214,11 @@ export function updateContent(id: string, html: string, updatedBy: string): Cont
   };
   
   contentStore[id] = contentBlock;
+  
+  // Add to version history
+  const { addContentVersion } = require('./contentHistory');
+  addContentVersion(id, html, html, updatedBy, 'update');
+  
   return contentBlock;
 }
 
