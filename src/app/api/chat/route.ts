@@ -63,7 +63,9 @@ Rules for your behavior:
 export async function POST(req: NextRequest) {
   try {
     // Get IP for rate limiting
-    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const forwarded = req.headers.get("x-forwarded-for");
+    const ip = forwarded ? forwarded.split(",")[0].trim() : req.headers.get("x-real-ip") || "unknown";
+
     
     // Check rate limit
     if (!checkRateLimit(ip)) {
