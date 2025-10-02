@@ -64,10 +64,15 @@ export async function POST(req: NextRequest) {
       max_completion_tokens: 150, // Enough for 3 short questions
     });
 
+    console.log("OpenAI completion response:", JSON.stringify(completion, null, 2));
+
     const suggestionsText = completion.choices[0]?.message?.content;
 
     if (!suggestionsText) {
       console.error("No suggestions generated");
+      console.error("Completion object:", completion);
+      console.error("Choices array:", completion.choices);
+      console.error("First choice:", completion.choices[0]);
       return NextResponse.json(
         { error: "Failed to generate suggestions" },
         { status: 500 }
