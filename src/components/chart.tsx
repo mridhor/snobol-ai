@@ -64,10 +64,10 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ currentPrice
   }, [currentPrice, currentSP500Price, currentDate]);
 
   const yAxisDomain = getYAxisDomain();
-  const [fontSize, setFontSize] = useState("1svw");
+  const [fontSize, setFontSize] = useState("12px");
   const [chartWidth, setChartWidth] = useState("100%");
   const [chartHeight, setChartHeight] = useState("100%");
-  const [chartMinWidth, setChartMinWidth] = useState("51svw");
+  const [chartMinWidth, setChartMinWidth] = useState("320px");
   const [chartMinHeight, setChartMinHeight] = useState("auto");
   const chartContainerRef = useRef<HTMLDivElement>(null);
 
@@ -75,29 +75,29 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ currentPrice
     const updateSizes = () => {
       const width = window.innerWidth;
       if (width <= 478) {
-        setFontSize("4.2svw");
-        setChartWidth("95svw");
-        setChartHeight("120svw");
-        setChartMinWidth("95svw");
-        setChartMinHeight("120svw");
+        setFontSize("14px");
+        setChartWidth("95%");
+        setChartHeight("400px");
+        setChartMinWidth("280px");
+        setChartMinHeight("400px");
       } else if (width <= 767) {
-        setFontSize("2.2svw");
-        setChartWidth("88svw");
-        setChartHeight("50svw");
-        setChartMinWidth("88svw");
-        setChartMinHeight("50svw");
+        setFontSize("12px");
+        setChartWidth("90%");
+        setChartHeight("300px");
+        setChartMinWidth("320px");
+        setChartMinHeight("300px");
       } else if (width <= 991) {
-        setFontSize("1.8svw");
-        setChartWidth("88svw");
-        setChartHeight("46svw");
-        setChartMinWidth("88svw");
-        setChartMinHeight("46svw");
+        setFontSize("11px");
+        setChartWidth("85%");
+        setChartHeight("350px");
+        setChartMinWidth("400px");
+        setChartMinHeight("350px");
       } else {
-        setFontSize("0.8vw");
-        setChartWidth("88svw");
-        setChartHeight("48svw");
-        setChartMinWidth("88svw");
-        setChartMinHeight("48svw");
+        setFontSize("10px");
+        setChartWidth("80%");
+        setChartHeight("400px");
+        setChartMinWidth("500px");
+        setChartMinHeight("400px");
       }
 
       const container = chartContainerRef.current;
