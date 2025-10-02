@@ -391,6 +391,69 @@ function isCryptoSymbol(symbol: string): boolean {
 }
 
 /**
+ * Helper to detect if a symbol is an index
+ * Indices should use global TradingView search without exchange prefix
+ */
+function isIndexSymbol(symbol: string): boolean {
+  const upper = symbol.toUpperCase();
+  const indexTickers = [
+    'SPX', 'SPX500', 'SP500', 'S&P500',
+    'DJI', 'DJIA', 'DOW', 'DOWJONES',
+    'IXIC', 'NASDAQ', 'NDX', 'NQ',
+    'RUT', 'RUSSELL2000', 'IWM',
+    'VIX', 'VIXINDEX',
+    'FTSE', 'FTSE100',
+    'DAX', 'DAX40',
+    'NIKKEI', 'NIKKEI225', 'N225',
+    'HANGSENG', 'HSI',
+    'CAC40', 'CAC',
+    'EURO50', 'STOXX50',
+    'SENSEX', 'NIFTY', 'NIFTY50',
+    'KOSPI', 'KOSDAQ',
+    'TSX', 'SPTSX'
+  ];
+  return indexTickers.includes(upper) || upper.includes('INDEX');
+}
+
+/**
+ * Helper to detect if a symbol is a commodity
+ * Commodities should use global TradingView search without exchange prefix
+ */
+function isCommoditySymbol(symbol: string): boolean {
+  const upper = symbol.toUpperCase();
+  const commodityTickers = [
+    // Precious Metals
+    'GOLD', 'GLD', 'GC', 'XAUUSD', 'XAU',
+    'SILVER', 'SLV', 'SI', 'XAGUSD', 'XAG',
+    'PLATINUM', 'XPTUSD', 'XPT', 'PL',
+    'PALLADIUM', 'XPDUSD', 'XPD', 'PA',
+    
+    // Energy
+    'OIL', 'CRUDE', 'CL', 'USOIL', 'WTI', 'BRENT',
+    'NATURALGAS', 'NG', 'NATGAS',
+    'GASOLINE', 'RB',
+    
+    // Industrial Metals
+    'COPPER', 'HG', 'XCULUSD',
+    'ALUMINUM', 'ALUMINIUM',
+    'NICKEL', 'ZINC', 'LEAD',
+    
+    // Agricultural
+    'WHEAT', 'ZW', 'CORN', 'ZC',
+    'SOYBEANS', 'ZS', 'SOYBEAN',
+    'SUGAR', 'COTTON', 'COFFEE', 'COCOA',
+    'RICE', 'OATS',
+    
+    // Livestock
+    'CATTLE', 'LEAN', 'HOGS',
+    
+    // Other
+    'LUMBER', 'ORANGE', 'ORANGEJUICE'
+  ];
+  return commodityTickers.includes(upper) || upper.includes('COMMODITY');
+}
+
+/**
  * Helper to generate chart data payload for a symbol
  */
 async function getChartDataForSymbol(symbol: string): Promise<string> {
@@ -409,6 +472,40 @@ async function getChartDataForSymbol(symbol: string): Promise<string> {
       symbol: fullSymbol,
       companyName: `${upper} (Cryptocurrency)`,
       assetType: 'Cryptocurrency',
+      period: '6mo',
+      priceSymbol: '$',
+      data: [],
+      note: 'Rendering via TradingView widget'
+    })}[/CHART_DATA]`;
+  }
+  
+  // Check if it's an index
+  const isIndex = isIndexSymbol(upper);
+  
+  // For indices: use symbol WITHOUT exchange prefix (global search)
+  if (isIndex) {
+    return `[CHART_DATA]${JSON.stringify({
+      type: 'stock_chart',
+      symbol: upper, // No exchange prefix for indices
+      companyName: `${upper} Index`,
+      assetType: 'Index',
+      period: '6mo',
+      priceSymbol: '',
+      data: [],
+      note: 'Rendering via TradingView widget'
+    })}[/CHART_DATA]`;
+  }
+  
+  // Check if it's a commodity
+  const isCommodity = isCommoditySymbol(upper);
+  
+  // For commodities: use symbol WITHOUT exchange prefix (global search)
+  if (isCommodity) {
+    return `[CHART_DATA]${JSON.stringify({
+      type: 'stock_chart',
+      symbol: upper, // No exchange prefix for commodities
+      companyName: `${upper} Commodity`,
+      assetType: 'Commodity',
       period: '6mo',
       priceSymbol: '$',
       data: [],
@@ -468,6 +565,12 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
   // Check if it's a crypto symbol
   const isCrypto = isCryptoSymbol(upper);
   
+  // Check if it's an index
+  const isIndex = isIndexSymbol(upper);
+  
+  // Check if it's a commodity
+  const isCommodity = isCommoditySymbol(upper);
+  
   // Build TradingView symbol with smart exchange guessing
   let fullSymbol = '';
   let companyName = upper;
@@ -480,6 +583,18 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
     fullSymbol = `BINANCE:${cryptoSymbol}`;
     companyName = `${upper} (Cryptocurrency)`;
     assetType = 'Cryptocurrency';
+    priceSymbol = '$';
+  } else if (isIndex) {
+    // For indices: use symbol WITHOUT exchange prefix (global search)
+    fullSymbol = upper;
+    companyName = `${upper} Index`;
+    assetType = 'Index';
+    priceSymbol = '';
+  } else if (isCommodity) {
+    // For commodities: use symbol WITHOUT exchange prefix (global search)
+    fullSymbol = upper;
+    companyName = `${upper} Commodity`;
+    assetType = 'Commodity';
     priceSymbol = '$';
   } else {
     // For stocks: try TradingView search API
