@@ -129,7 +129,7 @@ export default function ChatbotPill() {
             aria-label="Open chat"
           >
             <MessageCircle className="w-4 h-4" />
-            <span className="font-normal text-sm">Chat with Snobol AI</span>
+            <span className="font-normal text-sm">Snobol AI</span>
           </button>
         </div>
       )}
