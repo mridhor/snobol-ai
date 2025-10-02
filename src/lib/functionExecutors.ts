@@ -44,19 +44,130 @@ async function searchWeb(query: string): Promise<string> {
 }
 
 /**
+ * Helper function to determine asset type based on symbol info
+ */
+function getAssetType(symbolInfo: any): string {
+  const symbol = symbolInfo.symbol?.toUpperCase() || '';
+  const exchange = symbolInfo.exchange?.toUpperCase() || '';
+  const type = symbolInfo.type?.toLowerCase() || '';
+  
+  // Cryptocurrency detection
+  if (symbol.includes('BTC') || symbol.includes('ETH') || symbol.includes('ADA') || 
+      symbol.includes('DOGE') || symbol.includes('SOL') || exchange.includes('CRYPTO')) {
+    return 'Cryptocurrency';
+  }
+  
+  // Commodity detection
+  if (symbol.includes('GOLD') || symbol.includes('SILVER') || symbol.includes('OIL') || 
+      symbol.includes('NATURALGAS') || symbol.includes('COPPER') || symbol.includes('PLATINUM')) {
+    return 'Commodity';
+  }
+  
+  // Forex detection
+  if (symbol.includes('USD') || symbol.includes('EUR') || symbol.includes('GBP') || 
+      symbol.includes('JPY') || symbol.includes('CAD') || symbol.includes('AUD') ||
+      exchange.includes('FX')) {
+    return 'Forex';
+  }
+  
+  // Index detection
+  if (symbol.includes('SPX') || symbol.includes('NASDAQ') || symbol.includes('DOW') || 
+      symbol.includes('NIKKEI') || symbol.includes('DAX') || symbol.includes('FTSE')) {
+    return 'Index';
+  }
+  
+  // ETF detection
+  if (symbol.includes('SPY') || symbol.includes('QQQ') || symbol.includes('VTI') || 
+      symbol.includes('ARKK') || symbol.includes('IWM') || type.includes('etf')) {
+    return 'ETF';
+  }
+  
+  // International stock detection
+  if (exchange.includes('LSE') || exchange.includes('TSE') || exchange.includes('FSE') || 
+      exchange.includes('HKEX') || exchange.includes('SSE') || exchange.includes('BSE')) {
+    return 'International Stock';
+  }
+  
+  return 'Stock';
+}
+
+/**
+ * Helper function to get appropriate price symbol based on asset type
+ */
+function getPriceSymbol(assetType: string, exchange: string): string {
+  switch (assetType) {
+    case 'Cryptocurrency':
+      return '$';
+    case 'Commodity':
+      return '$';
+    case 'Forex':
+      return '';
+    case 'Index':
+      return '';
+    case 'ETF':
+      return '$';
+    case 'International Stock':
+      // Different currencies for different exchanges
+      if (exchange.includes('LSE')) return '£';
+      if (exchange.includes('TSE')) return '¥';
+      if (exchange.includes('FSE')) return '€';
+      if (exchange.includes('HKEX')) return 'HK$';
+      return '$';
+    default:
+      return '$';
+  }
+}
+
+/**
+ * Helper function to get examples of diverse ticker options
+ */
+function getDiverseTickerExamples(): string {
+  return `
+**🌍 INTERNATIONAL STOCKS:**
+- **Europe:** ASML (Netherlands), SAP (Germany), LVMH (France)
+- **Asia:** TSMC (Taiwan), BABA (China), SONY (Japan)
+- **Other:** RIO (Australia), SHOP (Canada)
+
+**₿ CRYPTOCURRENCIES:**
+- **Major:** BTCUSD, ETHUSD, ADAUSD, SOLUSD
+- **Altcoins:** DOGEUSD, MATICUSD, DOTUSD, AVAXUSD
+
+**🥇 COMMODITIES:**
+- **Metals:** GOLD, SILVER, COPPER, PLATINUM
+- **Energy:** OIL, NATURALGAS, GASOLINE
+- **Agriculture:** WHEAT, CORN, SOYBEAN
+
+**💱 FOREX:**
+- **Major Pairs:** EURUSD, GBPUSD, USDJPY, USDCHF
+- **Cross Pairs:** EURGBP, GBPJPY, AUDUSD, USDCAD
+
+**📊 INDICES:**
+- **US:** SPX500, NASDAQ, DOW, RUSSELL2000
+- **International:** NIKKEI (Japan), DAX (Germany), FTSE (UK)
+
+**📈 ETFs:**
+- **Broad Market:** SPY, QQQ, VTI, IWM
+- **Sector:** XLK (Tech), XLF (Finance), XLE (Energy)
+- **International:** VEA (Europe), VWO (Emerging Markets)
+`;
+}
+
+/**
  * Get stock quote using TradingView data endpoints (free, no API key needed)
  * Using TradingView's public symbol search and quotes API
  */
 async function getStockQuote(symbol: string): Promise<string> {
   try {
-    // First, search for the symbol to get the proper TradingView symbol
-    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=US`;
+    // Enhanced search with support for multiple asset types and international markets
+    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
     
     const searchResponse = await fetch(searchUrl);
     const searchData = await searchResponse.json();
     
     if (!searchData || searchData.length === 0) {
-      return `Could not find stock data for symbol "${symbol}". Please verify the ticker symbol is correct.`;
+      return `Could not find data for symbol "${symbol}". Please verify the ticker symbol is correct.
+
+${getDiverseTickerExamples()}`;
     }
     
     // Get the first result (most relevant)
@@ -87,37 +198,45 @@ async function getStockQuote(symbol: string): Promise<string> {
     const volume = quote.v;
     const marketCap = quote.market_cap_basic;
     
+    // Determine asset type for better formatting
+    const assetType = getAssetType(symbolInfo);
+    const priceSymbol = getPriceSymbol(assetType, exchange);
+    
     return `
 **${tradingViewSymbol}** - ${symbolInfo.description || tradingViewSymbol}
+**Type:** ${assetType} | **Exchange:** ${exchange}
 
-**Current Price:** $${currentPrice?.toFixed(2)}
-**Change:** $${change.toFixed(2)} (${changePercent}%)
-**Day Range:** $${dayLow?.toFixed(2)} - $${dayHigh?.toFixed(2)}
+**Current Price:** ${priceSymbol}${currentPrice?.toFixed(2)}
+**Change:** ${priceSymbol}${change.toFixed(2)} (${changePercent}%)
+**Day Range:** ${priceSymbol}${dayLow?.toFixed(2)} - ${priceSymbol}${dayHigh?.toFixed(2)}
 **Volume:** ${volume ? (volume / 1000000).toFixed(2) + 'M' : 'N/A'}
-**Market Cap:** ${marketCap ? (marketCap / 1e9).toFixed(2) + 'B' : 'N/A'}
-**Exchange:** ${exchange}
+${marketCap ? `**Market Cap:** ${(marketCap / 1e9).toFixed(2)}B` : ''}
 
 *Data as of ${new Date().toLocaleString()}*
     `.trim();
   } catch (error) {
     console.error('Stock quote error:', error);
-    return `Unable to fetch stock data for "${symbol}". Please verify the ticker symbol is correct (e.g., AAPL for Apple, TSLA for Tesla).`;
+    return `Unable to fetch data for "${symbol}". Please verify the ticker symbol is correct.
+
+${getDiverseTickerExamples()}`;
   }
 }
 
 /**
- * Analyze company using TradingView data endpoints
+ * Analyze company/asset using TradingView data endpoints
  */
 async function analyzeCompany(symbol: string): Promise<string> {
   try {
-    // First, search for the symbol to get the proper TradingView symbol
-    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=US`;
+    // Enhanced search with support for multiple asset types
+    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
     
     const searchResponse = await fetch(searchUrl);
     const searchData = await searchResponse.json();
     
     if (!searchData || searchData.length === 0) {
-      return `Could not find company data for "${symbol}". Please verify the ticker symbol.`;
+      return `Could not find data for "${symbol}". Please verify the ticker symbol.
+
+${getDiverseTickerExamples()}`;
     }
     
     // Get the first result (most relevant)
@@ -133,34 +252,36 @@ async function analyzeCompany(symbol: string): Promise<string> {
     const quotesData = await quotesResponse.json();
     
     if (!quotesData || !quotesData.data || quotesData.data.length === 0) {
-      return `Could not fetch company data for "${symbol}". Please verify the ticker symbol.`;
+      return `Could not fetch data for "${symbol}". Please verify the ticker symbol.`;
     }
     
     const quote = quotesData.data[0];
+    const assetType = getAssetType(symbolInfo);
+    const priceSymbol = getPriceSymbol(assetType, exchange);
     
     const analysis = `
 **${symbolInfo.description || tradingViewSymbol}**
 
+**Type:** ${assetType}
 **Exchange:** ${exchange}
 **Country:** ${symbolInfo.country || 'N/A'}
-**Type:** ${symbolInfo.type || 'N/A'}
 
-**Financial Health:**
-- Market Cap: ${quote.market_cap_basic ? (quote.market_cap_basic / 1e9).toFixed(2) + 'B' : 'N/A'}
-- Current Price: $${quote.lp?.toFixed(2) || 'N/A'}
-- Day High: $${quote.h?.toFixed(2) || 'N/A'}
-- Day Low: $${quote.l?.toFixed(2) || 'N/A'}
+**Current Metrics:**
+- Current Price: ${priceSymbol}${quote.lp?.toFixed(2) || 'N/A'}
+- Day High: ${priceSymbol}${quote.h?.toFixed(2) || 'N/A'}
+- Day Low: ${priceSymbol}${quote.l?.toFixed(2) || 'N/A'}
 - Volume: ${quote.v ? (quote.v / 1000000).toFixed(2) + 'M' : 'N/A'}
+${quote.market_cap_basic ? `- Market Cap: ${(quote.market_cap_basic / 1e9).toFixed(2)}B` : ''}
 
 **Price Performance:**
-- Change: $${(quote.lp - quote.prev_close_price)?.toFixed(2) || 'N/A'}
+- Change: ${priceSymbol}${(quote.lp - quote.prev_close_price)?.toFixed(2) || 'N/A'}
 - Change %: ${quote.prev_close_price ? (((quote.lp - quote.prev_close_price) / quote.prev_close_price) * 100).toFixed(2) + '%' : 'N/A'}
-- Previous Close: $${quote.prev_close_price?.toFixed(2) || 'N/A'}
+- Previous Close: ${priceSymbol}${quote.prev_close_price?.toFixed(2) || 'N/A'}
 
 **Trading Information:**
-- Open: $${quote.o?.toFixed(2) || 'N/A'}
-- High: $${quote.h?.toFixed(2) || 'N/A'}
-- Low: $${quote.l?.toFixed(2) || 'N/A'}
+- Open: ${priceSymbol}${quote.o?.toFixed(2) || 'N/A'}
+- High: ${priceSymbol}${quote.h?.toFixed(2) || 'N/A'}
+- Low: ${priceSymbol}${quote.l?.toFixed(2) || 'N/A'}
 - Volume: ${quote.v ? quote.v.toLocaleString() : 'N/A'}
 
 *Data provided by TradingView*
@@ -168,25 +289,29 @@ async function analyzeCompany(symbol: string): Promise<string> {
     
     return analysis;
   } catch (error) {
-    console.error('Company analysis error:', error);
-    return `Unable to analyze "${symbol}". The company data may not be available or the ticker symbol is incorrect.`;
+    console.error('Analysis error:', error);
+    return `Unable to analyze "${symbol}". Please verify the ticker symbol is correct.
+
+${getDiverseTickerExamples()}`;
   }
 }
 
 /**
- * Get historical stock data for chart visualization using TradingView
+ * Get historical data for chart visualization using TradingView
  * Note: TradingView doesn't provide free historical data API, so we'll use a free alternative
  */
 async function getStockChartData(symbol: string, period: string = '6mo'): Promise<string> {
   try {
-    // First, search for the symbol to get the proper TradingView symbol
-    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=US`;
+    // Enhanced search with support for multiple asset types
+    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
     
     const searchResponse = await fetch(searchUrl);
     const searchData = await searchResponse.json();
     
     if (!searchData || searchData.length === 0) {
-      return `Could not find chart data for "${symbol}". Please verify the ticker symbol.`;
+      return `Could not find chart data for "${symbol}". Please verify the ticker symbol.
+
+${getDiverseTickerExamples()}`;
     }
     
     // Get the first result (most relevant)
@@ -206,6 +331,8 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
     }
     
     const quote = quotesData.data[0];
+    const assetType = getAssetType(symbolInfo);
+    const priceSymbol = getPriceSymbol(assetType, exchange);
     
     // Since TradingView doesn't provide free historical data, we'll create a simple chart
     // with current price data and suggest using TradingView's chart widget
@@ -231,16 +358,20 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
       type: 'stock_chart',
       symbol: tradingViewSymbol,
       companyName: symbolInfo.description || tradingViewSymbol,
+      assetType: assetType,
       period: period,
       currentPrice: currentPrice?.toFixed(2),
       change: changePercent,
+      priceSymbol: priceSymbol,
       data: chartData,
-      note: "For detailed historical charts, visit TradingView.com"
+      note: `For detailed historical ${assetType.toLowerCase()} charts, visit TradingView.com`
     })}[/CHART_DATA]`;
     
   } catch (error) {
     console.error('Chart data error:', error);
-    return `Unable to fetch chart data for "${symbol}". For detailed historical charts, please visit TradingView.com directly.`;
+    return `Unable to fetch chart data for "${symbol}". For detailed historical charts, please visit TradingView.com directly.
+
+${getDiverseTickerExamples()}`;
   }
 }
 

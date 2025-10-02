@@ -95,7 +95,7 @@ export default function StockChart({
 
       {/* Legend */}
       <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-500">
-        <span>Source: Yahoo Finance</span>
+        <span>Source: TradingView</span>
         <span>Updated: {new Date().toLocaleTimeString()}</span>
       </div>
     </div>

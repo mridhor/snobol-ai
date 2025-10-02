@@ -230,8 +230,11 @@ export async function POST(req: NextRequest) {
               ] as OpenAI.ChatCompletionMessageParam[];
               
               // Make follow-up streaming call with tool results
+              // If TradingView chart is requested, upgrade to full GPT-5 model
+              const requiresGpt5 = toolCalls.some(tc => tc.function.name === 'show_stock_chart');
+              const followupModel = requiresGpt5 ? 'gpt-5' : 'gpt-5-nano';
               const followupStream = await openai.chat.completions.create({
-                model: "gpt-5-nano",
+                model: followupModel,
                 messages: messagesWithTools,
                 temperature: 1,
                 max_completion_tokens: 1000,
