@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   Tooltip
 } from "recharts";
-import { formatAreaChartData as importedFormatAreaChartData, getYAxisDomain, ChartData } from "@/utils/chartData";
+import { formatAreaChartData as importedFormatAreaChartData, ChartData } from "@/utils/chartData";
 
 interface PerformanceChartProps {
   currentPrice: number;
@@ -18,7 +18,7 @@ interface PerformanceChartProps {
 export const PerformanceChart: React.FC<PerformanceChartProps> = ({ currentPrice, currentSP500Price }) => {
   console.log("PerformanceChart - Rendered with Props:", { currentPrice, currentSP500Price });
 
-  const [currentDate, setCurrentDate] = useState<string>(
+  const [currentDate] = useState<string>(
     new Date().toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -63,9 +63,8 @@ export const PerformanceChart: React.FC<PerformanceChartProps> = ({ currentPrice
     setChartData(formattedData);
   }, [currentPrice, currentSP500Price, currentDate]);
 
-  const yAxisDomain = getYAxisDomain();
   const [fontSize, setFontSize] = useState("12px");
-  const [chartWidth, setChartWidth] = useState("100%");
+  const [, setChartWidth] = useState("100%");
   const [chartHeight, setChartHeight] = useState("100%");
   const [chartMinWidth, setChartMinWidth] = useState("320px");
   const [chartMinHeight, setChartMinHeight] = useState("auto");

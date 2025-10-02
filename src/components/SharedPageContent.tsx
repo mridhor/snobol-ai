@@ -167,7 +167,7 @@ const AdminChart = () => {
 };
 
 export default function SharedPageContent({ isAdmin = false, editMode = false, onSave }: SharedPageContentProps) {
-  const { content, loading, getContent } = useContent();
+  const { loading, getContent } = useContent();
 
   const handleSave = async (html: string, elementId?: string) => {
     if (onSave && elementId) {

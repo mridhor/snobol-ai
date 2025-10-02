@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useContent } from "../../hooks/useContent";
 import CMSInterface from "../../components/CMSInterface";
 import ContentHistory from "../../components/ContentHistory";
