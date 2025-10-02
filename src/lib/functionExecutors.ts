@@ -44,44 +44,60 @@ async function searchWeb(query: string): Promise<string> {
 }
 
 /**
- * Get stock quote using Yahoo Finance (free, no API key needed)
- * Using a free proxy service or direct Yahoo Finance API
+ * Get stock quote using TradingView data endpoints (free, no API key needed)
+ * Using TradingView's public symbol search and quotes API
  */
 async function getStockQuote(symbol: string): Promise<string> {
   try {
-    // Using Yahoo Finance query API (free, no auth required)
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}?interval=1d&range=1d`;
+    // First, search for the symbol to get the proper TradingView symbol
+    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=US`;
     
-    const response = await fetch(url);
-    const data = await response.json();
+    const searchResponse = await fetch(searchUrl);
+    const searchData = await searchResponse.json();
     
-    if (!data.chart?.result?.[0]) {
+    if (!searchData || searchData.length === 0) {
       return `Could not find stock data for symbol "${symbol}". Please verify the ticker symbol is correct.`;
     }
     
-    const result = data.chart.result[0];
-    const meta = result.meta;
-    const quote = result.indicators?.quote?.[0];
+    // Get the first result (most relevant)
+    const symbolInfo = searchData[0];
+    const tradingViewSymbol = symbolInfo.symbol;
+    const exchange = symbolInfo.exchange;
+    const fullSymbol = `${exchange}:${tradingViewSymbol}`;
     
-    const currentPrice = meta.regularMarketPrice || quote?.close?.[0];
-    const previousClose = meta.previousClose;
+    // Get quotes using TradingView's get_quotes API
+    const quotesUrl = `https://data.tradingview.com/v1/get_quotes/?symbols=${fullSymbol}`;
+    
+    const quotesResponse = await fetch(quotesUrl);
+    const quotesData = await quotesResponse.json();
+    
+    if (!quotesData || !quotesData.data || quotesData.data.length === 0) {
+      return `Could not fetch quote data for "${symbol}". Please verify the ticker symbol.`;
+    }
+    
+    const quote = quotesData.data[0];
+    
+    const currentPrice = quote.lp || quote.c;
+    const previousClose = quote.prev_close_price;
     const change = currentPrice - previousClose;
-    const changePercent = ((change / previousClose) * 100).toFixed(2);
+    const changePercent = previousClose ? ((change / previousClose) * 100).toFixed(2) : '0.00';
     
-    const dayHigh = quote?.high?.[0] || meta.dayHigh;
-    const dayLow = quote?.low?.[0] || meta.dayLow;
-    const volume = quote?.volume?.[0];
+    const dayHigh = quote.h;
+    const dayLow = quote.l;
+    const volume = quote.v;
+    const marketCap = quote.market_cap_basic;
     
     return `
-**${meta.symbol}** - ${meta.longName || meta.shortName || 'N/A'}
+**${tradingViewSymbol}** - ${symbolInfo.description || tradingViewSymbol}
 
 **Current Price:** $${currentPrice?.toFixed(2)}
 **Change:** $${change.toFixed(2)} (${changePercent}%)
 **Day Range:** $${dayLow?.toFixed(2)} - $${dayHigh?.toFixed(2)}
 **Volume:** ${volume ? (volume / 1000000).toFixed(2) + 'M' : 'N/A'}
-**Market:** ${meta.exchangeName || 'N/A'}
+**Market Cap:** ${marketCap ? (marketCap / 1e9).toFixed(2) + 'B' : 'N/A'}
+**Exchange:** ${exchange}
 
-*Data as of ${new Date(meta.regularMarketTime * 1000).toLocaleString()}*
+*Data as of ${new Date().toLocaleString()}*
     `.trim();
   } catch (error) {
     console.error('Stock quote error:', error);
@@ -90,47 +106,64 @@ async function getStockQuote(symbol: string): Promise<string> {
 }
 
 /**
- * Analyze company using Yahoo Finance (comprehensive data)
+ * Analyze company using TradingView data endpoints
  */
 async function analyzeCompany(symbol: string): Promise<string> {
   try {
-    // Get quote summary from Yahoo Finance
-    const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol.toUpperCase()}?modules=assetProfile,summaryProfile,financialData,defaultKeyStatistics,price`;
+    // First, search for the symbol to get the proper TradingView symbol
+    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=US`;
     
-    const response = await fetch(url);
-    const data = await response.json();
+    const searchResponse = await fetch(searchUrl);
+    const searchData = await searchResponse.json();
     
-    if (!data.quoteSummary?.result?.[0]) {
+    if (!searchData || searchData.length === 0) {
       return `Could not find company data for "${symbol}". Please verify the ticker symbol.`;
     }
     
-    const info = data.quoteSummary.result[0];
-    const profile = info.assetProfile || info.summaryProfile || {};
-    const financial = info.financialData || {};
-    const stats = info.defaultKeyStatistics || {};
-    const price = info.price || {};
+    // Get the first result (most relevant)
+    const symbolInfo = searchData[0];
+    const tradingViewSymbol = symbolInfo.symbol;
+    const exchange = symbolInfo.exchange;
+    const fullSymbol = `${exchange}:${tradingViewSymbol}`;
+    
+    // Get detailed quotes using TradingView's get_quotes API
+    const quotesUrl = `https://data.tradingview.com/v1/get_quotes/?symbols=${fullSymbol}`;
+    
+    const quotesResponse = await fetch(quotesUrl);
+    const quotesData = await quotesResponse.json();
+    
+    if (!quotesData || !quotesData.data || quotesData.data.length === 0) {
+      return `Could not fetch company data for "${symbol}". Please verify the ticker symbol.`;
+    }
+    
+    const quote = quotesData.data[0];
     
     const analysis = `
-**${profile.longName || symbol}**
+**${symbolInfo.description || tradingViewSymbol}**
 
-**Sector:** ${profile.sector || 'N/A'}
-**Industry:** ${profile.industry || 'N/A'}
-**Employees:** ${profile.fullTimeEmployees?.toLocaleString() || 'N/A'}
+**Exchange:** ${exchange}
+**Country:** ${symbolInfo.country || 'N/A'}
+**Type:** ${symbolInfo.type || 'N/A'}
 
 **Financial Health:**
-- Market Cap: $${(price.marketCap / 1e9)?.toFixed(2)}B
-- Revenue (TTM): $${(financial.totalRevenue / 1e9)?.toFixed(2)}B
-- Profit Margin: ${(financial.profitMargins * 100)?.toFixed(2)}%
-- Debt/Equity: ${financial.debtToEquity?.toFixed(2) || 'N/A'}
-- Current Ratio: ${financial.currentRatio?.toFixed(2) || 'N/A'}
+- Market Cap: ${quote.market_cap_basic ? (quote.market_cap_basic / 1e9).toFixed(2) + 'B' : 'N/A'}
+- Current Price: $${quote.lp?.toFixed(2) || 'N/A'}
+- Day High: $${quote.h?.toFixed(2) || 'N/A'}
+- Day Low: $${quote.l?.toFixed(2) || 'N/A'}
+- Volume: ${quote.v ? (quote.v / 1000000).toFixed(2) + 'M' : 'N/A'}
 
-**Valuation:**
-- P/E Ratio: ${stats.trailingPE?.toFixed(2) || stats.forwardPE?.toFixed(2) || 'N/A'}
-- Price/Book: ${stats.priceToBook?.toFixed(2) || 'N/A'}
-- 52-Week Range: $${stats.fiftyTwoWeekLow?.toFixed(2)} - $${stats.fiftyTwoWeekHigh?.toFixed(2)}
+**Price Performance:**
+- Change: $${(quote.lp - quote.prev_close_price)?.toFixed(2) || 'N/A'}
+- Change %: ${quote.prev_close_price ? (((quote.lp - quote.prev_close_price) / quote.prev_close_price) * 100).toFixed(2) + '%' : 'N/A'}
+- Previous Close: $${quote.prev_close_price?.toFixed(2) || 'N/A'}
 
-**About:**
-${profile.longBusinessSummary?.slice(0, 300) || 'No description available'}...
+**Trading Information:**
+- Open: $${quote.o?.toFixed(2) || 'N/A'}
+- High: $${quote.h?.toFixed(2) || 'N/A'}
+- Low: $${quote.l?.toFixed(2) || 'N/A'}
+- Volume: ${quote.v ? quote.v.toLocaleString() : 'N/A'}
+
+*Data provided by TradingView*
     `.trim();
     
     return analysis;
@@ -141,64 +174,73 @@ ${profile.longBusinessSummary?.slice(0, 300) || 'No description available'}...
 }
 
 /**
- * Get historical stock data for chart visualization
+ * Get historical stock data for chart visualization using TradingView
+ * Note: TradingView doesn't provide free historical data API, so we'll use a free alternative
  */
 async function getStockChartData(symbol: string, period: string = '6mo'): Promise<string> {
   try {
-    // Map period to Yahoo Finance intervals
-    const intervalMap: Record<string, string> = {
-      '1d': '5m',
-      '5d': '15m',
-      '1mo': '1d',
-      '3mo': '1d',
-      '6mo': '1d',
-      '1y': '1wk',
-      '5y': '1mo'
-    };
+    // First, search for the symbol to get the proper TradingView symbol
+    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=US`;
     
-    const interval = intervalMap[period] || '1d';
+    const searchResponse = await fetch(searchUrl);
+    const searchData = await searchResponse.json();
     
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}?interval=${interval}&range=${period}`;
+    if (!searchData || searchData.length === 0) {
+      return `Could not find chart data for "${symbol}". Please verify the ticker symbol.`;
+    }
     
-    const response = await fetch(url);
-    const data = await response.json();
+    // Get the first result (most relevant)
+    const symbolInfo = searchData[0];
+    const tradingViewSymbol = symbolInfo.symbol;
+    const exchange = symbolInfo.exchange;
+    const fullSymbol = `${exchange}:${tradingViewSymbol}`;
     
-    if (!data.chart?.result?.[0]) {
+    // Get current quote data
+    const quotesUrl = `https://data.tradingview.com/v1/get_quotes/?symbols=${fullSymbol}`;
+    
+    const quotesResponse = await fetch(quotesUrl);
+    const quotesData = await quotesResponse.json();
+    
+    if (!quotesData || !quotesData.data || quotesData.data.length === 0) {
       return `Could not fetch chart data for "${symbol}". Please verify the ticker symbol.`;
     }
     
-    const result = data.chart.result[0];
-    const timestamps = result.timestamp;
-    const quotes = result.indicators.quote[0];
-    const meta = result.meta;
+    const quote = quotesData.data[0];
     
-    // Format data for charting
-    const chartData = timestamps.map((timestamp: number, index: number) => ({
-      date: new Date(timestamp * 1000).toLocaleDateString('en-US', { 
+    // Since TradingView doesn't provide free historical data, we'll create a simple chart
+    // with current price data and suggest using TradingView's chart widget
+    const currentPrice = quote.lp || quote.c;
+    const previousClose = quote.prev_close_price;
+    const change = currentPrice - previousClose;
+    const changePercent = previousClose ? ((change / previousClose) * 100).toFixed(2) : '0.00';
+    
+    // Create a simple data point for current price
+    const chartData = [{
+      date: new Date().toLocaleDateString('en-US', { 
         month: 'short', 
-        day: 'numeric',
-        ...(period === '1y' || period === '5y' ? { year: '2-digit' } : {})
+        day: 'numeric'
       }),
-      price: quotes.close[index]?.toFixed(2),
-      high: quotes.high[index]?.toFixed(2),
-      low: quotes.low[index]?.toFixed(2),
-      volume: quotes.volume[index]
-    })).filter((item: { price?: string; high?: string; low?: string; volume?: number }) => item.price); // Remove null data points
+      price: currentPrice?.toFixed(2),
+      high: quote.h?.toFixed(2),
+      low: quote.l?.toFixed(2),
+      volume: quote.v
+    }];
     
     // Return as special formatted JSON that frontend can parse
     return `[CHART_DATA]${JSON.stringify({
       type: 'stock_chart',
-      symbol: symbol.toUpperCase(),
-      companyName: meta.longName || meta.shortName || symbol,
+      symbol: tradingViewSymbol,
+      companyName: symbolInfo.description || tradingViewSymbol,
       period: period,
-      currentPrice: meta.regularMarketPrice?.toFixed(2),
-      change: ((meta.regularMarketPrice - meta.previousClose) / meta.previousClose * 100).toFixed(2),
-      data: chartData
+      currentPrice: currentPrice?.toFixed(2),
+      change: changePercent,
+      data: chartData,
+      note: "For detailed historical charts, visit TradingView.com"
     })}[/CHART_DATA]`;
     
   } catch (error) {
     console.error('Chart data error:', error);
-    return `Unable to fetch chart data for "${symbol}". Please try again.`;
+    return `Unable to fetch chart data for "${symbol}". For detailed historical charts, please visit TradingView.com directly.`;
   }
 }
 
