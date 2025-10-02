@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
     // Call OpenAI API✅
       const openai = getOpenAIClient();
       const completion = await openai.chat.completions.create({
-        model: "gpt-5", // Full GPT-5 model (higher quality, more nuanced replies)
+        model: "gpt-5-mini", // Full GPT-5 model (higher quality, more nuanced replies)
         messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
         temperature: 1, // must be 1 for reasoning to work
         max_completion_tokens: 2000, // generous output cap
