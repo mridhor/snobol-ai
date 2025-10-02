@@ -81,7 +81,7 @@ export default function ChatbotPill() {
       ];
       setMessages(newMessages);
       setIsLoading(true);
-      setIsStreaming(true);
+      // Don't set isStreaming yet - wait for stream to actually start
       lastRequestTime.current = now;
 
       // Create abort controller for this request
@@ -113,7 +113,9 @@ export default function ChatbotPill() {
         let accumulatedContent = "";
 
         if (reader) {
+          // Now set streaming to true and hide loading dots
           setIsLoading(false);
+          setIsStreaming(true);
           
           while (true) {
             const { done, value } = await reader.read();
@@ -187,6 +189,22 @@ export default function ChatbotPill() {
 
   return (
     <>
+      <style jsx>{`
+        @keyframes smoothReveal {
+          from {
+            opacity: 0;
+            transform: translateY(4px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        .streaming-text {
+          animation: smoothReveal 0.6s ease-out forwards;
+        }
+      `}</style>
+      
       {/* Chatbot Pill Button */}
       {!isOpen && (
         <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -229,29 +247,32 @@ export default function ChatbotPill() {
           {/* Messages */}
           <div className="h-full pt-12 sm:pt-14 pb-28 sm:pb-32 overflow-y-auto">
             <div className="max-w-3xl mx-auto px-3 sm:px-4 space-y-4 sm:space-y-6 py-4 sm:py-6">
-              {messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  } animate-in fade-in slide-in-from-bottom-1 duration-300`}
-                  style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
-                >
-                  {message.role === "user" ? (
-                    <div className="bg-gray-900 text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm max-w-[85%] sm:max-w-[75%] shadow-sm break-words">
-                      {message.content}
-                    </div>
-                  ) : (
-                    <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] shadow-sm break-words relative">
-                      {message.content === "" && isStreaming && index === messages.length - 1 ? (
-                        <div className="flex items-center gap-1">
-                          <span className="inline-block w-1 h-4 bg-gray-600 animate-pulse"></span>
-                        </div>
-                      ) : (
-                        <>
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={{
+              {messages.map((message, index) => {
+                // Hide the empty streaming message while loading dots are showing
+                const isEmptyStreamingMessage = message.role === "assistant" && message.content === "" && isStreaming && index === messages.length - 1;
+                if (isEmptyStreamingMessage && isLoading) {
+                  return null;
+                }
+                
+                return (
+                  <div
+                    key={index}
+                    className={`flex ${
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    } animate-in fade-in slide-in-from-bottom-1 duration-300`}
+                    style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
+                  >
+                    {message.role === "user" ? (
+                      <div className="bg-gray-900 text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm max-w-[85%] sm:max-w-[75%] break-words">
+                        {message.content}
+                      </div>
+                    ) : (
+                      <div className={`bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] break-words relative ${
+                        isStreaming && index === messages.length - 1 && message.content !== "" ? 'streaming-text' : ''
+                      }`}>
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
                           p: ({ children }) => (
                             <p className="mb-3 sm:mb-4 last:mb-0 leading-relaxed">{children}</p>
                           ),
@@ -285,23 +306,19 @@ export default function ChatbotPill() {
                           blockquote: ({ children }) => (
                             <blockquote className="border-l-2 border-gray-300 pl-3 italic my-2 sm:my-3 text-sm sm:text-base opacity-90">{children}</blockquote>
                           ),
-                            }}
-                          >
-                            {message.content}
-                          </ReactMarkdown>
-                          {isStreaming && index === messages.length - 1 && message.content !== "" && (
-                            <span className="inline-block w-0.5 h-4 bg-gray-600 ml-0.5 animate-pulse"></span>
-                          )}
-                        </>
-                      )}
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
                     </div>
                   )}
                 </div>
-              ))}
+              );
+              })}
 
               {isLoading && !isStreaming && (
                 <div className="flex justify-start animate-in fade-in duration-300">
-                  <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-sm">
+                  <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5">
                     <div className="flex items-center space-x-1">
                       <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" />
                       <span
@@ -334,7 +351,7 @@ export default function ChatbotPill() {
                   {error}
                 </div>
               )}
-              <div className="flex items-end gap-2 sm:gap-2.5 bg-white border border-gray-300 rounded-[1.625em] shadow-sm p-2 sm:p-2.5">
+              <div className="flex items-end gap-2 sm:gap-2.5 bg-white border border-gray-300 rounded-[1.625em] p-2 sm:p-2.5">
                 <textarea
                   ref={textareaRef}
                   value={inputValue}
