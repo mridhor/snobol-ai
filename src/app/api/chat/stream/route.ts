@@ -182,6 +182,14 @@ export async function POST(req: NextRequest) {
             if (finishReason === 'tool_calls' && toolCalls.length > 0) {
               console.log('Tool calls detected:', toolCalls.map(tc => tc.function.name));
               
+              // Send tool call metadata to client for dynamic loading message
+              const toolMetadata = JSON.stringify({
+                type: "tool_call",
+                toolName: toolCalls[0].function.name, // Use first tool for message
+                toolCount: toolCalls.length
+              });
+              controller.enqueue(encoder.encode(`[TOOL_CALL]${toolMetadata}[/TOOL_CALL]`));
+              
               // Execute all tool calls in parallel
               const toolResults = await Promise.all(
                 toolCalls.map(async (toolCall) => {
