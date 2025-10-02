@@ -136,101 +136,101 @@ export default function ChatbotPill() {
 
       {/* Full Page Overlay */}
       {isOpen && (
-  <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-sm animate-in fade-in duration-300 ease-out">
-    {/* Header */}
-    <div className="absolute top-0 left-0 right-0 z-10 border-b border-gray-200/60 bg-white/70 backdrop-blur-sm">
-      <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900">Snobol AI</h2>
-        <button
-          onClick={() => setIsOpen(false)}
-          className="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
-          aria-label="Close chat"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-    </div>
+        <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-sm animate-in fade-in duration-300 ease-out">
+          {/* Header */}
+          <div className="absolute top-0 left-0 right-0 z-10 border-b border-gray-200/60 bg-white/70 backdrop-blur-sm">
+            <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+              <h2 className="text-base font-semibold text-gray-900">Snobol AI</h2>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                aria-label="Close chat"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
 
-    {/* Messages */}
-    <div className="h-full pt-14 pb-32 overflow-y-auto">
-      <div className="max-w-3xl mx-auto px-4 space-y-6 py-6">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${
-              message.role === "user" ? "justify-end" : "justify-start"
-            } animate-in fade-in slide-in-from-bottom-1 duration-300`}
-            style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
-          >
-            {message.role === "user" ? (
-              <div className="bg-gray-900 text-white rounded-2xl px-4 py-2.5 text-sm max-w-[75%] shadow-sm">
-                {message.content}
+          {/* Messages */}
+          <div className="h-full pt-14 pb-32 overflow-y-auto">
+            <div className="max-w-3xl mx-auto px-4 space-y-6 py-6">
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`flex ${
+                    message.role === "user" ? "justify-end" : "justify-start"
+                  } animate-in fade-in slide-in-from-bottom-1 duration-300`}
+                  style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
+                >
+                  {message.role === "user" ? (
+                    <div className="bg-gray-900 text-white rounded-2xl px-4 py-2.5 text-sm max-w-[75%] shadow-sm">
+                      {message.content}
+                    </div>
+                  ) : (
+                    <div className="bg-gray-100 rounded-2xl px-4 py-2.5 text-sm text-gray-800 max-w-[75%] shadow-sm">
+                      {message.content}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {isLoading && (
+                <div className="flex items-center space-x-1 text-gray-500 text-sm">
+                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                  <span
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  />
+                  <span
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  />
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          {/* Input Area */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200/50 pt-4 pb-5">
+            <div className="max-w-3xl mx-auto px-4">
+              {error && (
+                <div className="mb-3 px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+              <div className="relative flex items-end bg-white border border-gray-200 rounded-2xl shadow-sm">
+                <textarea
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Message Snobol AI..."
+                  rows={1}
+                  disabled={isLoading}
+                  className="w-full px-4 py-3 bg-transparent resize-none focus:outline-none text-sm leading-relaxed disabled:opacity-50 rounded-2xl"
+                  style={{ minHeight: "44px", maxHeight: "120px" }}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!inputValue.trim() || isLoading}
+                  className="absolute right-2 bottom-2 bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed p-2 rounded-full transition-colors"
+                  aria-label="Send message"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Send className="w-5 h-5" />
+                  )}
+                </button>
               </div>
-            ) : (
-              <div className="bg-gray-100 rounded-2xl px-4 py-2.5 text-sm text-gray-800 max-w-[75%] shadow-sm">
-                {message.content}
-              </div>
-            )}
+              <p className="text-[11px] text-gray-400 text-center mt-2">
+                Snobol AI can make mistakes. Always double-check important info.
+              </p>
+            </div>
           </div>
-        ))}
-
-        {isLoading && (
-          <div className="flex items-center space-x-1 text-gray-500 text-sm">
-            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-            <span
-              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-              style={{ animationDelay: "150ms" }}
-            />
-            <span
-              className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-              style={{ animationDelay: "300ms" }}
-            />
-          </div>
-        )}
-
-        <div ref={messagesEndRef} />
-      </div>
-    </div>
-
-    {/* Input Area */}
-    <div className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200/50 pt-4 pb-5">
-      <div className="max-w-3xl mx-auto px-4">
-        {error && (
-          <div className="mb-3 px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
-        <div className="relative flex items-end bg-white border border-gray-200 rounded-2xl shadow-sm">
-          <textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Message Snobol AI..."
-            rows={1}
-            disabled={isLoading}
-            className="w-full px-4 py-3 bg-transparent resize-none focus:outline-none text-sm leading-relaxed disabled:opacity-50 rounded-2xl"
-            style={{ minHeight: "44px", maxHeight: "120px" }}
-          />
-          <button
-            onClick={handleSendMessage}
-            disabled={!inputValue.trim() || isLoading}
-            className="absolute right-2 bottom-2 bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed p-2 rounded-full transition-colors"
-            aria-label="Send message"
-          >
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </button>
         </div>
-        <p className="text-[11px] text-gray-400 text-center mt-2">
-          Snobol AI can make mistakes. Always double-check important info.
-        </p>
-      </div>
-    </div>
-  </div>
-)}
+      )}
     </>
   );
 }
