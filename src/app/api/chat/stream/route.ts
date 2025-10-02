@@ -1,6 +1,13 @@
 import { NextRequest } from "next/server";
 import OpenAI from "openai";
 
+// Type extension for GPT-5 reasoning support
+interface DeltaWithReasoning {
+  content?: string | null;
+  reasoning_content?: string | null;
+  role?: string;
+}
+
 // Initialize OpenAI client lazily
 function getOpenAIClient() {
   return new OpenAI({
@@ -93,7 +100,7 @@ export async function POST(req: NextRequest) {
           const startTime = Date.now();
           
           for await (const chunk of stream) {
-            const delta = chunk.choices[0]?.delta as any;
+            const delta = chunk.choices[0]?.delta as DeltaWithReasoning;
             const reasoning = delta?.reasoning_content || "";
             const content = delta?.content || "";
             
