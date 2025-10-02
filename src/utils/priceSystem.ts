@@ -7,7 +7,9 @@ export const priceCounter = new PriceCounter(
   currentSnobolPrice,
   (updatedPrice: number) => {
     currentSnobolPrice = updatedPrice;
-    localStorage.setItem("latestSnobolPrice", updatedPrice.toString());
+        if (typeof window !== 'undefined') {
+          localStorage.setItem("latestSnobolPrice", updatedPrice.toString());
+        }
   },
   (updatedSP500Price: number) => {
     currentSP500Price = updatedSP500Price;

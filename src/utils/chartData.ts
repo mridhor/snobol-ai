@@ -13,9 +13,14 @@ export interface ChartData {
   totalSnobol?: number; // Optional field for total Snobol price
 }
 
-export const financialData: FinancialData[] = JSON.parse(localStorage.getItem("financialData") || "[]")?.length
-  ? JSON.parse(localStorage.getItem("financialData")!)
-  : [
+export const financialData: FinancialData[] = (() => {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem("financialData");
+    if (stored && stored.length > 0) {
+      return JSON.parse(stored);
+    }
+  }
+  return [
       { date: "Aug 8, 2013", snobol: 1, sp500: 1 },
       { date: "Dec 31, 2014", snobol: 1.3427, sp500: 1.2303 },
       { date: "Dec 31, 2015", snobol: 2.0271, sp500: 1.2203 },
@@ -29,6 +34,7 @@ export const financialData: FinancialData[] = JSON.parse(localStorage.getItem("f
       { date: "Dec 31, 2023", snobol: 14.4117, sp500: 2.8209 },
       { date: "Dec 31, 2024", snobol: 14.9501, sp500: 3.4933 }
     ];
+})();
 
 export const addTodayData = (latestPrice: number, sp500: number) => {
   const today = new Date();
@@ -44,7 +50,9 @@ export const addTodayData = (latestPrice: number, sp500: number) => {
     { date: formattedToday, snobol: latestPrice, sp500: sp500 }
   ];
 
-  localStorage.setItem("financialData", JSON.stringify(updatedData));
+  if (typeof window !== 'undefined') {
+    localStorage.setItem("financialData", JSON.stringify(updatedData));
+  }
   return updatedData;
 };
 
@@ -62,7 +70,9 @@ export const checkAndRecordYearlyData = (latestPrice: number, sp500: number) => 
       sp500: sp500
     };
     const updatedData = [...financialData, yearEndEntry];
+    if (typeof window !== 'undefined') {
     localStorage.setItem("financialData", JSON.stringify(updatedData));
+  }
     return updatedData;
   }
   return financialData;
