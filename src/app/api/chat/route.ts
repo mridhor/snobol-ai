@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     // Call OpenAI API
     const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Using GPT-4o-mini for cost-effectiveness, you can change to "gpt-4" or "gpt-4-turbo"
+      model: "gpt-5-nano", // Using GPT-5 Nano for speed and cost-effectiveness
       messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
       temperature: 0.7,
       max_tokens: 500,

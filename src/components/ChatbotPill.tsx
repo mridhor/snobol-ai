@@ -136,9 +136,9 @@ export default function ChatbotPill() {
 
       {/* Full Page Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] bg-white animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[100] bg-white animate-in fade-in zoom-in-95 duration-300 ease-out">
           {/* Header */}
-          <div className="absolute top-0 left-0 right-0 bg-white z-10 border-b border-gray-100">
+          <div className="absolute top-0 left-0 right-0 bg-white z-10 border-b border-gray-100 animate-in slide-in-from-top duration-300">
             <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
               <h2 className="text-sm font-medium text-gray-900">Snobol AI</h2>
               <button
@@ -156,7 +156,15 @@ export default function ChatbotPill() {
             <div className="max-w-3xl mx-auto px-4">
               <div className="space-y-8 py-8">
                 {messages.map((message, index) => (
-                  <div key={index} className="group">
+                  <div 
+                    key={index} 
+                    className={`group ${
+                      message.role === "user" 
+                        ? "animate-in slide-in-from-right-4 fade-in duration-300" 
+                        : "animate-in slide-in-from-top-2 fade-in duration-400"
+                    }`}
+                    style={{ animationDelay: `${Math.min(index * 50, 200)}ms` }}
+                  >
                     {message.role === "user" ? (
                       <div className="flex justify-end">
                         <div className="bg-gray-100 rounded-3xl px-5 py-3 max-w-[80%]">
@@ -178,7 +186,7 @@ export default function ChatbotPill() {
                 
                 {/* Loading indicator */}
                 {isLoading && (
-                  <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1 animate-in slide-in-from-top-3 fade-in duration-500">
                     <div className="text-sm font-medium text-gray-900">Snobol AI</div>
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -194,10 +202,10 @@ export default function ChatbotPill() {
           </div>
 
           {/* Input Area (Fixed at bottom) */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-8">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-8 animate-in slide-in-from-bottom duration-400">
             <div className="max-w-3xl mx-auto px-4 pb-6">
               {error && (
-                <div className="mb-3 px-4 py-2 bg-red-50 rounded-lg">
+                <div className="mb-3 px-4 py-2 bg-red-50 rounded-lg animate-in slide-in-from-top-2 fade-in duration-300">
                   <p className="text-sm text-red-600">{error}</p>
                 </div>
               )}

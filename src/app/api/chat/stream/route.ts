@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     // Call OpenAI API with streaming
     const openai = getOpenAIClient();
     const stream = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-5-nano",
       messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
       temperature: 0.7,
       max_tokens: 500,
