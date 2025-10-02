@@ -1,19 +1,7 @@
 "use client";
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Filler,
-  TooltipItem,
-} from "chart.js";
-import { Line } from "react-chartjs-2";
 import { useContent } from "../hooks/useContent";
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
+import { PerformanceChart } from "../components/chart";
 
 export default function Home() {
   const { loading, getContent } = useContent();
@@ -29,51 +17,9 @@ export default function Home() {
     );
   }
 
-  const labels = [
-    "2013", "2014", "2015", "2016", "2017",
-    "2018", "2019", "2020", "2021", "2022",
-    "2023", "2024", "2025"
-  ];
-
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: "Snobol Fund Price",
-        data: [
-          1.0, 1.34, 2.02, 2.51, 5.40,
-          9.97, 11.77, 10.81, 12.45, 13.04,
-          14.41, 14.95, 18.49
-        ],
-        borderColor: "#000000",
-        backgroundColor: "rgba(0,0,0,0.1)",
-        fill: true,
-        tension: 0.3,
-        borderWidth: 3,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: (context: TooltipItem<"line">) => `$${Number(context.raw).toFixed(2)}`,
-        },
-      },
-    },
-    scales: {
-      x: { grid: { display: false } },
-      y: {
-        ticks: { callback: (value: string | number) => `$${value}` },
-        grid: { color: "rgba(0,0,0,0.05)" },
-      },
-    },
-  };
+  // Current prices for the PerformanceChart
+  const currentPrice = 18.49; // Snobol fund price
+  const currentSP500Price = 3.30; // S&P 500 portion
 
   return (
     <main className="font-sans bg-white text-black px-6 md:px-16 lg:px-32 py-12 space-y-16">
@@ -89,7 +35,10 @@ export default function Home() {
           dangerouslySetInnerHTML={{ __html: getContent("hero-subtitle", "Clarity in Crisis. Powered by AI, guided by wisdom.") }}
         />
         <div className="max-w-3xl mx-auto mt-8">
-          <Line data={data} options={options} />
+          <PerformanceChart 
+            currentPrice={currentPrice} 
+            currentSP500Price={currentSP500Price} 
+          />
           <p 
             className="text-xs text-gray-500 mt-2"
             dangerouslySetInnerHTML={{ __html: getContent("chart-disclaimer", "*Past performance in no way guarantees future performance.") }}
