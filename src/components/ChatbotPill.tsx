@@ -21,10 +21,12 @@ export default function ChatbotPill() {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastRequestTime = useRef<number>(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Prevent body scroll when overlay is open
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function ChatbotPill() {
   }, [inputValue]);
 
   const handleSendMessage = async () => {
-    if (inputValue.trim() && !isLoading) {
+    if (inputValue.trim() && !isLoading && !isStreaming) {
       // Rate limiting: Prevent requests faster than every 2 seconds
       const now = Date.now();
       const timeSinceLastRequest = now - lastRequestTime.current;
@@ -71,18 +73,26 @@ export default function ChatbotPill() {
         textareaRef.current.style.height = 'auto';
       }
       
-      // Add user message
-      const newMessages: Message[] = [...messages, { role: "user", content: userMessage }];
+      // Add user message and empty assistant message for streaming
+      const newMessages: Message[] = [
+        ...messages, 
+        { role: "user", content: userMessage },
+        { role: "assistant", content: "" }
+      ];
       setMessages(newMessages);
       setIsLoading(true);
+      setIsStreaming(true);
       lastRequestTime.current = now;
 
+      // Create abort controller for this request
+      abortControllerRef.current = new AbortController();
+
       try {
-        // Only send last 10 messages to reduce token usage
-        const recentMessages = newMessages.slice(-10);
+        // Only send last 10 messages to reduce token usage (excluding the empty assistant message)
+        const recentMessages = newMessages.slice(-11, -1).slice(-10);
         
-        // Call the chat API
-        const response = await fetch("/api/chat", {
+        // Call the streaming chat API
+        const response = await fetch("/api/chat/stream", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -90,41 +100,80 @@ export default function ChatbotPill() {
           body: JSON.stringify({
             messages: recentMessages,
           }),
+          signal: abortControllerRef.current.signal,
         });
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to get response");
+          throw new Error("Failed to get response");
         }
 
-        const data = await response.json();
-        
-        // Add AI response
-        setMessages([...newMessages, {
-          role: "assistant",
-          content: data.message,
-        }]);
+        // Read the stream
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
+        let accumulatedContent = "";
+
+        if (reader) {
+          setIsLoading(false);
+          
+          while (true) {
+            const { done, value } = await reader.read();
+            
+            if (done) {
+              break;
+            }
+
+            // Decode the chunk and add to accumulated content
+            const chunk = decoder.decode(value, { stream: true });
+            accumulatedContent += chunk;
+
+            // Update the last message with accumulated content
+            setMessages(prev => {
+              const updated = [...prev];
+              updated[updated.length - 1] = {
+                role: "assistant",
+                content: accumulatedContent
+              };
+              return updated;
+            });
+          }
+        }
       } catch (err: unknown) {
         console.error("Chat error:", err);
-        const error = err as { message?: string };
+        const error = err as { message?: string; name?: string };
+        
+        // Don't show error if request was aborted
+        if (error.name === 'AbortError') {
+          return;
+        }
+        
         const errorMessage = error.message || "Failed to send message. Please try again.";
         
         // Show user-friendly message for rate limits
         if (errorMessage.includes("Rate limit")) {
           setError("Too many requests. Please wait a moment and try again.");
-          setMessages([...newMessages, {
-            role: "assistant",
-            content: "I am receiving a lot of requests right now. Please wait a moment and try again, or email us at hello@snobol.com.",
-          }]);
+          setMessages(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              role: "assistant",
+              content: "I am receiving a lot of requests right now. Please wait a moment and try again, or email us at hello@snobol.com."
+            };
+            return updated;
+          });
         } else {
           setError(errorMessage);
-          setMessages([...newMessages, {
-            role: "assistant",
-            content: "I apologize, but I am having trouble responding right now. Please try again or contact us at hello@snobol.com for assistance.",
-          }]);
+          setMessages(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              role: "assistant",
+              content: "I apologize, but I am having trouble responding right now. Please try again or contact us at hello@snobol.com for assistance."
+            };
+            return updated;
+          });
         }
       } finally {
         setIsLoading(false);
+        setIsStreaming(false);
+        abortControllerRef.current = null;
       }
     }
   };
@@ -193,10 +242,16 @@ export default function ChatbotPill() {
                       {message.content}
                     </div>
                   ) : (
-                    <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] shadow-sm break-words">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
+                    <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] shadow-sm break-words relative">
+                      {message.content === "" && isStreaming && index === messages.length - 1 ? (
+                        <div className="flex items-center gap-1">
+                          <span className="inline-block w-1 h-4 bg-gray-600 animate-pulse"></span>
+                        </div>
+                      ) : (
+                        <>
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
                           p: ({ children }) => (
                             <p className="mb-3 sm:mb-4 last:mb-0 leading-relaxed">{children}</p>
                           ),
@@ -230,17 +285,22 @@ export default function ChatbotPill() {
                           blockquote: ({ children }) => (
                             <blockquote className="border-l-2 border-gray-300 pl-3 italic my-2 sm:my-3 text-sm sm:text-base opacity-90">{children}</blockquote>
                           ),
-                        }}
-                      >
-                        {message.content}
-                      </ReactMarkdown>
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                          {isStreaming && index === messages.length - 1 && message.content !== "" && (
+                            <span className="inline-block w-0.5 h-4 bg-gray-600 ml-0.5 animate-pulse"></span>
+                          )}
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
               ))}
 
-              {isLoading && (
-                <div className="flex justify-start">
+              {isLoading && !isStreaming && (
+                <div className="flex justify-start animate-in fade-in duration-300">
                   <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-sm">
                     <div className="flex items-center space-x-1">
                       <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" />
@@ -282,17 +342,17 @@ export default function ChatbotPill() {
                   onKeyDown={handleKeyPress}
                   placeholder="Message Snobol AI..."
                   rows={1}
-                  disabled={isLoading}
+                  disabled={isLoading || isStreaming}
                   className="flex-1 px-2.5 py-2 sm:px-3 sm:py-2 bg-transparent resize-none focus:outline-none text-[14px] sm:text-sm leading-relaxed disabled:opacity-50 overflow-y-auto"
                   style={{ minHeight: "40px", maxHeight: "120px" }}
                 />
                 <button
                   onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isLoading}
+                  disabled={!inputValue.trim() || isLoading || isStreaming}
                   className="flex-shrink-0 bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed p-2 sm:p-2.5 rounded-full transition-colors self-end"
                   aria-label="Send message"
                 >
-                  {isLoading ? (
+                  {isLoading || isStreaming ? (
                     <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   ) : (
                     <Send className="w-4 h-4 sm:w-5 sm:h-5" />
