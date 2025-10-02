@@ -354,7 +354,7 @@ export default function ChatbotPill() {
             className="group flex items-center gap-2 sm:gap-2.5 bg-white hover:bg-gray-900 text-white pl-3 pr-4 sm:pl-4 sm:pr-5 py-2.5 sm:py-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl border border-gray-200"
             aria-label="Open chat"
           >
-            <MessageCircle className="w-4 h-4 text-black group-hover:text-white transition-colors" />
+            <MessageCircle className="w-5 h-5 text-black group-hover:text-white transition-colors" />
             <span className="font-normal text-black text-md group-hover:text-white transition-colors">Ask Snobol</span>
           </button>
         </div>
