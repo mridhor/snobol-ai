@@ -274,7 +274,7 @@ export default function ChatbotPill() {
                   {error}
                 </div>
               )}
-              <div className="flex items-end gap-2 sm:gap-2.5 bg-white border border-gray-300 rounded-full shadow-sm p-2 sm:p-2.5">
+              <div className="flex items-end gap-2 sm:gap-2.5 bg-white border border-gray-300 rounded-[1.625em] shadow-sm p-2 sm:p-2.5">
                 <textarea
                   ref={textareaRef}
                   value={inputValue}
