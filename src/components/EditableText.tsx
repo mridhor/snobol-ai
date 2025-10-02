@@ -7,7 +7,7 @@ interface EditableTextProps {
   editMode: boolean;
   onSave: (html: string) => void;
   className?: string;
-  tag?: keyof JSX.IntrinsicElements;
+  tag?: "div" | "h1" | "h2" | "h3" | "h4" | "p" | "span" | "button" | "ul" | "li";
 }
 
 export default function EditableText({
@@ -15,7 +15,7 @@ export default function EditableText({
   editMode,
   onSave,
   className = "",
-  tag: Tag = "div",
+  tag = "div",
 }: EditableTextProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState("");
@@ -64,17 +64,37 @@ export default function EditableText({
       }
     : {};
 
-  return (
-    <Tag
-      ref={elementRef}
-      contentEditable={editMode && isEditing}
-      suppressContentEditableWarning={true}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-      className={className}
-      style={editStyles}
-      dangerouslySetInnerHTML={{ __html: content }}
-    />
-  );
+  const baseProps = {
+    contentEditable: editMode && isEditing,
+    suppressContentEditableWarning: true,
+    onFocus: handleFocus,
+    onBlur: handleBlur,
+    onKeyDown: handleKeyDown,
+    className,
+    style: editStyles,
+    dangerouslySetInnerHTML: { __html: content },
+  };
+
+  switch (tag) {
+    case "h1":
+      return <h1 ref={elementRef as React.RefObject<HTMLHeadingElement>} {...baseProps} />;
+    case "h2":
+      return <h2 ref={elementRef as React.RefObject<HTMLHeadingElement>} {...baseProps} />;
+    case "h3":
+      return <h3 ref={elementRef as React.RefObject<HTMLHeadingElement>} {...baseProps} />;
+    case "h4":
+      return <h4 ref={elementRef as React.RefObject<HTMLHeadingElement>} {...baseProps} />;
+    case "p":
+      return <p ref={elementRef as React.RefObject<HTMLParagraphElement>} {...baseProps} />;
+    case "span":
+      return <span ref={elementRef as React.RefObject<HTMLSpanElement>} {...baseProps} />;
+    case "button":
+      return <button ref={elementRef as React.RefObject<HTMLButtonElement>} {...baseProps} />;
+    case "ul":
+      return <ul ref={elementRef as React.RefObject<HTMLUListElement>} {...baseProps} />;
+    case "li":
+      return <li ref={elementRef as React.RefObject<HTMLLIElement>} {...baseProps} />;
+    default:
+      return <div ref={elementRef as React.RefObject<HTMLDivElement>} {...baseProps} />;
+  }
 }

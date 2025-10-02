@@ -9,7 +9,7 @@ import {
   LineElement,
   Tooltip,
   Filler,
-  
+  TooltipItem,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import EditableText from "../components/EditableText";
@@ -77,14 +77,14 @@ export default function Home() {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (context: any) => `$${context.raw.toFixed(2)}`,
+          label: (context: TooltipItem<"line">) => `$${Number(context.raw).toFixed(2)}`,
         },
       },
     },
     scales: {
       x: { grid: { display: false } },
       y: {
-        ticks: { callback: (value: any) => `$${value}` },
+        ticks: { callback: (value: string | number) => `$${value}` },
         grid: { color: "rgba(0,0,0,0.05)" },
       },
     },
@@ -162,7 +162,7 @@ export default function Home() {
           className="mb-4"
         >
           Snobol is a <strong>crisis investing movement</strong> that responds rationally when the
-          market panics. We don't predict the future. We prepare, monitor, and respond with
+          market panics. We don&apos;t predict the future. We prepare, monitor, and respond with
           discipline when fear creates opportunity.
         </EditableText>
         <EditableText
@@ -174,7 +174,7 @@ export default function Home() {
           <li><strong>Thesis:</strong> Markets overreact during crises. Durable companies become mispriced.</li>
           <li><strong>Edge:</strong> Real-time monitoring of order flow, options signals, and macro stress, filtered through quality and valuation rules.</li>
           <li><strong>Promise:</strong> Radical transparency. Every alert published live, every win and loss logged.</li>
-          <li><strong>Vision:</strong> Build the world's most trusted brand in crisis investing — calm, clear, and inevitable like a snowball rolling downhill.</li>
+          <li><strong>Vision:</strong> Build the world&apos;s most trusted brand in crisis investing — calm, clear, and inevitable like a snowball rolling downhill.</li>
         </EditableText>
       </section>
 
@@ -194,7 +194,7 @@ export default function Home() {
           tag="ul"
           className="list-disc list-inside space-y-1 text-gray-800"
         >
-          <li>Respond, don't predict.</li>
+          <li>Respond, don&apos;t predict.</li>
           <li>Buy quality under panic.</li>
           <li>Transparency over hindsight.</li>
           <li>Risk management first.</li>
@@ -292,7 +292,7 @@ export default function Home() {
           tag="p"
           className="mb-4"
         >
-          Snobol is not a hedge fund. It's a <strong>movement of calm contrarians</strong>.
+          Snobol is not a hedge fund. It&apos;s a <strong>movement of calm contrarians</strong>.
         </EditableText>
         <EditableText
           editMode={editMode}
@@ -331,7 +331,7 @@ export default function Home() {
           tag="p"
           className="mb-4"
         >
-          We aim to build the world's most trusted brand in <strong>crisis investing</strong>.
+          We aim to build the world&apos;s most trusted brand in <strong>crisis investing</strong>.
         </EditableText>
         <EditableText
           editMode={editMode}
@@ -348,7 +348,7 @@ export default function Home() {
           onSave={(html) => handleSave(html, "vision-ask")}
           tag="p"
         >
-          <strong>Ask:</strong> Let's connect with incubators, investors, and partners who share this vision.
+          <strong>Ask:</strong> Let&apos;s connect with incubators, investors, and partners who share this vision.
         </EditableText>
       </section>
 
