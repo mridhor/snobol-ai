@@ -7,13 +7,29 @@ import remarkGfm from "remark-gfm";
 import Image from "next/image";
 import StockChart from "./StockChart";
 
+interface ChartData {
+  type: string;
+  symbol: string;
+  companyName: string;
+  period: string;
+  currentPrice: string;
+  change: string;
+  data: Array<{
+    date: string;
+    price: string;
+    high: string;
+    low: string;
+    volume: number;
+  }>;
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
   reasoning?: string;
   thinkingTime?: number;
   suggestions?: string[];
-  chartData?: any;
+  chartData?: ChartData;
 }
 
 export interface ChatbotPillRef {
@@ -353,11 +369,11 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   };
 
   // Helper to extract chart data from content
-  const extractChartData = (content: string): { cleanContent: string; chartData: any | null } => {
+  const extractChartData = (content: string): { cleanContent: string; chartData: ChartData | null } => {
     const chartMatch = content.match(/\[CHART_DATA\]([\s\S]*?)\[\/CHART_DATA\]/);
     if (chartMatch) {
       try {
-        const chartData = JSON.parse(chartMatch[1]);
+        const chartData = JSON.parse(chartMatch[1]) as ChartData;
         const cleanContent = content.replace(/\[CHART_DATA\][\s\S]*?\[\/CHART_DATA\]/, '').trim();
         return { cleanContent, chartData };
       } catch (e) {

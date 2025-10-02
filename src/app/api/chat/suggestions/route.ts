@@ -115,7 +115,6 @@ export async function POST(req: NextRequest) {
     }
   } catch (error: unknown) {
     console.error("Suggestions API Error:", error);
-    const err = error as { message?: string };
     
     // Return fallback suggestions on error
     return NextResponse.json({

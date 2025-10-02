@@ -22,8 +22,8 @@ async function searchWeb(query: string): Promise<string> {
     // Get related topics
     if (data.RelatedTopics && data.RelatedTopics.length > 0) {
       const topics = data.RelatedTopics.slice(0, 3)
-        .filter((topic: any) => topic.Text)
-        .map((topic: any) => topic.Text)
+        .filter((topic: { Text?: string }) => topic.Text)
+        .map((topic: { Text: string }) => topic.Text)
         .join('\n\n');
       
       if (topics) {
@@ -110,7 +110,7 @@ async function analyzeCompany(symbol: string): Promise<string> {
     const stats = info.defaultKeyStatistics || {};
     const price = info.price || {};
     
-    let analysis = `
+    const analysis = `
 **${profile.longName || symbol}**
 
 **Sector:** ${profile.sector || 'N/A'}
@@ -183,7 +183,7 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
       high: quotes.high[index]?.toFixed(2),
       low: quotes.low[index]?.toFixed(2),
       volume: quotes.volume[index]
-    })).filter((item: any) => item.price); // Remove null data points
+    })).filter((item: { price?: string; high?: string; low?: string; volume?: number }) => item.price); // Remove null data points
     
     // Return as special formatted JSON that frontend can parse
     return `[CHART_DATA]${JSON.stringify({
@@ -205,22 +205,22 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
 /**
  * Main executor - routes function calls to appropriate handlers
  */
-export async function executeFunction(name: string, args: Record<string, any>): Promise<string> {
+export async function executeFunction(name: string, args: Record<string, string | number>): Promise<string> {
   console.log(`[Function Call] ${name}`, args);
   
   try {
     switch (name) {
       case 'search_web':
-        return await searchWeb(args.query);
+        return await searchWeb(String(args.query));
       
       case 'get_stock_quote':
-        return await getStockQuote(args.symbol);
+        return await getStockQuote(String(args.symbol));
       
       case 'analyze_company':
-        return await analyzeCompany(args.symbol);
+        return await analyzeCompany(String(args.symbol));
       
       case 'show_stock_chart':
-        return await getStockChartData(args.symbol, args.period);
+        return await getStockChartData(String(args.symbol), String(args.period));
       
       default:
         return `Function "${name}" not found.`;

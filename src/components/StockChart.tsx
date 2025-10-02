@@ -78,7 +78,7 @@ export default function StockChart({
                 borderRadius: '8px',
                 fontSize: '12px'
               }}
-              formatter={(value: any) => [`$${parseFloat(value).toFixed(2)}`, 'Price']}
+              formatter={(value: number | string) => [`$${parseFloat(String(value)).toFixed(2)}`, 'Price']}
               labelStyle={{ color: '#666', fontWeight: 'bold' }}
             />
             <Line 

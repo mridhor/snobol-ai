@@ -126,10 +126,10 @@ export async function POST(req: NextRequest) {
           let reasoningContent = "";
           let hasStartedContent = false;
           const startTime = Date.now();
-          let toolCalls: ToolCall[] = [];
+          const toolCalls: ToolCall[] = [];
           
           for await (const chunk of stream) {
-            const delta = chunk.choices[0]?.delta as DeltaWithReasoning & { tool_calls?: any[] };
+            const delta = chunk.choices[0]?.delta as DeltaWithReasoning & { tool_calls?: Array<{ index: number; id?: string; function?: { name?: string; arguments?: string } }> };
             const finishReason = chunk.choices[0]?.finish_reason;
             const reasoning = delta?.reasoning_content || "";
             const content = delta?.content || "";
