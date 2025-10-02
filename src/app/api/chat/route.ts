@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
     const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({      model: "gpt-5-nano", // Using GPT-5 Nano for speed and cost-effectiveness
       messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
-      temperature: 0.7,
+      temperature: 1,
       max_completion_tokens: 500,
       top_p: 1,
       frequency_penalty: 0,
