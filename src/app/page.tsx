@@ -97,15 +97,21 @@ const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => 
 export default function Homepage() {
   return (
     <div className="bg-white min-h-screen flex flex-col" data-name="Homepage" data-node-id="1:2">
-      <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-24 py-8 md:py-12" data-name="Header" data-node-id="1:154">
-        <div className="relative shrink-0 w-full max-w-6xl" data-node-id="1:180">
-          <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex flex-col gap-8 md:gap-20 items-center relative">
-            <div className="content-stretch flex gap-2 items-center justify-center relative shrink-0" data-name="Heading 1" data-node-id="1:155">
-              <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic relative shrink-0 text-2xl md:text-4xl text-black text-nowrap tracking-tight whitespace-pre" data-node-id="1:156">
-                Snobol
-              </p>
-            </div>
-            <div className="content-stretch flex flex-col lg:flex-row gap-8 lg:gap-24 items-center relative shrink-0 w-full" data-name="Container" data-node-id="1:157">
+      {/* Snobol title at the top */}
+      <div className="w-full flex justify-center px-4 md:px-12 lg:px-24 py-8" data-name="Header" data-node-id="1:154">
+        <div className="w-full max-w-6xl">
+          <div className="flex gap-2 items-center justify-center">
+            <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic text-2xl md:text-4xl text-black text-nowrap tracking-tight" data-node-id="1:156">
+              Snobol
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      {/* Main content centered */}
+      <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-24 py-8 md:py-12">
+        <div className="relative w-full max-w-6xl">
+          <div className="content-stretch flex flex-col lg:flex-row gap-8 lg:gap-24 items-center relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 max-w-lg lg:max-w-none" data-name="Paragraph" data-node-id="1:158">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full">
                   <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic text-xl md:text-2xl lg:text-4xl text-black mb-4" data-node-id="1:159">
