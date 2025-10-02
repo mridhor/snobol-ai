@@ -1,25 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
+import { updateContent } from "../../lib/content";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { html, elementId, content } = body;
 
-    // Log the saved content for now
-    console.log("Saved content:", {
-      html,
-      elementId,
-      content,
-      timestamp: new Date().toISOString(),
-    });
+    // Update content in the content management system
+    const updatedContent = updateContent(
+      elementId, 
+      html, 
+      "admin" // TODO: Get actual user ID from authentication
+    );
 
-    // TODO: Save to Supabase or other database
-    // For now, just return success
+    console.log("Content updated:", {
+      id: elementId,
+      content: html,
+      updatedAt: updatedContent.updatedAt,
+      updatedBy: updatedContent.updatedBy
+    });
 
     return NextResponse.json(
       { 
         success: true, 
         message: "Content saved successfully",
+        content: updatedContent,
         timestamp: new Date().toISOString()
       },
       { status: 200 }
