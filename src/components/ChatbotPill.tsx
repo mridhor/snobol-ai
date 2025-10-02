@@ -33,12 +33,11 @@ export default function ChatbotPill() {
   const [isClosing, setIsClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedThinking, setExpandedThinking] = useState<Set<number>>(new Set());
-  const [loadingDuration, setLoadingDuration] = useState(0);
+  const [thinkingDuration, setThinkingDuration] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastRequestTime = useRef<number>(0);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const loadingStartTime = useRef<number>(0);
 
   // Suggestion templates organized by topic (fallback only)
   const suggestionTemplates = {
@@ -200,6 +199,25 @@ export default function ChatbotPill() {
     }
   }, [isStreaming, messages]);
 
+  // Thinking duration counter
+  useEffect(() => {
+    if (isLoading) {
+      // Reset counter and start timer
+      setThinkingDuration(0);
+      const startTime = Date.now();
+      
+      const timer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        setThinkingDuration(elapsed);
+      }, 100); // Update every 100ms for smooth counting
+      
+      return () => clearInterval(timer);
+    } else {
+      // Reset when not loading
+      setThinkingDuration(0);
+    }
+  }, [isLoading]);
+
   // Auto-resize textarea as user types
   useEffect(() => {
     const textarea = textareaRef.current;
@@ -208,34 +226,6 @@ export default function ChatbotPill() {
       textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
   }, [inputValue]);
-
-  // Track loading duration
-  useEffect(() => {
-    if (isLoading) {
-      loadingStartTime.current = Date.now();
-      setLoadingDuration(0);
-      
-      const interval = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - loadingStartTime.current) / 1000);
-        setLoadingDuration(elapsed);
-      }, 1000);
-      
-      return () => clearInterval(interval);
-    } else {
-      setLoadingDuration(0);
-    }
-  }, [isLoading]);
-
-  // Format duration for display
-  const formatDuration = (seconds: number): string => {
-    if (seconds < 60) {
-      return `(${seconds}s)`;
-    } else {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      return `(${minutes}m ${remainingSeconds}s)`;
-    }
-  };
 
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputValue.trim();
@@ -765,10 +755,9 @@ export default function ChatbotPill() {
                       </div>
                     </div>
                   </div>
-                  <div className="thinking-text text-xs sm:text-sm text-gray-500 font-medium ml-3 sm:ml-4 flex items-center gap-1.5">
-                    <span>Thinking...</span>
-                    <span className="text-gray-400">{formatDuration(loadingDuration)}</span>
-                  </div>
+                  <span className="thinking-text text-xs sm:text-sm text-gray-500 font-medium ml-3 sm:ml-4">
+                    Thinking... ({thinkingDuration}s)
+                  </span>
                 </div>
               )}
 
