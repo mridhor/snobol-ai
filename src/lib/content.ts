@@ -216,6 +216,7 @@ export function updateContent(id: string, html: string, updatedBy: string): Cont
   contentStore[id] = contentBlock;
   
   // Add to version history
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { addContentVersion } = require('./contentHistory');
   addContentVersion(id, html, html, updatedBy, 'update');
   

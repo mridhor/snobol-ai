@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useContent } from "../hooks/useContent";
 
 export default function BulkContentManager() {
-  const { content, getContent, saveContent } = useContent();
+  const { getContent } = useContent();
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(false);

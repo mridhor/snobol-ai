@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useContent } from "../hooks/useContent";
-import { ContentBlock } from "../lib/content";
+// import { ContentBlock } from "../lib/content";
 
 interface CMSInterfaceProps {
   onSave: (html: string, elementId: string) => Promise<void>;

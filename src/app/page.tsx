@@ -16,7 +16,7 @@ import { useContent } from "../hooks/useContent";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
 
 export default function Home() {
-  const { content, loading, getContent } = useContent();
+  const { loading, getContent } = useContent();
 
   if (loading) {
     return (

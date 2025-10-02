@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 
 interface EditableTextProps {
   children: React.ReactNode;
@@ -18,7 +18,8 @@ export default function EditableText({
   tag = "div",
 }: EditableTextProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const elementRef = useRef<HTMLElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const elementRef = useRef<any>(null);
 
   const handleFocus = () => {
     if (editMode) {
@@ -56,8 +57,7 @@ export default function EditableText({
       }
     : {};
 
-  const baseProps = {
-    ref: elementRef,
+  const commonProps = {
     contentEditable: editMode && isEditing,
     suppressContentEditableWarning: true,
     onFocus: handleFocus,
@@ -69,24 +69,24 @@ export default function EditableText({
 
   switch (tag) {
     case "h1":
-      return <h1 {...baseProps}>{children}</h1>;
+      return <h1 ref={elementRef} {...commonProps}>{children}</h1>;
     case "h2":
-      return <h2 {...baseProps}>{children}</h2>;
+      return <h2 ref={elementRef} {...commonProps}>{children}</h2>;
     case "h3":
-      return <h3 {...baseProps}>{children}</h3>;
+      return <h3 ref={elementRef} {...commonProps}>{children}</h3>;
     case "h4":
-      return <h4 {...baseProps}>{children}</h4>;
+      return <h4 ref={elementRef} {...commonProps}>{children}</h4>;
     case "p":
-      return <p {...baseProps}>{children}</p>;
+      return <p ref={elementRef} {...commonProps}>{children}</p>;
     case "span":
-      return <span {...baseProps}>{children}</span>;
+      return <span ref={elementRef} {...commonProps}>{children}</span>;
     case "button":
-      return <button {...baseProps}>{children}</button>;
+      return <button ref={elementRef} {...commonProps}>{children}</button>;
     case "ul":
-      return <ul {...baseProps}>{children}</ul>;
+      return <ul ref={elementRef} {...commonProps}>{children}</ul>;
     case "li":
-      return <li {...baseProps}>{children}</li>;
+      return <li ref={elementRef} {...commonProps}>{children}</li>;
     default:
-      return <div {...baseProps}>{children}</div>;
+      return <div ref={elementRef} {...commonProps}>{children}</div>;
   }
 }

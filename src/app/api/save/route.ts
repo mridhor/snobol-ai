@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateContent } from "../../lib/content";
+import { updateContent } from "../../../lib/content";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { html, elementId, content } = body;
+    const { html, elementId } = body;
 
     // Update content in the content management system
     const updatedContent = updateContent(
