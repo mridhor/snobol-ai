@@ -542,7 +542,7 @@ export default function ChatbotPill() {
           <div className={`absolute top-0 left-0 right-0 z-10 bg-white/70 backdrop-blur-sm ${
             isClosing ? 'exit-top' : 'animate-in slide-in-from-top-2 fade-in duration-500 ease-out'
           }`}>
-            <div className="max-w-3xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
+            <div className="max-w-full mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Image 
                   src="/snobol-ai-logo.png" 
