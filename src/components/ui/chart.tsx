@@ -109,6 +109,12 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: "line" | "dot" | "dashed"
       nameKey?: string
       labelKey?: string
+      payload?: unknown[]
+      label?: string
+      labelFormatter?: (value: unknown) => string
+      labelClassName?: string
+      formatter?: (value: unknown) => string
+      color?: string
     }
 >(
   (
@@ -137,8 +143,8 @@ const ChartTooltipContent = React.forwardRef<
       }
 
       const [item] = payload
-      const key = `${labelKey || item.dataKey || item.name || "value"}`
-      const itemConfig = getPayloadConfigFromPayload(config, item, key)
+      const key = `${labelKey || (item as Record<string, unknown>).dataKey || (item as Record<string, unknown>).name || "value"}`
+      const itemConfig = getPayloadConfigFromPayload(config, item as Record<string, unknown>, key)
       const value =
         !labelKey && typeof label === "string"
           ? config[label as keyof typeof config]?.label || label
@@ -147,7 +153,7 @@ const ChartTooltipContent = React.forwardRef<
       if (labelFormatter) {
         return (
           <div className={cn("font-medium", labelClassName)}>
-            {labelFormatter(value, payload)}
+            {labelFormatter(value, payload as never)}
           </div>
         )
       }
@@ -184,13 +190,13 @@ const ChartTooltipContent = React.forwardRef<
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
           {payload.map((item, index) => {
-            const key = `${nameKey || item.name || item.dataKey || "value"}`
-            const itemConfig = getPayloadConfigFromPayload(config, item, key)
-            const indicatorColor = color || item.payload.fill || item.color
+            const key = `${nameKey || (item as any).name || (item as any).dataKey || "value"}`
+            const itemConfig = getPayloadConfigFromPayload(config, item as any, key)
+            const indicatorColor = color || (item as any).payload?.fill || (item as any).color
 
             return (
               <div
-                key={item.dataKey}
+                key={(item as any).dataKey}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
