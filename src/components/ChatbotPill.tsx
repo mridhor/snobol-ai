@@ -20,6 +20,7 @@ export default function ChatbotPill() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const lastRequestTime = useRef<number>(0);
 
   // Prevent body scroll when overlay is open
   useEffect(() => {
@@ -40,6 +41,14 @@ export default function ChatbotPill() {
 
   const handleSendMessage = async () => {
     if (inputValue.trim() && !isLoading) {
+      // Rate limiting: Prevent requests faster than every 2 seconds
+      const now = Date.now();
+      const timeSinceLastRequest = now - lastRequestTime.current;
+      if (timeSinceLastRequest < 2000) {
+        setError("Please wait a moment before sending another message.");
+        return;
+      }
+
       const userMessage = inputValue.trim();
       setInputValue("");
       setError(null);
@@ -48,8 +57,12 @@ export default function ChatbotPill() {
       const newMessages: Message[] = [...messages, { role: "user", content: userMessage }];
       setMessages(newMessages);
       setIsLoading(true);
+      lastRequestTime.current = now;
 
       try {
+        // Only send last 10 messages to reduce token usage
+        const recentMessages = newMessages.slice(-10);
+        
         // Call the chat API
         const response = await fetch("/api/chat", {
           method: "POST",
@@ -57,7 +70,7 @@ export default function ChatbotPill() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            messages: newMessages,
+            messages: recentMessages,
           }),
         });
 
@@ -76,13 +89,22 @@ export default function ChatbotPill() {
       } catch (err: unknown) {
         console.error("Chat error:", err);
         const error = err as { message?: string };
-        setError(error.message || "Failed to send message. Please try again.");
+        const errorMessage = error.message || "Failed to send message. Please try again.";
         
-        // Add error message as assistant response
-        setMessages([...newMessages, {
-          role: "assistant",
-          content: "I apologize, but I am having trouble responding right now. Please try again or contact us at hello@snobol.com for assistance.",
-        }]);
+        // Show user-friendly message for rate limits
+        if (errorMessage.includes("Rate limit")) {
+          setError("Too many requests. Please wait a moment and try again.");
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: "I&apos;m receiving a lot of requests right now. Please wait a moment and try again, or email us at hello@snobol.com.",
+          }]);
+        } else {
+          setError(errorMessage);
+          setMessages([...newMessages, {
+            role: "assistant",
+            content: "I apologize, but I&apos;m having trouble responding right now. Please try again or contact us at hello@snobol.com for assistance.",
+          }]);
+        }
       } finally {
         setIsLoading(false);
       }
