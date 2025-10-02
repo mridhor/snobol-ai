@@ -355,7 +355,7 @@ export default function ChatbotPill() {
             aria-label="Open chat"
           >
             <MessageCircle className="w-4 h-4 text-black group-hover:text-white transition-colors" />
-            <span className="font-normal text-black text-sm group-hover:text-white transition-colors">Ask Snobol</span>
+            <span className="font-normal text-black text-md group-hover:text-white transition-colors">Ask Snobol</span>
           </button>
         </div>
       )}
