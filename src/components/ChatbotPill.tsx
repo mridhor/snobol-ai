@@ -30,6 +30,7 @@ interface Message {
   thinkingTime?: number;
   suggestions?: string[];
   chartData?: ChartData;
+  sources?: Array<{ name: string; url: string }>;
 }
 
 export interface ChatbotPillRef {
@@ -383,6 +384,22 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     return { cleanContent: content, chartData: null };
   };
 
+  // Helper to extract sources from content
+  const extractSources = (content: string): { cleanContent: string; sources: Array<{ name: string; url: string }> } => {
+    const srcMatch = content.match(/\[SOURCES\]([\s\S]*?)\[\/SOURCES\]/);
+    if (srcMatch) {
+      try {
+        const parsed = JSON.parse(srcMatch[1]) as { sources?: Array<{ name: string; url: string }> };
+        const sources = Array.isArray(parsed.sources) ? parsed.sources.filter(s => s && s.name && s.url) : [];
+        const cleanContent = content.replace(/\[SOURCES\][\s\S]*?\[\/SOURCES\]/, '').trim();
+        return { cleanContent, sources };
+      } catch (e) {
+        console.error('Failed to parse sources:', e);
+      }
+    }
+    return { cleanContent: content, sources: [] };
+  };
+
   // Helper to get dynamic loading message based on tool being called
   const getLoadingMessage = (toolName?: string): string => {
     if (!toolName) return "Thinking...";
@@ -608,14 +625,18 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
               suggestionsPromise = generateAISuggestions(userMessage, accumulatedContent);
             }
 
-            // Update the last message with accumulated content and reasoning
+            // Update the last message with accumulated content, chart data, sources, and reasoning
             setMessages(prev => {
               const updated = [...prev];
-              const { cleanContent, chartData } = extractChartData(accumulatedContent);
+              // Extract sources first
+              const src = extractSources(accumulatedContent);
+              // Then extract chart data from the remaining content
+              const chart = extractChartData(src.cleanContent);
               updated[updated.length - 1] = {
                 role: "assistant",
-                content: cleanContent,
-                ...(chartData && { chartData }),
+                content: chart.cleanContent,
+                ...(chart.chartData && { chartData: chart.chartData }),
+                ...(src.sources.length > 0 && { sources: src.sources }),
                 ...(reasoningData && {
                   reasoning: reasoningData.reasoning,
                   thinkingTime: reasoningData.thinkingTime
@@ -997,6 +1018,24 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           {message.content}
                         </ReactMarkdown>
                         
+                        {/* Sources pills */}
+                        {message.sources && message.sources.length > 0 && (
+                          <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
+                            {message.sources.map((src, i) => (
+                              <a
+                                key={`${src.url}-${i}`}
+                                href={src.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs sm:text-sm border border-gray-200 bg-white hover:bg-gray-900 hover:text-white transition-colors"
+                                title={src.url}
+                              >
+                                <span className="truncate max-w-[160px] sm:max-w-[220px]">{src.name}</span>
+                              </a>
+                            ))}
+                          </div>
+                        )}
+
                         {/* Render TradingView widget if we have a proper symbol */}
                         {message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol && (
                           <div className="mt-3">

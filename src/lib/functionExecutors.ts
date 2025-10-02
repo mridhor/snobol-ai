@@ -161,99 +161,91 @@ function getDiverseTickerExamples(): string {
 }
 
 /**
- * Get stock quote using Yahoo Finance (free, no API key needed)
+ * Get stock quote using DuckDuckGo (rich-text summary; no direct price API)
  */
 async function getStockQuote(symbol: string): Promise<string> {
   try {
-    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol.toUpperCase()}?interval=1d&range=1d`;
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    if (!data.chart?.result?.[0]) {
-      return `Could not find stock data for symbol "${symbol}". Please verify the ticker symbol is correct.`;
-    }
-    
-    const result = data.chart.result[0];
-    const meta = result.meta;
-    const quote = result.indicators?.quote?.[0] || {};
-    
-    const currentPrice = meta.regularMarketPrice || quote.close?.[0];
-    const previousClose = meta.previousClose;
-    const change = (currentPrice ?? 0) - (previousClose ?? 0);
-    const changePercent = previousClose ? ((change / previousClose) * 100).toFixed(2) : '0.00';
-    
-    const dayHigh = quote.high?.[0] || meta.dayHigh;
-    const dayLow = quote.low?.[0] || meta.dayLow;
-    const volume = quote.volume?.[0];
-    
+    const upper = String(symbol || '').toUpperCase();
+    const summary = await searchWeb(`${upper} stock price today summary`);
+    const howToView = `You can view live pricing via the search link below.`;
+    const sourcesPayload = {
+      sources: [
+        { name: 'DuckDuckGo Search', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' stock price today')}` }
+      ]
+    };
     return `
-**${meta.symbol}** - ${meta.longName || meta.shortName || 'N/A'}
+**${upper} – Quick Stock Snapshot**
 
-**Current Price:** $${currentPrice?.toFixed(2)}
-**Change:** $${change.toFixed(2)} (${changePercent}%)
-**Day Range:** $${dayLow?.toFixed(2)} - $${dayHigh?.toFixed(2)}
-**Volume:** ${volume ? (volume / 1000000).toFixed(2) + 'M' : 'N/A'}
-**Market:** ${meta.exchangeName || 'N/A'}
+- This is a brief overview gathered via web search (no direct price API).
+- ${howToView}
 
-*Data as of ${meta.regularMarketTime ? new Date(meta.regularMarketTime * 1000).toLocaleString() : new Date().toLocaleString()}*
+**What we found:**
+${summary || 'No concise summary available right now.'}
+
+[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
     `.trim();
   } catch (error) {
-    console.error('Stock quote error:', error);
-    // Fallback: provide a brief note sourced via web search
-    const fallback = await searchWeb(`${symbol} stock price today site:finance.yahoo.com`);
-    return `Unable to fetch structured quote for "${symbol}" right now. Here's a quick reference from web search:\n\n${fallback}`;
+    console.error('Stock quote (DuckDuckGo) error:', error);
+    const sourcesPayload = {
+      sources: [
+        { name: 'DuckDuckGo Search', url: `https://duckduckgo.com/?q=${encodeURIComponent(String(symbol) + ' stock price today')}` }
+      ]
+    };
+    return `
+**${String(symbol).toUpperCase()} – Quick Stock Snapshot**
+
+- Web search temporarily unavailable. Please open the search link below for live price.
+
+[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
+    `.trim();
   }
 }
 
 /**
- * Analyze company using Yahoo Finance (with DuckDuckGo fallback)
+ * Analyze company using DuckDuckGo (rich-text summary; no direct financials API)
  */
 async function analyzeCompany(symbol: string): Promise<string> {
   try {
-    const url = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${symbol.toUpperCase()}?modules=assetProfile,summaryProfile,financialData,defaultKeyStatistics,price`;
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    if (!data.quoteSummary?.result?.[0]) {
-      // Fallback to web search summary
-      const web = await searchWeb(`${symbol} company overview financial profile`);
-      return `Basic overview for ${symbol} (web search):\n\n${web}`;
-    }
-    
-    const info = data.quoteSummary.result[0];
-    const profile = info.assetProfile || info.summaryProfile || {};
-    const financial = info.financialData || {};
-    const stats = info.defaultKeyStatistics || {};
-    const price = info.price || {};
-    
-    const analysis = `
-**${profile.longName || price.longName || symbol}**
+    const upper = String(symbol || '').toUpperCase();
+    const overview = await searchWeb(`${upper} company overview business description`);
+    const financials = await searchWeb(`${upper} financials revenue profit margin balance sheet basics`);
+    const risks = await searchWeb(`${upper} key risks competition market share simple terms`);
+    const sourcesPayload = {
+      sources: [
+        { name: 'DuckDuckGo: Overview', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' company overview')}` },
+        { name: 'DuckDuckGo: Financials', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' financials')}` },
+        { name: 'DuckDuckGo: Risks', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' risks competition')}` }
+      ]
+    };
+    return `
+**${upper} – Beginner-Friendly Company Snapshot**
 
-**Sector:** ${profile.sector || 'N/A'}
-**Industry:** ${profile.industry || 'N/A'}
-**Employees:** ${profile.fullTimeEmployees?.toLocaleString() || 'N/A'}
+**What the company does (in plain English):**
+${overview || '- Unable to fetch an overview right now.'}
 
-**Financial Health:**
-- Market Cap: $${price.marketCap ? (price.marketCap / 1e9).toFixed(2) : 'N/A'}B
-- Revenue (TTM): $${financial.totalRevenue ? (financial.totalRevenue / 1e9).toFixed(2) : 'N/A'}B
-- Profit Margin: ${financial.profitMargins ? (financial.profitMargins * 100).toFixed(2) : 'N/A'}%
-- Debt/Equity: ${financial.debtToEquity?.toFixed(2) || 'N/A'}
-- Current Ratio: ${financial.currentRatio?.toFixed(2) || 'N/A'}
+**Financial health (high level):**
+${financials || '- Unable to fetch financial highlights right now.'}
 
-**Valuation:**
-- P/E Ratio: ${stats.trailingPE?.toFixed(2) || stats.forwardPE?.toFixed(2) || 'N/A'}
-- Price/Book: ${stats.priceToBook?.toFixed(2) || 'N/A'}
-- 52-Week Range: $${stats.fiftyTwoWeekLow?.toFixed(2) || 'N/A'} - $${stats.fiftyTwoWeekHigh?.toFixed(2) || 'N/A'}
+**What to watch (risks & context):**
+${risks || '- Unable to fetch risks summary right now.'}
 
-**About:**
-${profile.longBusinessSummary ? String(profile.longBusinessSummary).slice(0, 400) + '...' : 'No description available'}
+[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
     `.trim();
-    
-    return analysis;
   } catch (error) {
-    console.error('Analysis error:', error);
-    const web = await searchWeb(`${symbol} company overview financial profile`);
-    return `Analysis temporarily unavailable from Yahoo Finance. Here's a quick overview from web search:\n\n${web}`;
+    console.error('Analysis (DuckDuckGo) error:', error);
+    const upper = String(symbol || '').toUpperCase();
+    const sourcesPayload = {
+      sources: [
+        { name: 'DuckDuckGo: Overview', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' company overview')}` }
+      ]
+    };
+    return `
+**${upper} – Company Snapshot**
+
+- Web search temporarily unavailable. Please open the source below for details.
+
+[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
+    `.trim();
   }
 }
 
