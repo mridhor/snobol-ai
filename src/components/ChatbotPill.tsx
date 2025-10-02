@@ -27,10 +27,107 @@ export default function ChatbotPill() {
   const [isClosing, setIsClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedThinking, setExpandedThinking] = useState<Set<number>>(new Set());
+  const [suggestions, setSuggestions] = useState<string[]>([
+    "What is Snobol AI's crisis investing approach?",
+    "How do you manage risk during market volatility?",
+    "What makes a quality investment during uncertain times?"
+  ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastRequestTime = useRef<number>(0);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Suggestion templates organized by topic
+  const suggestionTemplates = {
+    general: [
+      "What is Snobol AI's crisis investing approach?",
+      "How do you manage risk during market volatility?",
+      "What makes a quality investment during uncertain times?",
+      "How should beginners start investing?",
+      "What's your view on diversification?"
+    ],
+    company: [
+      "What financial metrics should I look at?",
+      "How do I evaluate if a company is financially healthy?",
+      "What are the risks I should consider?",
+      "Should I focus on revenue growth or profitability?",
+      "How important are dividends when investing?"
+    ],
+    market: [
+      "Should I invest during a market downturn?",
+      "How do I protect my portfolio during crashes?",
+      "What's the difference between bull and bear markets?",
+      "Is now a good time to buy stocks?",
+      "How do economic cycles affect investments?"
+    ],
+    risk: [
+      "How much of my portfolio should be in cash?",
+      "What is position sizing and why does it matter?",
+      "How do I avoid emotional investing decisions?",
+      "What's the role of stop-losses in risk management?",
+      "Should I use leverage in my investments?"
+    ],
+    specific: [
+      "How do I know when to sell an investment?",
+      "What's the role of dividends in investing?",
+      "Should I invest in index funds or individual stocks?",
+      "How do I balance growth vs value stocks?",
+      "What's the best way to track my portfolio performance?"
+    ],
+    snobol: [
+      "What makes Snobol AI different from other advisors?",
+      "How does Snobol AI help during market crises?",
+      "What is the philosophy behind crisis investing?",
+      "Can you explain Snobol AI's investment strategy?",
+      "How does Snobol AI stay calm during market panic?"
+    ]
+  };
+
+  // Generate contextual suggestions based on conversation
+  const generateSuggestions = (userQuestion: string, aiResponse: string) => {
+    const lowerQ = userQuestion.toLowerCase();
+    const lowerA = aiResponse.toLowerCase();
+    
+    // Detect if asking about Snobol AI specifically
+    if (lowerQ.includes('snobol') || lowerA.includes('snobol')) {
+      return getRandomSuggestions(suggestionTemplates.snobol);
+    }
+    
+    // Detect company/stock analysis
+    if (lowerQ.match(/\b(apple|tesla|amazon|google|microsoft|meta|stock|company|share)\b/i) || 
+        lowerA.includes('company') || lowerA.includes('financial health')) {
+      return getRandomSuggestions(suggestionTemplates.company);
+    }
+    
+    // Detect market conditions
+    if (lowerQ.match(/\b(market|crash|downturn|bull|bear|recession|economy)\b/i) ||
+        lowerA.match(/\b(market|volatility|downturn|crash)\b/i)) {
+      return getRandomSuggestions(suggestionTemplates.market);
+    }
+    
+    // Detect risk management
+    if (lowerQ.match(/\b(risk|safe|protect|hedge|loss)\b/i) ||
+        lowerA.match(/\b(risk|diversif|protect|buffer)\b/i)) {
+      return getRandomSuggestions(suggestionTemplates.risk);
+    }
+    
+    // Detect specific how-to questions
+    if (lowerQ.match(/\b(how|when|should i|what's the best)\b/i)) {
+      return getRandomSuggestions(suggestionTemplates.specific);
+    }
+    
+    // Default to general suggestions
+    return getRandomSuggestions(suggestionTemplates.general);
+  };
+  
+  // Get 3 random suggestions from a category, avoiding current suggestions
+  const getRandomSuggestions = (category: string[]) => {
+    // Filter out currently displayed suggestions
+    const available = category.filter(s => !suggestions.includes(s));
+    const pool = available.length >= 3 ? available : category;
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 3);
+  };
 
   // Prevent body scroll when overlay is open
   useEffect(() => {
@@ -109,6 +206,8 @@ export default function ChatbotPill() {
       // Create abort controller for this request
       abortControllerRef.current = new AbortController();
 
+      let accumulatedContent = "";
+
       try {
         // Only send last 10 messages to reduce token usage (excluding the empty assistant message)
         const recentMessages = newMessages.slice(-11, -1).slice(-10);
@@ -132,7 +231,6 @@ export default function ChatbotPill() {
         // Read the stream
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
-        let accumulatedContent = "";
         let reasoningData: { reasoning: string; thinkingTime: number } | null = null;
 
         if (reader) {
@@ -220,6 +318,12 @@ export default function ChatbotPill() {
         setIsLoading(false);
         setIsStreaming(false);
         abortControllerRef.current = null;
+        
+        // Generate new suggestions based on the conversation
+        if (accumulatedContent) {
+          const newSuggestions = generateSuggestions(userMessage, accumulatedContent);
+          setSuggestions(newSuggestions);
+        }
       }
     }
   };
@@ -238,6 +342,14 @@ export default function ChatbotPill() {
       setIsOpen(false);
       setIsClosing(false);
     }, 250); // Match animation duration
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    setInputValue(suggestion);
+    // Focus on textarea after setting value
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 0);
   };
 
   return (
@@ -545,6 +657,21 @@ export default function ChatbotPill() {
             }}
           >
             <div className="max-w-3xl mx-auto px-3 sm:px-4">
+              {/* Suggestion Pills */}
+              {suggestions.length > 0 && !isLoading && !isStreaming && (
+                <div className="mb-3 sm:mb-4 flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  {suggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="group px-3 py-1.5 sm:px-3.5 sm:py-2 bg-gray-100 hover:bg-gray-900 text-gray-700 hover:text-white rounded-full text-xs sm:text-sm transition-all duration-200 border border-gray-200 hover:border-gray-900 hover:shadow-sm"
+                    >
+                      <span className="line-clamp-1">{suggestion}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              
               {error && (
                 <div className="mb-2 sm:mb-3 px-3 py-2 sm:px-4 bg-red-100 text-red-700 rounded-lg text-xs sm:text-sm">
                   {error}
