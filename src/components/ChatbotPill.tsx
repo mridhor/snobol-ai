@@ -966,11 +966,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                         </div>
                       ) : (
                         <div 
-                          className={`bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 ${
-                            message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol
-                              ? 'max-w-full'
-                              : 'max-w-[85%] sm:max-w-[75%]'
-                          } break-words relative ${
+                          className={`bg-transparent rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-full break-words relative ${
                             isStreaming && index === messages.length - 1 && message.content !== "" ? '' : 'message-appear'
                           }`}
                           style={{ 
@@ -1108,7 +1104,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
               {isLoading && !isStreaming && (
                 <div className="flex flex-col items-start gap-2">
                   <div className="flex justify-start">
-                    <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 max-w-[85%] sm:max-w-[75%] message-appear">
+                    <div className="bg-transparent rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 max-w-full message-appear">
                       <div className="flex items-center space-x-1.5">
                         <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" />
                         <span
