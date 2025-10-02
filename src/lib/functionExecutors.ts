@@ -180,12 +180,17 @@ function getDiverseTickerExamples(): string {
 
 /**
  * Get stock quote using DuckDuckGo (rich-text summary; no direct price API)
+ * ALWAYS includes TradingView chart data
  */
 async function getStockQuote(symbol: string): Promise<string> {
   try {
     const upper = String(symbol || '').toUpperCase();
     const summary = await searchWeb(`${upper} stock price today summary`);
     const howToView = `You can view live pricing via the search link below.`;
+    
+    // Get TradingView chart data
+    const chartData = await getChartDataForSymbol(upper);
+    
     const sourcesPayload = {
       sources: [
         { name: 'DuckDuckGo Search', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' stock price today')}` }
@@ -201,9 +206,19 @@ async function getStockQuote(symbol: string): Promise<string> {
 ${summary || 'No concise summary available right now.'}
 
 [SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
+${chartData}
     `.trim();
   } catch (error) {
     console.error('Stock quote (DuckDuckGo) error:', error);
+    
+    // Still try to include chart even on error
+    let chartData = '';
+    try {
+      chartData = await getChartDataForSymbol(String(symbol || '').toUpperCase());
+    } catch (e) {
+      // Chart failed too, continue without it
+    }
+    
     const sourcesPayload = {
       sources: [
         { name: 'DuckDuckGo Search', url: `https://duckduckgo.com/?q=${encodeURIComponent(String(symbol) + ' stock price today')}` }
@@ -215,12 +230,14 @@ ${summary || 'No concise summary available right now.'}
 - Web search temporarily unavailable. Please open the search link below for live price.
 
 [SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
+${chartData}
     `.trim();
   }
 }
 
 /**
  * Analyze company using DuckDuckGo (rich-text summary; no direct financials API)
+ * ALWAYS includes TradingView chart data
  */
 async function analyzeCompany(symbol: string): Promise<string> {
   try {
@@ -228,6 +245,10 @@ async function analyzeCompany(symbol: string): Promise<string> {
     const overview = await searchWeb(`${upper} company overview business description`);
     const financials = await searchWeb(`${upper} financials revenue profit margin balance sheet basics`);
     const risks = await searchWeb(`${upper} key risks competition market share simple terms`);
+    
+    // Get TradingView chart data
+    const chartData = await getChartDataForSymbol(upper);
+    
     const sourcesPayload = {
       sources: [
         { name: 'DuckDuckGo: Overview', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' company overview')}` },
@@ -248,10 +269,20 @@ ${financials || '- Unable to fetch financial highlights right now.'}
 ${risks || '- Unable to fetch risks summary right now.'}
 
 [SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
+${chartData}
     `.trim();
   } catch (error) {
     console.error('Analysis (DuckDuckGo) error:', error);
     const upper = String(symbol || '').toUpperCase();
+    
+    // Still try to include chart even on error
+    let chartData = '';
+    try {
+      chartData = await getChartDataForSymbol(upper);
+    } catch (e) {
+      // Chart failed too, continue without it
+    }
+    
     const sourcesPayload = {
       sources: [
         { name: 'DuckDuckGo: Overview', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' company overview')}` }
@@ -263,79 +294,158 @@ ${risks || '- Unable to fetch risks summary right now.'}
 - Web search temporarily unavailable. Please open the source below for details.
 
 [SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
+${chartData}
     `.trim();
   }
 }
 
 /**
+ * Helper to generate chart data payload for a symbol
+ */
+async function getChartDataForSymbol(symbol: string): Promise<string> {
+  const upper = String(symbol || '').toUpperCase();
+  
+  // Heuristic exchange guess for common tickers
+  function guessExchangeForSymbol(sym: string): string {
+    const nasdaqLikely = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','AMD','INTC','ADBE','NFLX'];
+    if (nasdaqLikely.includes(sym)) return 'NASDAQ';
+    return 'NYSE';
+  }
+
+  let fullSymbol = `${guessExchangeForSymbol(upper)}:${upper}`;
+  let companyName = upper;
+  let assetType = 'Stock';
+  let priceSymbol = '$';
+
+  try {
+    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${upper}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
+    const res = await fetch(searchUrl);
+    const searchData = await res.json();
+    if (Array.isArray(searchData) && searchData.length > 0) {
+      const info = searchData[0];
+      const tradingViewSymbol = info.symbol;
+      const exchange = info.exchange;
+      companyName = info.description || tradingViewSymbol || upper;
+      fullSymbol = `${exchange}:${tradingViewSymbol}`;
+      assetType = getAssetType(info);
+      priceSymbol = getPriceSymbol(assetType, exchange);
+    }
+  } catch (e) {
+    // If search fails, we still proceed with guessed fullSymbol
+  }
+
+  return `[CHART_DATA]${JSON.stringify({
+    type: 'stock_chart',
+    symbol: fullSymbol,
+    companyName,
+    assetType,
+    period: '6mo',
+    priceSymbol,
+    data: [],
+    note: 'Rendering via TradingView widget'
+  })}[/CHART_DATA]`;
+}
+
+/**
  * Get historical data for chart visualization using TradingView
- * Note: TradingView doesn't provide free historical data API, so we'll use a free alternative
+ * When a chart is requested, ALSO include company analysis
  */
 
 async function getStockChartData(symbol: string, period: string = '6mo'): Promise<string> {
+  const upper = String(symbol || '').toUpperCase();
+  
+  // Build TradingView symbol with smart exchange guessing
+  let fullSymbol = '';
+  let companyName = upper;
+  let assetType = 'Stock';
+  let priceSymbol = '$';
+  
   try {
-    // Enhanced search with support for multiple asset types
-    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${symbol.toUpperCase()}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
+    // Try to fetch from TradingView search API
+    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${upper}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
+    const searchResponse = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
     
-    const searchResponse = await fetch(searchUrl);
-    const searchData = await searchResponse.json();
-    
-    if (!searchData || searchData.length === 0) {
-      // Fallback: build a best-guess TradingView symbol and still render widget
-      const upper = String(symbol || '').toUpperCase();
-      const guessExchange = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','AMD','INTC','ADBE','NFLX'].includes(upper) ? 'NASDAQ' : 'NYSE';
-      const guessedFull = `${guessExchange}:${upper}`;
-      const assetType = 'Stock';
-      const priceSymbol = '$';
-      return `[CHART_DATA]${JSON.stringify({
-        type: 'stock_chart',
-        symbol: guessedFull,
-        companyName: upper,
-        assetType,
-        period,
-        priceSymbol,
-        data: [],
-        note: 'Rendering via TradingView widget (guessed symbol)'
-      })}[/CHART_DATA]`;
+    if (searchResponse.ok) {
+      const searchData = await searchResponse.json();
+      if (Array.isArray(searchData) && searchData.length > 0) {
+        const symbolInfo = searchData[0];
+        const tradingViewSymbol = symbolInfo.symbol;
+        const exchange = symbolInfo.exchange;
+        fullSymbol = `${exchange}:${tradingViewSymbol}`;
+        companyName = symbolInfo.description || tradingViewSymbol;
+        assetType = getAssetType(symbolInfo);
+        priceSymbol = getPriceSymbol(assetType, exchange);
+      }
     }
-    
-    // Get the first result (most relevant)
-    const symbolInfo = searchData[0];
-    const tradingViewSymbol = symbolInfo.symbol;
-    const exchange = symbolInfo.exchange;
-    const fullSymbol = `${exchange}:${tradingViewSymbol}`;
-    
-    // Build minimal payload for TradingView widget; no quote fetch required
-    const assetType = getAssetType(symbolInfo);
-    const priceSymbol = getPriceSymbol(assetType, exchange);
-    return `[CHART_DATA]${JSON.stringify({
-      type: 'stock_chart',
-      symbol: fullSymbol,
-      companyName: symbolInfo.description || tradingViewSymbol,
-      assetType,
-      period,
-      priceSymbol,
-      data: [],
-      note: 'Rendering via TradingView widget'
-    })}[/CHART_DATA]`;
-    
-  } catch (error) {
-    console.error('Chart data error:', error);
-    // Last-resort fallback: still return a TradingView-embeddable symbol guess
-    const upper = String(symbol || '').toUpperCase();
-    const guessExchange = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','AMD','INTC','ADBE','NFLX'].includes(upper) ? 'NASDAQ' : 'NYSE';
-    const guessedFull = `${guessExchange}:${upper}`;
-    return `[CHART_DATA]${JSON.stringify({
-      type: 'stock_chart',
-      symbol: guessedFull,
-      companyName: upper,
-      assetType: 'Stock',
-      period,
-      priceSymbol: '$',
-      data: [],
-      note: 'Rendering via TradingView widget (fallback guess)'
-    })}[/CHART_DATA]`;
+  } catch (e) {
+    console.log('TradingView search failed, using fallback symbol:', e);
   }
+  
+  // Fallback: smart guess based on common tickers
+  if (!fullSymbol) {
+    const guessExchange = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','AMD','INTC','ADBE','NFLX'].includes(upper) ? 'NASDAQ' : 'NYSE';
+    fullSymbol = `${guessExchange}:${upper}`;
+  }
+  
+  // Generate chart data payload
+  const chartPayload = `[CHART_DATA]${JSON.stringify({
+    type: 'stock_chart',
+    symbol: fullSymbol,
+    companyName,
+    assetType,
+    period,
+    priceSymbol,
+    data: [],
+    note: 'Rendering via TradingView widget'
+  })}[/CHART_DATA]`;
+    
+  // ALSO include company analysis with proper error handling
+  let overview = '';
+  let financials = '';
+  let risks = '';
+  
+  try {
+    [overview, financials, risks] = await Promise.all([
+      searchWeb(`${upper} company overview business description`).catch(() => '- Unable to fetch overview right now.'),
+      searchWeb(`${upper} financials revenue profit margin balance sheet basics`).catch(() => '- Unable to fetch financials right now.'),
+      searchWeb(`${upper} key risks competition market share simple terms`).catch(() => '- Unable to fetch risks right now.')
+    ]);
+  } catch (e) {
+    console.error('Error fetching analysis data:', e);
+    overview = '- Unable to fetch overview right now.';
+    financials = '- Unable to fetch financials right now.';
+    risks = '- Unable to fetch risks right now.';
+  }
+  
+  const sourcesPayload = {
+    sources: [
+      { name: 'DuckDuckGo: Overview', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' company overview')}` },
+      { name: 'DuckDuckGo: Financials', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' financials')}` },
+      { name: 'DuckDuckGo: Risks', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' risks competition')}` }
+    ]
+  };
+  
+  const analysisText = `
+**${upper} – Company Snapshot with Chart**
+
+**What the company does (in plain English):**
+${overview || '- Unable to fetch an overview right now.'}
+
+**Financial health (high level):**
+${financials || '- Unable to fetch financial highlights right now.'}
+
+**What to watch (risks & context):**
+${risks || '- Unable to fetch risks summary right now.'}
+
+[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
+${chartPayload}
+  `.trim();
+  
+  return analysisText;
 }
 
 /**

@@ -25,6 +25,14 @@ Rules:
 - Stay within finance/investing topics only
 - Make questions progressively helpful (easy to more advanced)
 
+**CRITICAL FOR STOCK ANALYSIS:**
+When the conversation is about stocks, companies, or investments:
+- NEVER suggest technical analysis (charts, indicators, patterns, support/resistance, moving averages, RSI, MACD, etc.)
+- ALWAYS focus on VALUE INVESTING frameworks (intrinsic value, margin of safety, quality of business, competitive advantages/moats)
+- ALWAYS focus on FUNDAMENTAL ANALYSIS (revenue growth, profit margins, debt levels, cash flow, P/E ratios, earnings quality)
+- Suggest questions about business quality, management, competitive position, financial health, long-term prospects
+- Examples: "What's the company's competitive moat?", "How strong is their balance sheet?", "What's their free cash flow like?"
+
 Format: Return ONLY a JSON array of 3 strings, nothing else.
 Example: ["How much should I invest monthly?", "What are index funds?", "When should I sell stocks?"]`;
 
@@ -104,24 +112,24 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ suggestions: questions });
       }
 
-      // Final fallback to default suggestions
+      // Final fallback to default suggestions (value investing focused)
       return NextResponse.json({
         suggestions: [
-          "How should beginners start investing?",
-          "What are the key risks to consider?",
-          "Can you explain more about this topic?"
+          "What fundamentals should I look for in a company?",
+          "How do I assess a company's competitive advantage?",
+          "What's a safe margin of safety when investing?"
         ]
       });
     }
   } catch (error: unknown) {
     console.error("Suggestions API Error:", error);
     
-    // Return fallback suggestions on error
+    // Return fallback suggestions on error (value investing focused)
     return NextResponse.json({
       suggestions: [
-        "How should beginners start investing?",
-        "What are the key risks to consider?",
-        "Can you explain more about this topic?"
+        "What fundamentals should I look for in a company?",
+        "How do I assess a company's competitive advantage?",
+        "What's a safe margin of safety when investing?"
       ]
     });
   }

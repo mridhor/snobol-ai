@@ -22,7 +22,7 @@ export const AI_TOOLS = [
     type: "function" as const,
     function: {
       name: "get_stock_quote",
-      description: "Get current stock price, change percentage, and basic market data for a publicly traded company",
+      description: "Get ONLY current stock price and basic quote data. Use this when user asks specifically for 'price', 'quote', 'trading at', 'current value' WITHOUT asking for analysis or company information. Always includes a chart.",
       parameters: {
         type: "object",
         properties: {
@@ -39,7 +39,7 @@ export const AI_TOOLS = [
     type: "function" as const,
     function: {
       name: "analyze_company",
-      description: "Get comprehensive company information including business description, sector, financials, and key metrics",
+      description: "Get comprehensive company analysis with chart. Use when user wants to: 'analyze', 'research', 'understand', 'learn about', 'tell me about', 'what does X do', 'company overview', 'business model', 'financials', 'risks', or any in-depth information about a company. Always includes business description, financial health, risks, AND a TradingView chart.",
       parameters: {
         type: "object",
         properties: {
@@ -56,13 +56,13 @@ export const AI_TOOLS = [
     type: "function" as const,
     function: {
       name: "show_stock_chart",
-      description: "Display an interactive price chart for a stock showing historical price movements. Use this when user asks to 'show chart', 'display chart', 'visualize stock', or wants to see price trends.",
+      description: "Display interactive TradingView chart with company analysis. Use when user explicitly asks to: 'show chart', 'display chart', 'visualize', 'graph', 'chart for', 'see chart', or wants to see price trends/patterns. Always includes both chart AND company analysis (business overview, financials, risks).",
       parameters: {
         type: "object",
         properties: {
           symbol: {
             type: "string",
-            description: "Stock ticker symbol in UPPERCASE (e.g., AAPL, TSLA, GOOGL)"
+            description: "Stock ticker symbol in UPPERCASE (e.g., AAPL, TSLA, GOOGL). Supports stocks, crypto (BTC, ETH), commodities (GOLD, OIL), forex (EURUSD), indices (SPX500)."
           },
           period: {
             type: "string",
