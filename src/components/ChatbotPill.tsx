@@ -419,10 +419,20 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     };
   }, [isOpen]);
 
-  // Auto scroll to bottom when new messages arrive
+  // Auto scroll to bottom when new messages arrive or loading state changes
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages, isLoading]);
+
+  // Ensure scroll to bottom when loading state changes (Thinking... message appears)
+  useEffect(() => {
+    if (isLoading) {
+      // Small delay to ensure the loading message is rendered
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 50);
+    }
+  }, [isLoading]);
 
   // Keep scrolling during streaming to follow the response
   useEffect(() => {
