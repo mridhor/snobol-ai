@@ -107,12 +107,38 @@ export async function POST(req: NextRequest) {
     try {
       const suggestions = JSON.parse(suggestionsText);
       
-      // Validate it's an array of 3 strings
-      if (!Array.isArray(suggestions) || suggestions.length !== 3) {
-        throw new Error("Invalid format");
+      // Validate it's an array
+      if (!Array.isArray(suggestions)) {
+        throw new Error("Not an array");
       }
 
-      return NextResponse.json({ suggestions });
+      // If we got exactly 3 suggestions, return them
+      if (suggestions.length === 3) {
+        return NextResponse.json({ suggestions });
+      }
+
+      // If we got fewer or more, try to fix it
+      if (suggestions.length > 0) {
+        console.warn(`Got ${suggestions.length} suggestions instead of 3, padding with defaults`);
+        
+        // Take up to 3 suggestions, pad if needed
+        const paddedSuggestions = suggestions.slice(0, 3);
+        
+        // Pad with contrarian defaults if needed
+        const defaults = [
+          "Where is fear greatest right now?",
+          "Is this panic overdone?",
+          "What's the crowd missing?"
+        ];
+        
+        while (paddedSuggestions.length < 3) {
+          paddedSuggestions.push(defaults[paddedSuggestions.length]);
+        }
+        
+        return NextResponse.json({ suggestions: paddedSuggestions });
+      }
+
+      throw new Error("Empty array");
     } catch (parseError) {
       console.error("Failed to parse suggestions:", parseError);
       console.error("Raw response:", suggestionsText);
@@ -124,18 +150,18 @@ export async function POST(req: NextRequest) {
         .filter(line => line.length > 0 && line.includes('?'))
         .slice(0, 3);
 
-      if (questions.length === 3) {
-        return NextResponse.json({ suggestions: questions });
+      // Pad with defaults if we got fewer than 3
+      const defaults = [
+        "Where is fear greatest right now?",
+        "Is this panic overdone?",
+        "What's the crowd missing?"
+      ];
+      
+      while (questions.length < 3) {
+        questions.push(defaults[questions.length]);
       }
 
-      // Final fallback to default suggestions (contrarian focused)
-      return NextResponse.json({
-        suggestions: [
-          "Where is fear greatest right now?",
-          "Is this panic overdone?",
-          "What's the crowd missing?"
-        ]
-      });
+      return NextResponse.json({ suggestions: questions });
     }
   } catch (error: unknown) {
     console.error("Suggestions API Error:", error);

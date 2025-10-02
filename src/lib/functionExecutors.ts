@@ -365,12 +365,43 @@ ${chartData}
 }
 
 /**
+ * Helper to detect if a symbol is cryptocurrency
+ */
+function isCryptoSymbol(symbol: string): boolean {
+  const upper = symbol.toUpperCase();
+  const cryptoTickers = ['BTC', 'ETH', 'BNB', 'XRP', 'ADA', 'DOGE', 'SOL', 'DOT', 'MATIC', 'AVAX', 
+                          'LINK', 'UNI', 'ATOM', 'LTC', 'BCH', 'XLM', 'ALGO', 'VET', 'FIL', 'TRX',
+                          'ETC', 'THETA', 'XMR', 'AAVE', 'CAKE', 'XTZ', 'EOS', 'NEAR', 'FTM', 'SAND'];
+  return cryptoTickers.includes(upper);
+}
+
+/**
  * Helper to generate chart data payload for a symbol
  */
 async function getChartDataForSymbol(symbol: string): Promise<string> {
   const upper = String(symbol || '').toUpperCase();
   
-  // Heuristic exchange guess for common tickers
+  // Check if it's a crypto symbol
+  const isCrypto = isCryptoSymbol(upper);
+  
+  // For crypto: use BINANCE exchange and add USDT
+  if (isCrypto) {
+    const cryptoSymbol = `${upper}USDT`;
+    const fullSymbol = `BINANCE:${cryptoSymbol}`;
+    
+    return `[CHART_DATA]${JSON.stringify({
+      type: 'stock_chart',
+      symbol: fullSymbol,
+      companyName: `${upper} (Cryptocurrency)`,
+      assetType: 'Cryptocurrency',
+      period: '6mo',
+      priceSymbol: '$',
+      data: [],
+      note: 'Rendering via TradingView widget'
+    })}[/CHART_DATA]`;
+  }
+  
+  // For stocks: existing logic
   function guessExchangeForSymbol(sym: string): string {
     const nasdaqLikely = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','AMD','INTC','ADBE','NFLX'];
     if (nasdaqLikely.includes(sym)) return 'NASDAQ';
@@ -419,41 +450,53 @@ async function getChartDataForSymbol(symbol: string): Promise<string> {
 async function getStockChartData(symbol: string, period: string = '6mo'): Promise<string> {
   const upper = String(symbol || '').toUpperCase();
   
+  // Check if it's a crypto symbol
+  const isCrypto = isCryptoSymbol(upper);
+  
   // Build TradingView symbol with smart exchange guessing
   let fullSymbol = '';
   let companyName = upper;
   let assetType = 'Stock';
   let priceSymbol = '$';
   
-  try {
-    // Try to fetch from TradingView search API
-    const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${upper}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
-    const searchResponse = await fetch(searchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+  // For crypto: use BINANCE exchange and add USDT
+  if (isCrypto) {
+    const cryptoSymbol = `${upper}USDT`;
+    fullSymbol = `BINANCE:${cryptoSymbol}`;
+    companyName = `${upper} (Cryptocurrency)`;
+    assetType = 'Cryptocurrency';
+    priceSymbol = '$';
+  } else {
+    // For stocks: try TradingView search API
+    try {
+      const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${upper}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
+      const searchResponse = await fetch(searchUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+      
+      if (searchResponse.ok) {
+        const searchData = await searchResponse.json();
+        if (Array.isArray(searchData) && searchData.length > 0) {
+          const symbolInfo = searchData[0];
+          const tradingViewSymbol = symbolInfo.symbol;
+          const exchange = symbolInfo.exchange;
+          fullSymbol = `${exchange}:${tradingViewSymbol}`;
+          companyName = symbolInfo.description || tradingViewSymbol;
+          assetType = getAssetType(symbolInfo);
+          priceSymbol = getPriceSymbol(assetType, exchange);
+        }
       }
-    });
-    
-    if (searchResponse.ok) {
-      const searchData = await searchResponse.json();
-      if (Array.isArray(searchData) && searchData.length > 0) {
-        const symbolInfo = searchData[0];
-        const tradingViewSymbol = symbolInfo.symbol;
-        const exchange = symbolInfo.exchange;
-        fullSymbol = `${exchange}:${tradingViewSymbol}`;
-        companyName = symbolInfo.description || tradingViewSymbol;
-        assetType = getAssetType(symbolInfo);
-        priceSymbol = getPriceSymbol(assetType, exchange);
-      }
+    } catch (e) {
+      console.log('TradingView search failed, using fallback symbol:', e);
     }
-  } catch (e) {
-    console.log('TradingView search failed, using fallback symbol:', e);
-  }
-  
-  // Fallback: smart guess based on common tickers
-  if (!fullSymbol) {
-    const guessExchange = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','AMD','INTC','ADBE','NFLX'].includes(upper) ? 'NASDAQ' : 'NYSE';
-    fullSymbol = `${guessExchange}:${upper}`;
+    
+    // Fallback: smart guess based on common tickers
+    if (!fullSymbol) {
+      const guessExchange = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','AMD','INTC','ADBE','NFLX'].includes(upper) ? 'NASDAQ' : 'NYSE';
+      fullSymbol = `${guessExchange}:${upper}`;
+    }
   }
   
   // Generate chart data payload

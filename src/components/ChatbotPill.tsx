@@ -438,7 +438,10 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
 
   // Auto scroll to bottom when new messages arrive or loading state changes
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Use setTimeout to ensure DOM has updated
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 50);
   }, [messages, isLoading]);
 
   // Ensure scroll to bottom when loading state changes (Thinking... message appears)
@@ -528,6 +531,11 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       setIsLoading(true);
       // Don't set isStreaming yet - wait for stream to actually start
       lastRequestTime.current = now;
+      
+      // Immediately scroll to bottom when user sends message
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 100);
 
       // Create abort controller for this request
       abortControllerRef.current = new AbortController();
