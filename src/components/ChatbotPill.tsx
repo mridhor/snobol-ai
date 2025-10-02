@@ -11,6 +11,7 @@ interface Message {
   content: string;
   reasoning?: string;
   thinkingTime?: number;
+  suggestions?: string[];
 }
 
 export default function ChatbotPill() {
@@ -18,7 +19,12 @@ export default function ChatbotPill() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "I'm Snobol AI. Ask me about finance, investing, or our crisis investing approach."
+      content: "I'm Snobol AI. Ask me about finance, investing, or our crisis investing approach.",
+      suggestions: [
+        "What is Snobol AI's crisis investing approach?",
+        "How do you manage risk during market volatility?",
+        "What makes a quality investment during uncertain times?"
+      ]
     }
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -27,11 +33,6 @@ export default function ChatbotPill() {
   const [isClosing, setIsClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedThinking, setExpandedThinking] = useState<Set<number>>(new Set());
-  const [suggestions, setSuggestions] = useState<string[]>([
-    "What is Snobol AI's crisis investing approach?",
-    "How do you manage risk during market volatility?",
-    "What makes a quality investment during uncertain times?"
-  ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastRequestTime = useRef<number>(0);
@@ -120,12 +121,9 @@ export default function ChatbotPill() {
     return getRandomSuggestions(suggestionTemplates.general);
   };
   
-  // Get 3 random suggestions from a category, avoiding current suggestions
+  // Get 3 random suggestions from a category
   const getRandomSuggestions = (category: string[]) => {
-    // Filter out currently displayed suggestions
-    const available = category.filter(s => !suggestions.includes(s));
-    const pool = available.length >= 3 ? available : category;
-    const shuffled = [...pool].sort(() => 0.5 - Math.random());
+    const shuffled = [...category].sort(() => 0.5 - Math.random());
     return shuffled.slice(0, 3);
   };
 
@@ -173,8 +171,10 @@ export default function ChatbotPill() {
     }
   }, [inputValue]);
 
-  const handleSendMessage = async () => {
-    if (inputValue.trim() && !isLoading && !isStreaming) {
+  const handleSendMessage = async (messageText?: string) => {
+    const textToSend = messageText || inputValue.trim();
+    
+    if (textToSend && !isLoading && !isStreaming) {
       // Rate limiting: Prevent requests faster than every 2 seconds
       const now = Date.now();
       const timeSinceLastRequest = now - lastRequestTime.current;
@@ -183,7 +183,7 @@ export default function ChatbotPill() {
         return;
       }
 
-      const userMessage = inputValue.trim();
+      const userMessage = textToSend;
       setInputValue("");
       setError(null);
       
@@ -319,10 +319,17 @@ export default function ChatbotPill() {
         setIsStreaming(false);
         abortControllerRef.current = null;
         
-        // Generate new suggestions based on the conversation
+        // Generate new suggestions based on the conversation and attach to the last message
         if (accumulatedContent) {
           const newSuggestions = generateSuggestions(userMessage, accumulatedContent);
-          setSuggestions(newSuggestions);
+          setMessages(prev => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              ...updated[updated.length - 1],
+              suggestions: newSuggestions
+            };
+            return updated;
+          });
         }
       }
     }
@@ -345,11 +352,8 @@ export default function ChatbotPill() {
   };
 
   const handleSuggestionClick = (suggestion: string) => {
-    setInputValue(suggestion);
-    // Focus on textarea after setting value
-    setTimeout(() => {
-      textareaRef.current?.focus();
-    }, 0);
+    // Send the suggestion immediately
+    handleSendMessage(suggestion);
   };
 
   return (
@@ -514,106 +518,125 @@ export default function ChatbotPill() {
                 }
                 
                 return (
-                  <div
-                    key={index}
-                    className={`flex ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    {message.role === "user" ? (
-                      <div 
-                        className="bg-gray-900 text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm max-w-[85%] sm:max-w-[75%] break-words message-appear"
-                        style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
-                      >
-                        {message.content}
-                      </div>
-                    ) : (
-                      <div 
-                        className={`bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] break-words relative ${
-                          isStreaming && index === messages.length - 1 && message.content !== "" ? 'streaming-text' : 'message-appear'
-                        }`}
-                        style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
-                      >
-                      {/* Thinking Process Section */}
-                      {message.reasoning && message.thinkingTime && (
-                        <div className="mb-3 sm:mb-4 border-b border-gray-200 pb-3">
-                          <button
-                            onClick={() => {
-                              setExpandedThinking(prev => {
-                                const next = new Set(prev);
-                                if (next.has(index)) {
-                                  next.delete(index);
-                                } else {
-                                  next.add(index);
-                                }
-                                return next;
-                              });
-                            }}
-                            className="flex items-center justify-between w-full text-left hover:opacity-70 transition-opacity"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs sm:text-sm font-medium text-gray-600">
-                                Thinking process
-                              </span>
-                              <span className="text-[10px] sm:text-xs text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">
-                                {(message.thinkingTime / 1000).toFixed(1)}s
-                              </span>
-                            </div>
-                            {expandedThinking.has(index) ? (
-                              <ChevronUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
-                            ) : (
-                              <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
-                            )}
-                          </button>
-                          
-                          {expandedThinking.has(index) && (
-                            <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-600 bg-gray-50 rounded-lg p-2 sm:p-3 whitespace-pre-wrap animate-in slide-in-from-top-2 fade-in duration-200">
-                              {message.reasoning}
-                            </div>
-                          )}
+                  <div key={index}>
+                    <div
+                      className={`flex ${
+                        message.role === "user" ? "justify-end" : "justify-start"
+                      }`}
+                    >
+                      {message.role === "user" ? (
+                        <div 
+                          className="bg-gray-900 text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm max-w-[85%] sm:max-w-[75%] break-words message-appear"
+                          style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
+                        >
+                          {message.content}
                         </div>
-                      )}
-                      
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          p: ({ children }) => (
-                            <p className="mb-3 sm:mb-4 last:mb-0 leading-relaxed">{children}</p>
-                          ),
-                          ul: ({ children }) => (
-                            <ul className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1">{children}</ul>
-                          ),
-                          ol: ({ children }) => (
-                            <ol className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1 list-decimal list-inside">{children}</ol>
-                          ),
-                          li: ({ children }) => (
-                            <li className="flex items-start gap-2 leading-relaxed">
-                              <span className="text-gray-500 mt-1 select-none text-sm">•</span>
-                              <span className="flex-1 break-words">{children}</span>
-                            </li>
-                          ),
-                          strong: ({ children }) => (
-                            <strong className="font-semibold text-gray-900">{children}</strong>
-                          ),
-                          em: ({ children }) => (
-                            <em className="italic">{children}</em>
-                          ),
-                          h3: ({ children }) => (
-                            <h3 className="font-bold text-gray-900 mb-2 sm:mb-3 mt-4 sm:mt-5 first:mt-0 text-base sm:text-lg">{children}</h3>
-                          ),
-                          h4: ({ children }) => (
-                            <h4 className="font-semibold text-gray-900 mb-2 sm:mb-2.5 mt-3 sm:mt-4 first:mt-0 text-sm sm:text-base">{children}</h4>
-                          ),
-                          code: ({ children }) => (
-                            <code className="bg-gray-200 px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono break-all">{children}</code>
-                          ),
-                          blockquote: ({ children }) => (
-                            <blockquote className="border-l-2 border-gray-300 pl-3 italic my-2 sm:my-3 text-sm sm:text-base opacity-90">{children}</blockquote>
-                          ),
-                        }}
-                      >
-                        {message.content}
-                      </ReactMarkdown>
+                      ) : (
+                        <div 
+                          className={`bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] break-words relative ${
+                            isStreaming && index === messages.length - 1 && message.content !== "" ? 'streaming-text' : 'message-appear'
+                          }`}
+                          style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
+                        >
+                        {/* Thinking Process Section */}
+                        {message.reasoning && message.thinkingTime && (
+                          <div className="mb-3 sm:mb-4 border-b border-gray-200 pb-3">
+                            <button
+                              onClick={() => {
+                                setExpandedThinking(prev => {
+                                  const next = new Set(prev);
+                                  if (next.has(index)) {
+                                    next.delete(index);
+                                  } else {
+                                    next.add(index);
+                                  }
+                                  return next;
+                                });
+                              }}
+                              className="flex items-center justify-between w-full text-left hover:opacity-70 transition-opacity"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs sm:text-sm font-medium text-gray-600">
+                                  Thinking process
+                                </span>
+                                <span className="text-[10px] sm:text-xs text-gray-400 bg-gray-200 px-1.5 py-0.5 rounded">
+                                  {(message.thinkingTime / 1000).toFixed(1)}s
+                                </span>
+                              </div>
+                              {expandedThinking.has(index) ? (
+                                <ChevronUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
+                              ) : (
+                                <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500" />
+                              )}
+                            </button>
+                            
+                            {expandedThinking.has(index) && (
+                              <div className="mt-2 sm:mt-3 text-xs sm:text-sm text-gray-600 bg-gray-50 rounded-lg p-2 sm:p-3 whitespace-pre-wrap animate-in slide-in-from-top-2 fade-in duration-200">
+                                {message.reasoning}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            p: ({ children }) => (
+                              <p className="mb-3 sm:mb-4 last:mb-0 leading-relaxed">{children}</p>
+                            ),
+                            ul: ({ children }) => (
+                              <ul className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1">{children}</ul>
+                            ),
+                            ol: ({ children }) => (
+                              <ol className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1 list-decimal list-inside">{children}</ol>
+                            ),
+                            li: ({ children }) => (
+                              <li className="flex items-start gap-2 leading-relaxed">
+                                <span className="text-gray-500 mt-1 select-none text-sm">•</span>
+                                <span className="flex-1 break-words">{children}</span>
+                              </li>
+                            ),
+                            strong: ({ children }) => (
+                              <strong className="font-semibold text-gray-900">{children}</strong>
+                            ),
+                            em: ({ children }) => (
+                              <em className="italic">{children}</em>
+                            ),
+                            h3: ({ children }) => (
+                              <h3 className="font-bold text-gray-900 mb-2 sm:mb-3 mt-4 sm:mt-5 first:mt-0 text-base sm:text-lg">{children}</h3>
+                            ),
+                            h4: ({ children }) => (
+                              <h4 className="font-semibold text-gray-900 mb-2 sm:mb-2.5 mt-3 sm:mt-4 first:mt-0 text-sm sm:text-base">{children}</h4>
+                            ),
+                            code: ({ children }) => (
+                              <code className="bg-gray-200 px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono break-all">{children}</code>
+                            ),
+                            blockquote: ({ children }) => (
+                              <blockquote className="border-l-2 border-gray-300 pl-3 italic my-2 sm:my-3 text-sm sm:text-base opacity-90">{children}</blockquote>
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Suggestion Pills Below Message */}
+                  {message.role === "assistant" && message.suggestions && message.suggestions.length > 0 && (
+                    <div className="flex justify-start mt-3">
+                      <div className="max-w-[85%] sm:max-w-[75%] flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-1 duration-300 delay-100">
+                        {message.suggestions.map((suggestion, suggestionIndex) => (
+                          <button
+                            key={suggestionIndex}
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            disabled={isLoading || isStreaming}
+                            className="px-2.5 py-1.5 sm:px-3 sm:py-2 bg-white hover:bg-gray-900 text-gray-700 hover:text-white rounded-full text-xs sm:text-sm transition-all duration-200 border border-gray-200 hover:border-gray-900 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <span className="line-clamp-1">{suggestion}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -657,21 +680,6 @@ export default function ChatbotPill() {
             }}
           >
             <div className="max-w-3xl mx-auto px-3 sm:px-4">
-              {/* Suggestion Pills */}
-              {suggestions.length > 0 && !isLoading && !isStreaming && (
-                <div className="mb-3 sm:mb-4 flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                  {suggestions.map((suggestion, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className="group px-3 py-1.5 sm:px-3.5 sm:py-2 bg-gray-100 hover:bg-gray-900 text-gray-700 hover:text-white rounded-full text-xs sm:text-sm transition-all duration-200 border border-gray-200 hover:border-gray-900 hover:shadow-sm"
-                    >
-                      <span className="line-clamp-1">{suggestion}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-              
               {error && (
                 <div className="mb-2 sm:mb-3 px-3 py-2 sm:px-4 bg-red-100 text-red-700 rounded-lg text-xs sm:text-sm">
                   {error}
@@ -690,7 +698,7 @@ export default function ChatbotPill() {
                   style={{ minHeight: "40px", maxHeight: "120px" }}
                 />
                 <button
-                  onClick={handleSendMessage}
+                  onClick={() => handleSendMessage()}
                   disabled={!inputValue.trim() || isLoading || isStreaming}
                   className="flex-shrink-0 bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed p-2 sm:p-2.5 rounded-full transition-colors self-end"
                   aria-label="Send message"
