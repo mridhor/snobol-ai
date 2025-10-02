@@ -13,7 +13,7 @@ export default function ChatbotPill() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi! I'm Snobol AI . How can I help you today?"
+      content: "I'm Snobol AI. Ask me about finance, investing, or our crisis investing approach."
     }
   ]);
   const [inputValue, setInputValue] = useState("");
