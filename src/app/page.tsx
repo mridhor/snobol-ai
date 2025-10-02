@@ -1,103 +1,179 @@
-import Image from "next/image";
+"use client";
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Filler,
+} from "chart.js";
+import { Line } from "react-chartjs-2";
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const labels = [
+    "2013", "2014", "2015", "2016", "2017",
+    "2018", "2019", "2020", "2021", "2022",
+    "2023", "2024", "2025"
+  ];
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const data = {
+    labels,
+    datasets: [
+      {
+        label: "Snobol Fund Price",
+        data: [
+          1.0, 1.34, 2.02, 2.51, 5.40,
+          9.97, 11.77, 10.81, 12.45, 13.04,
+          14.41, 14.95, 18.49
+        ],
+        borderColor: "#000000",
+        backgroundColor: "rgba(0,0,0,0.1)",
+        fill: true,
+        tension: 0.3,
+        borderWidth: 3,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => `$${context.raw.toFixed(2)}`,
+        },
+      },
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: {
+        ticks: { callback: (value: any) => `$${value}` },
+        grid: { color: "rgba(0,0,0,0.05)" },
+      },
+    },
+  };
+
+  return (
+    <main className="font-sans bg-white text-black px-6 md:px-16 lg:px-32 py-12 space-y-16">
+      {/* Hero */}
+      <section className="text-center space-y-4">
+        <h1 className="text-4xl md:text-5xl font-bold">Snobol.ai</h1>
+        <h2 className="text-xl md:text-2xl text-gray-700">
+          Clarity in Crisis. Powered by AI, guided by wisdom.
+        </h2>
+        <div className="max-w-3xl mx-auto mt-8">
+          <Line data={data} options={options} />
+          <p className="text-xs text-gray-500 mt-2">
+            *Past performance in no way guarantees future performance.
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+        <button className="mt-8 px-6 py-3 bg-black text-white rounded hover:bg-gray-800 transition">
+          Join the Crisis Contrarians
+        </button>
+      </section>
+
+      {/* Executive Summary */}
+      <section>
+        <h3 className="text-2xl font-semibold mb-4">Executive Summary</h3>
+        <p className="mb-4">
+          Snobol is a <strong>crisis investing movement</strong> that responds rationally when the
+          market panics. We don’t predict the future. We prepare, monitor, and respond with
+          discipline when fear creates opportunity.
+        </p>
+        <ul className="list-disc list-inside space-y-1 text-gray-800">
+          <li><strong>Thesis:</strong> Markets overreact during crises. Durable companies become mispriced.</li>
+          <li><strong>Edge:</strong> Real-time monitoring of order flow, options signals, and macro stress, filtered through quality and valuation rules.</li>
+          <li><strong>Promise:</strong> Radical transparency. Every alert published live, every win and loss logged.</li>
+          <li><strong>Vision:</strong> Build the world’s most trusted brand in crisis investing — calm, clear, and inevitable like a snowball rolling downhill.</li>
+        </ul>
+      </section>
+
+      {/* Investment Philosophy */}
+      <section>
+        <h3 className="text-2xl font-semibold mb-4">Investment Philosophy</h3>
+        <ul className="list-disc list-inside space-y-1 text-gray-800">
+          <li>Respond, don’t predict.</li>
+          <li>Buy quality under panic.</li>
+          <li>Transparency over hindsight.</li>
+          <li>Risk management first.</li>
+          <li>AI as tool, not oracle — humans apply judgment.</li>
+        </ul>
+      </section>
+
+      {/* Process */}
+      <section>
+        <h3 className="text-2xl font-semibold mb-6">The Snobol Process</h3>
+        <div className="grid md:grid-cols-3 gap-8 text-gray-800">
+          <div>
+            <h4 className="font-semibold mb-2">Signal Layer (AI)</h4>
+            <ul className="list-disc list-inside">
+              <li>Order flow stress</li>
+              <li>Options panic</li>
+              <li>Macro alerts</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-2">Filter Layer (Rules)</h4>
+            <ul className="list-disc list-inside">
+              <li>Quality metrics</li>
+              <li>Valuation checks</li>
+              <li>Crisis scoring</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold mb-2">Action Layer (Transparency)</h4>
+            <ul className="list-disc list-inside">
+              <li>Real-time alerts</li>
+              <li>Live portfolio</li>
+              <li>Educational commentary</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Community */}
+      <section>
+        <h3 className="text-2xl font-semibold mb-4">Crisis Contrarians</h3>
+        <p className="mb-4">
+          Snobol is not a hedge fund. It’s a <strong>movement of calm contrarians</strong>.
+        </p>
+        <ul className="list-disc list-inside space-y-1 text-gray-800">
+          <li><strong>Design:</strong> Nordic minimalism, white space, pastel blue.</li>
+          <li><strong>Tone:</strong> Clear, rational, never hype.</li>
+          <li><strong>Community:</strong> Investors who stay calm, rational, and opportunistic when others fear.</li>
+          <li><strong>Transparency:</strong> Portfolio tracker, public letters, open discussions.</li>
+        </ul>
+        <button className="mt-6 px-6 py-3 bg-black text-white rounded hover:bg-gray-800 transition">
+          Get Early Access
+        </button>
+      </section>
+
+      {/* Vision & Ask */}
+      <section>
+        <h3 className="text-2xl font-semibold mb-4">Vision & Ask</h3>
+        <p className="mb-4">
+          We aim to build the world’s most trusted brand in <strong>crisis investing</strong>.
+        </p>
+        <ul className="list-disc list-inside space-y-1 text-gray-800 mb-4">
+          <li>Launch incubator-ready MVP in 6 months.</li>
+          <li>Grow global community of Crisis Contrarians.</li>
+          <li>Build AI-first transparency platform.</li>
+        </ul>
+        <p><strong>Ask:</strong> Let’s connect with incubators, investors, and partners who share this vision.</p>
+      </section>
+
+      {/* Footer */}
+      <footer className="text-center text-gray-500 text-sm mt-12">
+        <p>📩 hello@snobol.ai</p>
+        <p>© 2025 Snobol.ai</p>
       </footer>
-    </div>
+    </main>
   );
 }
