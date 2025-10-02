@@ -13,7 +13,7 @@ export default function ChatbotPill() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi! I'm your Snobol AI assistant. How can I help you today?"
+      content: "Hi! I'm Snobol AI . How can I help you today?"
     }
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -96,7 +96,7 @@ export default function ChatbotPill() {
           setError("Too many requests. Please wait a moment and try again.");
           setMessages([...newMessages, {
             role: "assistant",
-            content: "I&apos;m receiving a lot of requests right now. Please wait a moment and try again, or email us at hello@snobol.com.",
+            content: "I am receiving a lot of requests right now. Please wait a moment and try again, or email us at hello@snobol.com.",
           }]);
         } else {
           setError(errorMessage);
@@ -125,30 +125,25 @@ export default function ChatbotPill() {
         <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <button
             onClick={() => setIsOpen(true)}
-            className="group flex items-center gap-2 bg-black hover:bg-gray-800 text-white px-5 py-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105"
+            className="group flex items-center gap-2.5 bg-black hover:bg-gray-900 text-white pl-4 pr-5 py-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl"
             aria-label="Open chat"
           >
-            <MessageCircle className="w-5 h-5" />
-            <span className="font-medium text-sm">Chat with us</span>
+            <MessageCircle className="w-4 h-4" />
+            <span className="font-normal text-sm">Chat with Snobol AI</span>
           </button>
         </div>
       )}
 
       {/* Full Page Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] bg-white animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] bg-white animate-in fade-in duration-200">
           {/* Header */}
-          <div className="absolute top-0 left-0 right-0 border-b border-gray-200 bg-white z-10">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-                  <MessageCircle className="w-4 h-4 text-white" />
-                </div>
-                <h2 className="font-semibold text-lg">Snobol AI Assistant</h2>
-              </div>
+          <div className="absolute top-0 left-0 right-0 bg-white z-10 border-b border-gray-100">
+            <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+              <h2 className="text-sm font-medium text-gray-900">Snobol AI</h2>
               <button
                 onClick={() => setIsOpen(false)}
-                className="hover:bg-gray-100 rounded-full p-2 transition-colors"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
                 aria-label="Close chat"
               >
                 <X className="w-5 h-5" />
@@ -157,35 +152,25 @@ export default function ChatbotPill() {
           </div>
 
           {/* Messages Container */}
-          <div className="h-full pt-20 pb-32 overflow-y-auto">
-            <div className="max-w-3xl mx-auto px-4 sm:px-6">
-              <div className="space-y-6 py-8">
+          <div className="h-full pt-14 pb-40 overflow-y-auto">
+            <div className="max-w-3xl mx-auto px-4">
+              <div className="space-y-8 py-8">
                 {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex gap-4 ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    {message.role === "assistant" && (
-                      <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                        <MessageCircle className="w-4 h-4 text-white" />
+                  <div key={index} className="group">
+                    {message.role === "user" ? (
+                      <div className="flex justify-end">
+                        <div className="bg-gray-100 rounded-3xl px-5 py-3 max-w-[80%]">
+                          <p className="text-[15px] text-gray-900 leading-relaxed whitespace-pre-wrap">
+                            {message.content}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    <div
-                      className={`max-w-[85%] sm:max-w-[75%] rounded-2xl px-5 py-3 ${
-                        message.role === "user"
-                          ? "bg-black text-white"
-                          : "bg-gray-100 text-gray-900"
-                      }`}
-                    >
-                      <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
-                        {message.content}
-                      </p>
-                    </div>
-                    {message.role === "user" && (
-                      <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                        <span className="text-white text-sm font-medium">You</span>
+                    ) : (
+                      <div className="flex flex-col gap-1">
+                        <div className="text-sm font-medium text-gray-900">Snobol AI</div>
+                        <p className="text-[15px] text-gray-700 leading-relaxed whitespace-pre-wrap">
+                          {message.content}
+                        </p>
                       </div>
                     )}
                   </div>
@@ -193,12 +178,12 @@ export default function ChatbotPill() {
                 
                 {/* Loading indicator */}
                 {isLoading && (
-                  <div className="flex gap-4 justify-start">
-                    <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <MessageCircle className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="bg-gray-100 text-gray-900 rounded-2xl px-5 py-3">
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                  <div className="flex flex-col gap-1">
+                    <div className="text-sm font-medium text-gray-900">Snobol AI</div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                     </div>
                   </div>
                 )}
@@ -209,33 +194,31 @@ export default function ChatbotPill() {
           </div>
 
           {/* Input Area (Fixed at bottom) */}
-          <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white">
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-8">
+            <div className="max-w-3xl mx-auto px-4 pb-6">
               {error && (
-                <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="mb-3 px-4 py-2 bg-red-50 rounded-lg">
                   <p className="text-sm text-red-600">{error}</p>
                 </div>
               )}
-              <div className="flex gap-3 items-end">
-                <div className="flex-1 relative">
-                  <textarea
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyPress}
-                    placeholder="Message Snobol AI..."
-                    rows={1}
-                    disabled={isLoading}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none text-[15px] leading-relaxed max-h-32 overflow-y-auto disabled:bg-gray-50 disabled:cursor-not-allowed"
-                    style={{
-                      minHeight: "48px",
-                      height: "auto"
-                    }}
-                  />
-                </div>
+              <div className="relative bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-shadow">
+                <textarea
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Message Snobol AI..."
+                  rows={1}
+                  disabled={isLoading}
+                  className="w-full px-5 py-4 pr-12 bg-transparent focus:outline-none resize-none text-[15px] leading-relaxed max-h-32 overflow-y-auto disabled:opacity-50"
+                  style={{
+                    minHeight: "56px",
+                    height: "auto"
+                  }}
+                />
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim() || isLoading}
-                  className="bg-black hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white p-3 rounded-full transition-colors flex-shrink-0"
+                  className="absolute right-3 bottom-3 bg-black hover:bg-gray-800 disabled:bg-gray-200 disabled:cursor-not-allowed text-white p-2 rounded-full transition-all"
                   aria-label="Send message"
                 >
                   {isLoading ? (
@@ -245,7 +228,7 @@ export default function ChatbotPill() {
                   )}
                 </button>
               </div>
-              <p className="text-xs text-gray-500 text-center mt-3">
+              <p className="text-xs text-gray-400 text-center mt-3">
                 Snobol AI can make mistakes. Check important info.
               </p>
             </div>
