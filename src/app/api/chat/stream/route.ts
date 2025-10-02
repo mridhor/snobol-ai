@@ -234,7 +234,7 @@ export async function POST(req: NextRequest) {
                 model: "gpt-5-mini",
                 messages: messagesWithTools,
                 temperature: 1,
-                max_completion_tokens: 2000,
+                max_completion_tokens: 1000,
                 stream: true,
               });
               
