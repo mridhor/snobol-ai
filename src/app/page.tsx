@@ -166,7 +166,7 @@ export default function Homepage() {
           </div>
           <div className="flex-shrink-0" data-name="Link" data-node-id="1:148">
             <p className="font-['Inter:Regular',_sans-serif] font-normal leading-5 text-[#666666] text-sm" data-node-id="1:149">
-              hello@snobol.com
+              hello@snobol.ai
             </p>
           </div>
 
