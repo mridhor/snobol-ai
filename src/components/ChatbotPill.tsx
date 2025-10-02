@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Message {
   role: "user" | "assistant";
@@ -20,6 +22,7 @@ export default function ChatbotPill() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastRequestTime = useRef<number>(0);
 
   // Prevent body scroll when overlay is open
@@ -39,6 +42,15 @@ export default function ChatbotPill() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Auto-resize textarea as user types
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+    }
+  }, [inputValue]);
+
   const handleSendMessage = async () => {
     if (inputValue.trim() && !isLoading) {
       // Rate limiting: Prevent requests faster than every 2 seconds
@@ -52,6 +64,11 @@ export default function ChatbotPill() {
       const userMessage = inputValue.trim();
       setInputValue("");
       setError(null);
+      
+      // Reset textarea height
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
       
       // Add user message
       const newMessages: Message[] = [...messages, { role: "user", content: userMessage }];
@@ -139,21 +156,21 @@ export default function ChatbotPill() {
         <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-sm animate-in fade-in duration-300 ease-out">
           {/* Header */}
           <div className="absolute top-0 left-0 right-0 z-10 border-b border-gray-200/60 bg-white/70 backdrop-blur-sm">
-            <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-gray-900">Snobol AI</h2>
+            <div className="max-w-3xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
+              <h2 className="text-sm sm:text-base font-semibold text-gray-900">Snobol AI</h2>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition-colors"
+                className="text-gray-400 hover:text-gray-600 p-1 sm:p-1.5 rounded-full hover:bg-gray-100 transition-colors -mr-1"
                 aria-label="Close chat"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="h-full pt-14 pb-32 overflow-y-auto">
-            <div className="max-w-3xl mx-auto px-4 space-y-6 py-6">
+          <div className="h-full pt-12 sm:pt-14 pb-28 sm:pb-32 overflow-y-auto">
+            <div className="max-w-3xl mx-auto px-3 sm:px-4 space-y-4 sm:space-y-6 py-4 sm:py-6">
               {messages.map((message, index) => (
                 <div
                   key={index}
@@ -163,28 +180,71 @@ export default function ChatbotPill() {
                   style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
                 >
                   {message.role === "user" ? (
-                    <div className="bg-gray-900 text-white rounded-2xl px-4 py-2.5 text-sm max-w-[75%] shadow-sm">
+                    <div className="bg-gray-900 text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm max-w-[85%] sm:max-w-[75%] shadow-sm break-words">
                       {message.content}
                     </div>
                   ) : (
-                    <div className="bg-gray-100 rounded-2xl px-4 py-2.5 text-sm text-gray-800 max-w-[75%] shadow-sm">
-                      {message.content}
+                    <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm text-gray-800 max-w-[85%] sm:max-w-[75%] shadow-sm break-words">
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({ children }) => (
+                            <p className="mb-2 sm:mb-3 last:mb-0 leading-relaxed">{children}</p>
+                          ),
+                          ul: ({ children }) => (
+                            <ul className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3 last:mb-0 ml-0.5 sm:ml-1">{children}</ul>
+                          ),
+                          ol: ({ children }) => (
+                            <ol className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3 last:mb-0 ml-0.5 sm:ml-1 list-decimal list-inside">{children}</ol>
+                          ),
+                          li: ({ children }) => (
+                            <li className="flex items-start gap-1.5 sm:gap-2 leading-relaxed">
+                              <span className="text-gray-500 mt-0.5 select-none text-xs sm:text-sm">•</span>
+                              <span className="flex-1 break-words">{children}</span>
+                            </li>
+                          ),
+                          strong: ({ children }) => (
+                            <strong className="font-semibold text-gray-900">{children}</strong>
+                          ),
+                          em: ({ children }) => (
+                            <em className="italic">{children}</em>
+                          ),
+                          h3: ({ children }) => (
+                            <h3 className="font-semibold text-gray-900 mb-1.5 sm:mb-2 mt-3 sm:mt-4 first:mt-0 text-sm sm:text-base">{children}</h3>
+                          ),
+                          h4: ({ children }) => (
+                            <h4 className="font-medium text-gray-900 mb-1.5 sm:mb-2 mt-2 sm:mt-3 first:mt-0 text-[13px] sm:text-sm">{children}</h4>
+                          ),
+                          code: ({ children }) => (
+                            <code className="bg-gray-200 px-1 sm:px-1.5 py-0.5 rounded text-[11px] sm:text-xs font-mono break-all">{children}</code>
+                          ),
+                          blockquote: ({ children }) => (
+                            <blockquote className="border-l-2 border-gray-300 pl-2 sm:pl-3 italic my-1.5 sm:my-2 text-[12px] sm:text-sm">{children}</blockquote>
+                          ),
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
                     </div>
                   )}
                 </div>
               ))}
 
               {isLoading && (
-                <div className="flex items-center space-x-1 text-gray-500 text-sm">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                  <span
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "150ms" }}
-                  />
-                  <span
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "300ms" }}
-                  />
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 shadow-sm">
+                    <div className="flex items-center space-x-1">
+                      <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" />
+                      <span
+                        className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      />
+                      <span
+                        className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -193,38 +253,44 @@ export default function ChatbotPill() {
           </div>
 
           {/* Input Area */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200/50 pt-4 pb-5">
-            <div className="max-w-3xl mx-auto px-4">
+          <div 
+            className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200/50 pt-3 sm:pt-4"
+            style={{ 
+              paddingBottom: 'max(1rem, env(safe-area-inset-bottom))'
+            }}
+          >
+            <div className="max-w-3xl mx-auto px-3 sm:px-4">
               {error && (
-                <div className="mb-3 px-4 py-2 bg-red-100 text-red-700 rounded-lg text-sm">
+                <div className="mb-2 sm:mb-3 px-3 py-2 sm:px-4 bg-red-100 text-red-700 rounded-lg text-xs sm:text-sm">
                   {error}
                 </div>
               )}
-              <div className="relative flex items-end bg-white border border-gray-200 rounded-2xl shadow-sm">
+              <div className="flex items-end gap-1.5 sm:gap-2 bg-white border border-gray-200 rounded-2xl shadow-sm p-1.5 sm:p-2">
                 <textarea
+                  ref={textareaRef}
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={handleKeyPress}
                   placeholder="Message Snobol AI..."
                   rows={1}
                   disabled={isLoading}
-                  className="w-full px-4 py-3 bg-transparent resize-none focus:outline-none text-sm leading-relaxed disabled:opacity-50 rounded-2xl"
-                  style={{ minHeight: "44px", maxHeight: "120px" }}
+                  className="flex-1 px-2.5 py-2 sm:px-3 sm:py-2 bg-transparent resize-none focus:outline-none text-[14px] sm:text-sm leading-relaxed disabled:opacity-50 overflow-y-auto"
+                  style={{ minHeight: "40px", maxHeight: "120px" }}
                 />
                 <button
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim() || isLoading}
-                  className="absolute right-2 bottom-2 bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed p-2 rounded-full transition-colors"
+                  className="flex-shrink-0 bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed p-2 sm:p-2.5 rounded-xl transition-colors self-end mb-0.5"
                   aria-label="Send message"
                 >
                   {isLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   ) : (
-                    <Send className="w-5 h-5" />
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
                 </button>
               </div>
-              <p className="text-[11px] text-gray-400 text-center mt-2">
+              <p className="text-[10px] sm:text-[11px] text-gray-400 text-center mt-1.5 sm:mt-2 px-2">
                 Snobol AI can make mistakes. Always double-check important info.
               </p>
             </div>
