@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         }
       ],
       temperature: 1, // Slightly creative but focused
-      max_completion_tokens: 150, // Enough for 3 short questions
+      max_completion_tokens: 200, // Enough for 3 short questions
     });
 
     console.log("OpenAI completion response:", JSON.stringify(completion, null, 2));
