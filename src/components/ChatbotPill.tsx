@@ -46,42 +46,212 @@ export default function ChatbotPill() {
       "How do you manage risk during market volatility?",
       "What makes a quality investment during uncertain times?",
       "How should beginners start investing?",
-      "What's your view on diversification?"
+      "What's your view on diversification?",
+      "How much money do I need to start investing?",
+      "What's the difference between investing and trading?",
+      "Should I invest in what I don't understand?",
+      "How do I build a long-term investment plan?",
+      "What are the biggest mistakes new investors make?",
+      "How often should I check my portfolio?",
+      "Is it better to invest regularly or wait for dips?",
+      "How do I stay calm when everyone else is panicking?",
+      "What should I focus on during market uncertainty?",
+      "How do I prepare for the next crisis?",
+      "What's a safe investing strategy for beginners?"
     ],
     company: [
       "What financial metrics should I look at?",
       "How do I evaluate if a company is financially healthy?",
       "What are the risks I should consider?",
       "Should I focus on revenue growth or profitability?",
-      "How important are dividends when investing?"
+      "How important are dividends when investing?",
+      "What does debt-to-equity ratio tell me?",
+      "How do I know if a stock is overvalued?",
+      "What's more important: earnings or cash flow?",
+      "Should I worry about management changes?",
+      "How do I research a company before investing?",
+      "What red flags should I watch out for?",
+      "How does company size affect my investment?",
+      "Which companies survive market crashes better?",
+      "How do I spot financially stable companies?",
+      "What makes a company crisis-resistant?",
+      "Should I avoid companies with high debt during crises?",
+      "How important is a company's cash reserves?",
+      "What industries are safer during downturns?",
+      "Analyze Apple's financial health",
+      "Compare Tesla vs traditional automakers",
+      "Evaluate Microsoft's competitive advantages",
+      "Check Amazon's debt levels"
     ],
     market: [
       "Should I invest during a market downturn?",
       "How do I protect my portfolio during crashes?",
       "What's the difference between bull and bear markets?",
       "Is now a good time to buy stocks?",
-      "How do economic cycles affect investments?"
+      "How do economic cycles affect investments?",
+      "What happens to stocks during a recession?",
+      "Should I sell everything when markets crash?",
+      "How long do market downturns usually last?",
+      "What's the best strategy during high inflation?",
+      "How do interest rate changes affect stocks?",
+      "Should I time the market or invest consistently?",
+      "What causes stock market volatility?",
+      "How can I profit from market fear and panic?",
+      "What are the signs of a market crisis?",
+      "Should I buy when others are fearful?",
+      "How do I stay rational during market crashes?",
+      "What's the best defense in a bear market?",
+      "How do crisis cycles create opportunities?",
+      "Analyze current market conditions",
+      "Show me historical bear market recoveries",
+      "Explain today's market volatility",
+      "Compare this downturn to 2008"
     ],
     risk: [
       "How much of my portfolio should be in cash?",
       "What is position sizing and why does it matter?",
       "How do I avoid emotional investing decisions?",
       "What's the role of stop-losses in risk management?",
-      "Should I use leverage in my investments?"
+      "Should I use leverage in my investments?",
+      "How much risk should I take at my age?",
+      "What's a safe withdrawal rate in retirement?",
+      "Should I sell losing positions or hold on?",
+      "How do I balance risk and reward?",
+      "What's the right asset allocation for me?",
+      "How do I protect against market crashes?",
+      "Is it risky to invest in just one sector?",
+      "How do I build a safety buffer for crises?",
+      "What's a conservative portfolio allocation?",
+      "Should I reduce risk during uncertain times?",
+      "How can I minimize losses in a downturn?",
+      "What's the safest way to preserve capital?",
+      "How do I prepare my portfolio for a crisis?",
+      "Assess my portfolio risk level",
+      "Create a conservative allocation plan",
+      "Review my current risk exposure",
+      "Build me a defensive portfolio"
     ],
     specific: [
       "How do I know when to sell an investment?",
       "What's the role of dividends in investing?",
       "Should I invest in index funds or individual stocks?",
       "How do I balance growth vs value stocks?",
-      "What's the best way to track my portfolio performance?"
+      "What's the best way to track my portfolio performance?",
+      "Should I reinvest my dividends automatically?",
+      "How do taxes affect my investment returns?",
+      "What's the benefit of dollar-cost averaging?",
+      "Should I rebalance my portfolio regularly?",
+      "How do I choose between stocks and bonds?",
+      "What's a reasonable return to expect?",
+      "Should I invest in international stocks?",
+      "How do I invest safely during a crisis?",
+      "What's the best way to buy during market fear?",
+      "Should I hold more cash during downturns?",
+      "How can I use market crashes to my advantage?",
+      "What assets hold value during crises?",
+      "Should I focus on value stocks during bear markets?",
+      "Show me dividend aristocrats",
+      "Compare index funds vs ETFs",
+      "Calculate tax-efficient investing strategies",
+      "Explain dollar-cost averaging with examples"
     ],
     snobol: [
       "What makes Snobol AI different from other advisors?",
       "How does Snobol AI help during market crises?",
       "What is the philosophy behind crisis investing?",
       "Can you explain Snobol AI's investment strategy?",
-      "How does Snobol AI stay calm during market panic?"
+      "How does Snobol AI stay calm during market panic?",
+      "Why does Snobol AI focus on crisis investing?",
+      "What does Snobol AI recommend for beginners?",
+      "How can Snobol AI help me build wealth?",
+      "What's Snobol AI's approach to risk?",
+      "Does Snobol AI work for long-term investing?",
+      "How does Snobol AI handle market uncertainty?",
+      "What makes crisis investing effective?",
+      "How does Snobol AI turn panic into opportunity?",
+      "What's Snobol AI's secret to staying calm?",
+      "How can I invest like Snobol AI during crises?",
+      "What does Snobol AI do when markets crash?"
+    ],
+    crisis: [
+      "How do I invest during a financial crisis?",
+      "What should I buy when markets are crashing?",
+      "How can I profit from market panic?",
+      "What's the best strategy during economic uncertainty?",
+      "Should I hold cash during a crisis?",
+      "How do I stay calm when my portfolio is down?",
+      "What makes a good crisis investment?",
+      "How long should I wait before buying the dip?",
+      "What are the warning signs of a market crash?",
+      "How do I protect my wealth during turbulent times?",
+      "Should I sell before a recession hits?",
+      "What opportunities emerge during market fear?",
+      "How do I build a crisis-proof portfolio?",
+      "What assets perform well during downturns?",
+      "How can fear create buying opportunities?",
+      "What's the safest approach during market chaos?",
+      "Show me crisis investing strategies",
+      "Analyze market crash patterns",
+      "Find undervalued stocks during panic",
+      "Build me a crisis-resistant portfolio"
+    ],
+    valueinvesting: [
+      "What is value investing?",
+      "How do I find undervalued stocks?",
+      "What makes a stock a good value?",
+      "Should I focus on value during bear markets?",
+      "How do I know if a company is trading below value?",
+      "What's the difference between price and value?",
+      "How patient should I be with value investments?",
+      "What are the best value investing strategies?",
+      "How do I spot value during market crashes?",
+      "Should I buy quality companies at low prices?",
+      "What role does patience play in value investing?",
+      "How do crises create value opportunities?",
+      "Find undervalued stocks for me",
+      "Analyze Warren Buffett's value approach",
+      "Show me quality companies trading below value",
+      "Teach me value investing fundamentals"
+    ],
+    psychology: [
+      "How do I control fear when investing?",
+      "What should I do when I panic about losses?",
+      "How do I avoid making emotional decisions?",
+      "Why do I want to sell when markets drop?",
+      "How can I think long-term during chaos?",
+      "What's the psychology behind market panic?",
+      "How do I stay disciplined during volatility?",
+      "Why is it hard to buy when others are selling?",
+      "How can I be greedy when others are fearful?",
+      "What mindset do successful crisis investors have?",
+      "How do I overcome investment anxiety?",
+      "Why does the crowd usually get it wrong?",
+      "Help me overcome my fear of losses",
+      "Teach me emotional discipline",
+      "Show me how Warren Buffett stays calm",
+      "Explain the psychology of successful investors"
+    ],
+    personalfinance: [
+      "How much should I save for emergencies?",
+      "What's a good budgeting strategy?",
+      "Should I pay off debt before investing?",
+      "How do I balance saving and investing?",
+      "What percentage of income should I invest?",
+      "How do I plan for retirement?",
+      "Should I prioritize 401k or personal investing?",
+      "How much house can I afford?",
+      "What's the best way to save for college?",
+      "How do I prepare financially for a crisis?",
+      "Should I have multiple income streams?",
+      "How much cash should I keep liquid?",
+      "What's a safe withdrawal strategy?",
+      "How do I build long-term financial security?",
+      "What insurance do I really need?",
+      "How do I protect my family financially?",
+      "Create a budget plan for me",
+      "Calculate my retirement needs",
+      "Review my current financial situation",
+      "Build me an emergency fund strategy"
     ]
   };
 
@@ -115,32 +285,50 @@ export default function ChatbotPill() {
   const getFallbackSuggestions = (userQuestion: string, aiResponse: string): string[] => {
     const lowerQ = userQuestion.toLowerCase();
     const lowerA = aiResponse.toLowerCase();
+    const combined = lowerQ + ' ' + lowerA;
     
     // Detect if asking about Snobol AI specifically
     if (lowerQ.includes('snobol') || lowerA.includes('snobol')) {
       return getRandomSuggestions(suggestionTemplates.snobol);
     }
     
-    // Detect company/stock analysis
-    if (lowerQ.match(/\b(apple|tesla|amazon|google|microsoft|meta|stock|company|share)\b/i) || 
-        lowerA.includes('company') || lowerA.includes('financial health')) {
+    // Detect crisis/panic/fear topics (HIGH PRIORITY - Snobol's specialty)
+    if (combined.match(/\b(crisis|crash|panic|fear|uncertain|turbulent|chaos|market fear|economic crisis|financial crisis|downturn|collapse|blood|carnage|disaster)\b/i)) {
+      return getRandomSuggestions(suggestionTemplates.crisis);
+    }
+    
+    // Detect psychology/emotions/behavior
+    if (combined.match(/\b(afraid|scared|nervous|worry|anxious|emotion|panic|fear|psychology|mindset|discipline|greed|calm|patient|irrational|rational)\b/i)) {
+      return getRandomSuggestions(suggestionTemplates.psychology);
+    }
+    
+    // Detect value investing topics
+    if (combined.match(/\b(value|undervalued|cheap|bargain|intrinsic|fair value|discount|margin of safety|quality|fundamental)\b/i)) {
+      return getRandomSuggestions(suggestionTemplates.valueinvesting);
+    }
+    
+    // Detect personal finance topics
+    if (combined.match(/\b(budget|save|saving|emergency fund|debt|loan|mortgage|retirement|401k|ira|pension|insurance|income|salary|expense|college fund|financial plan|net worth|credit|afford|pay off)\b/i)) {
+      return getRandomSuggestions(suggestionTemplates.personalfinance);
+    }
+    
+    // Detect company/stock analysis (expanded keywords)
+    if (combined.match(/\b(apple|tesla|amazon|google|microsoft|meta|netflix|nvidia|stock|company|share|equity|corporation|business|ticker|earnings|revenue|profit|balance sheet|income statement|cash flow|dividend|p\/e|price-to-earnings)\b/i)) {
       return getRandomSuggestions(suggestionTemplates.company);
     }
     
-    // Detect market conditions
-    if (lowerQ.match(/\b(market|crash|downturn|bull|bear|recession|economy)\b/i) ||
-        lowerA.match(/\b(market|volatility|downturn|crash)\b/i)) {
+    // Detect market conditions (expanded)
+    if (combined.match(/\b(market|bull|bear|recession|depression|recovery|expansion|cycle|boom|bust|economy|economic|gdp|unemployment|inflation|deflation|fed|federal reserve|interest rate|correction|rally)\b/i)) {
       return getRandomSuggestions(suggestionTemplates.market);
     }
     
-    // Detect risk management
-    if (lowerQ.match(/\b(risk|safe|protect|hedge|loss)\b/i) ||
-        lowerA.match(/\b(risk|diversif|protect|buffer)\b/i)) {
+    // Detect risk management (expanded)
+    if (combined.match(/\b(risk|safe|protect|hedge|loss|avoid loss|preservation|capital preservation|buffer|emergency fund|cash reserve|allocation|defensive|conservative|volatility|drawdown|stop loss)\b/i)) {
       return getRandomSuggestions(suggestionTemplates.risk);
     }
     
     // Detect specific how-to questions
-    if (lowerQ.match(/\b(how|when|should i|what's the best)\b/i)) {
+    if (lowerQ.match(/\b(how do|how can|how should|when do|when should|should i|what's the best|which is better|help me|teach me|explain|tell me about)\b/i)) {
       return getRandomSuggestions(suggestionTemplates.specific);
     }
     
