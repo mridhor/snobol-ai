@@ -13,33 +13,21 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import EditableText from "../src/components/EditableText";
+import { useContent } from "../src/hooks/useContent";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
 
 export default function AdminPage() {
   const [editMode, setEditMode] = useState(true); // Always in edit mode for admin
   const [isAuthenticated, setIsAuthenticated] = useState(false); // TODO: Add auth
+  const { content, loading, getContent, saveContent } = useContent();
 
   const handleSave = async (html: string, elementId?: string) => {
+    if (!elementId) return;
+    
     try {
-      const response = await fetch("/api/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          html,
-          elementId,
-          content: html,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save content");
-      }
-
-      const result = await response.json();
-      console.log("Content saved:", result);
+      await saveContent(html, elementId);
+      console.log("Content saved and refreshed:", elementId);
     } catch (error) {
       console.error("Error saving content:", error);
     }
@@ -90,6 +78,18 @@ export default function AdminPage() {
       },
     },
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading content...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Simple auth check - replace with proper authentication
   if (!isAuthenticated) {
@@ -176,7 +176,7 @@ export default function AdminPage() {
           tag="h1"
           className="text-4xl md:text-5xl font-bold"
         >
-          Snobol.ai
+          {getContent("hero-title", "Snobol.ai")}
         </EditableText>
         <EditableText
           editMode={editMode}
