@@ -113,16 +113,15 @@ export async function POST(req: NextRequest) {
     ];
 
     // Call OpenAI API
-    const openai = getOpenAIClient();
-    const completion = await openai.chat.completions.create({
-      model: "gpt-5-nano", // Using GPT-5 Nano for speed and cost-effectiveness
-      messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
-      temperature: 1,
-      max_completion_tokens: 2000, // Increased to allow for reasoning tokens + actual response
-      top_p: 1,
-      frequency_penalty: 0,
-      presence_penalty: 0,
-    });
+      const openai = getOpenAIClient();
+      const completion = await openai.chat.completions.create({
+        model: "gpt-5", // Full GPT-5 model (higher quality, more nuanced replies)
+        messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
+        temperature: 0.7, // lower than 1 for more consistent, brand-safe tone
+        max_completion_tokens: 2000, // generous output cap
+        top_p: 1,
+      });
+
 
     // Log the completion for debugging
     console.log("OpenAI Response:", JSON.stringify(completion, null, 2));
