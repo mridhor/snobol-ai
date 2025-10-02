@@ -625,9 +625,12 @@ export default function ChatbotPill() {
                       ) : (
                         <div 
                           className={`bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] break-words relative ${
-                            isStreaming && index === messages.length - 1 && message.content !== "" ? 'streaming-text' : 'message-appear'
+                            isStreaming && index === messages.length - 1 && message.content !== "" ? '' : 'message-appear'
                           }`}
-                          style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
+                          style={{ 
+                            animationDelay: isStreaming && index === messages.length - 1 ? '0ms' : `${Math.min(index * 40, 200)}ms`,
+                            transition: 'opacity 0.15s ease-out'
+                          }}
                         >
                         {/* Thinking Process Section */}
                         {message.reasoning && message.thinkingTime && (
@@ -755,9 +758,14 @@ export default function ChatbotPill() {
                       </div>
                     </div>
                   </div>
-                  <span className="thinking-text text-xs sm:text-sm text-gray-500 font-medium ml-3 sm:ml-4">
-                    Thinking... ({thinkingDuration}s)
-                  </span>
+                  <div className="text-xs sm:text-sm font-medium ml-3 sm:ml-4 flex items-center gap-1.5">
+                    <span className="thinking-text text-gray-500">
+                      Thinking...
+                    </span>
+                    <span className="text-gray-400 tabular-nums">
+                      ({thinkingDuration}s)
+                    </span>
+                  </div>
                 </div>
               )}
 
