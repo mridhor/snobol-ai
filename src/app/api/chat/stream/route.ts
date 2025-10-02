@@ -212,6 +212,13 @@ export async function POST(req: NextRequest) {
                 })
               );
               
+              // Stream tool results directly so clients can parse special tags like [CHART_DATA]
+              for (const tr of toolResults) {
+                if (tr.content) {
+                  controller.enqueue(encoder.encode(String(tr.content)));
+                }
+              }
+
               // Build new message history with tool results
               const messagesWithTools = [
                 ...(openaiMessages as OpenAI.ChatCompletionMessageParam[]),

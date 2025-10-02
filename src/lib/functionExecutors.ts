@@ -318,9 +318,22 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
     const searchData = await searchResponse.json();
     
     if (!searchData || searchData.length === 0) {
-      return `Could not find chart data for "${symbol}". Please verify the ticker symbol.
-
-${getDiverseTickerExamples()}`;
+      // Fallback: build a best-guess TradingView symbol and still render widget
+      const upper = String(symbol || '').toUpperCase();
+      const guessExchange = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','AMD','INTC','ADBE','NFLX'].includes(upper) ? 'NASDAQ' : 'NYSE';
+      const guessedFull = `${guessExchange}:${upper}`;
+      const assetType = 'Stock';
+      const priceSymbol = '$';
+      return `[CHART_DATA]${JSON.stringify({
+        type: 'stock_chart',
+        symbol: guessedFull,
+        companyName: upper,
+        assetType,
+        period,
+        priceSymbol,
+        data: [],
+        note: 'Rendering via TradingView widget (guessed symbol)'
+      })}[/CHART_DATA]`;
     }
     
     // Get the first result (most relevant)
@@ -329,58 +342,36 @@ ${getDiverseTickerExamples()}`;
     const exchange = symbolInfo.exchange;
     const fullSymbol = `${exchange}:${tradingViewSymbol}`;
     
-    // Get current quote data
-    const quotesUrl = `https://data.tradingview.com/v1/get_quotes/?symbols=${fullSymbol}`;
-    
-    const quotesResponse = await fetch(quotesUrl);
-    const quotesData = await quotesResponse.json();
-    
-    if (!quotesData || !quotesData.data || quotesData.data.length === 0) {
-      return `Could not fetch chart data for "${symbol}". Please verify the ticker symbol.`;
-    }
-    
-    const quote = quotesData.data[0];
+    // Build minimal payload for TradingView widget; no quote fetch required
     const assetType = getAssetType(symbolInfo);
     const priceSymbol = getPriceSymbol(assetType, exchange);
-    
-    // Since TradingView doesn't provide free historical data, we'll create a simple chart
-    // with current price data and suggest using TradingView's chart widget
-    const currentPrice = quote.lp || quote.c;
-    const previousClose = quote.prev_close_price;
-    const change = currentPrice - previousClose;
-    const changePercent = previousClose ? ((change / previousClose) * 100).toFixed(2) : '0.00';
-    
-    // Create a simple data point for current price
-    const chartData = [{
-      date: new Date().toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric'
-      }),
-      price: currentPrice?.toFixed(2),
-      high: quote.h?.toFixed(2),
-      low: quote.l?.toFixed(2),
-      volume: quote.v
-    }];
-    
-    // Return as special formatted JSON that frontend can parse
     return `[CHART_DATA]${JSON.stringify({
       type: 'stock_chart',
       symbol: fullSymbol,
       companyName: symbolInfo.description || tradingViewSymbol,
-      assetType: assetType,
-      period: period,
-      currentPrice: currentPrice?.toFixed(2),
-      change: changePercent,
-      priceSymbol: priceSymbol,
-      data: chartData,
-      note: `For detailed historical ${assetType.toLowerCase()} charts, visit TradingView.com`
+      assetType,
+      period,
+      priceSymbol,
+      data: [],
+      note: 'Rendering via TradingView widget'
     })}[/CHART_DATA]`;
     
   } catch (error) {
     console.error('Chart data error:', error);
-    return `Unable to fetch chart data for "${symbol}". For detailed historical charts, please visit TradingView.com directly.
-
-${getDiverseTickerExamples()}`;
+    // Last-resort fallback: still return a TradingView-embeddable symbol guess
+    const upper = String(symbol || '').toUpperCase();
+    const guessExchange = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','AMD','INTC','ADBE','NFLX'].includes(upper) ? 'NASDAQ' : 'NYSE';
+    const guessedFull = `${guessExchange}:${upper}`;
+    return `[CHART_DATA]${JSON.stringify({
+      type: 'stock_chart',
+      symbol: guessedFull,
+      companyName: upper,
+      assetType: 'Stock',
+      period,
+      priceSymbol: '$',
+      data: [],
+      note: 'Rendering via TradingView widget (fallback guess)'
+    })}[/CHART_DATA]`;
   }
 }
 
