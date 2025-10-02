@@ -308,6 +308,7 @@ ${getDiverseTickerExamples()}`;
  * Get historical data for chart visualization using TradingView
  * Note: TradingView doesn't provide free historical data API, so we'll use a free alternative
  */
+
 async function getStockChartData(symbol: string, period: string = '6mo'): Promise<string> {
   try {
     // Enhanced search with support for multiple asset types
@@ -364,7 +365,7 @@ ${getDiverseTickerExamples()}`;
     // Return as special formatted JSON that frontend can parse
     return `[CHART_DATA]${JSON.stringify({
       type: 'stock_chart',
-      symbol: tradingViewSymbol,
+      symbol: fullSymbol,
       companyName: symbolInfo.description || tradingViewSymbol,
       assetType: assetType,
       period: period,

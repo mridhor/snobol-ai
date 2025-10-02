@@ -5,7 +5,7 @@ import { MessageCircle, X, Send, Loader2, ChevronDown, ChevronUp } from "lucide-
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Image from "next/image";
-import StockChart from "./StockChart";
+import TradingViewWidget from "./TradingViewWidget";
 
 interface ChartData {
   type: string;
@@ -993,16 +993,11 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           {message.content}
                         </ReactMarkdown>
                         
-                        {/* Render Stock Chart if available */}
-                        {message.chartData && message.chartData.type === 'stock_chart' && (
-                          <StockChart
-                            symbol={message.chartData.symbol}
-                            companyName={message.chartData.companyName}
-                            period={message.chartData.period}
-                            currentPrice={message.chartData.currentPrice}
-                            change={message.chartData.change}
-                            data={message.chartData.data}
-                          />
+                        {/* Render TradingView widget if we have a proper symbol */}
+                        {message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol && (
+                          <div className="mt-3">
+                            <TradingViewWidget symbol={message.chartData.symbol} height={420} />
+                          </div>
                         )}
                       </div>
                     )}
