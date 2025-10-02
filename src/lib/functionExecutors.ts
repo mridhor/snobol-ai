@@ -1,28 +1,95 @@
 // Function executors for AI tool calling
 
 /**
- * Enhanced search using multiple strategies
+ * Enhanced search using Alpha Vantage API for financial data
  */
 async function searchWeb(query: string): Promise<string> {
   try {
-    // Strategy 1: Try DuckDuckGo Instant Answer API
-    const ddgResponse = await fetch(
-      `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`,
-      { signal: AbortSignal.timeout(5000) }
-    );
-    const ddgData = await ddgResponse.json();
+    // Check if Alpha Vantage API key is configured
+    const alphaApiKey = process.env.ALPHA_API_KEY;
     
-    let result = '';
-    if (ddgData.Abstract) {
-      result += `${ddgData.Abstract}\n\n`;
+    if (!alphaApiKey) {
+      console.warn('ALPHA_API_KEY not configured, using placeholder response');
+      return buildPlaceholderResponse(query);
     }
-    if (ddgData.RelatedTopics && ddgData.RelatedTopics.length > 0) {
-      const topics = ddgData.RelatedTopics.slice(0, 3)
-        .filter((topic: { Text?: string }) => topic.Text)
-        .map((topic: { Text: string }) => topic.Text)
-        .join('\n\n');
-      if (topics) {
-        result += `${topics}`;
+    
+    // Extract potential ticker symbols from query
+    const tickerMatch = query.match(/\b[A-Z]{1,5}\b/);
+    const ticker = tickerMatch ? tickerMatch[0] : null;
+    
+    if (!ticker) {
+      // If no ticker found, return placeholder
+      return buildPlaceholderResponse(query);
+    }
+    
+    // Use Alpha Vantage Company Overview endpoint
+    const alphaResponse = await fetch(
+      `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${ticker}&apikey=${alphaApiKey}`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+    
+    if (!alphaResponse.ok) {
+      console.error('Alpha Vantage API error:', alphaResponse.status, alphaResponse.statusText);
+      return buildPlaceholderResponse(query);
+    }
+    
+    const alphaData = await alphaResponse.json();
+    
+    // Check if we got valid data
+    if (!alphaData || alphaData.Note || alphaData.Information || !alphaData.Symbol) {
+      console.warn('Alpha Vantage rate limit or invalid symbol:', alphaData.Note || alphaData.Information);
+      return buildPlaceholderResponse(query);
+    }
+    
+    // Build response based on query type
+    let result = '';
+    
+    // Company overview queries
+    if (/overview|company|business|description|about/i.test(query)) {
+      if (alphaData.Description) {
+        // Shorten description to first 2-3 sentences for Nordic style
+        const sentences = alphaData.Description.split('. ').slice(0, 2).join('. ') + '.';
+        result += `${sentences}\n\n`;
+      }
+      if (alphaData.Sector) {
+        result += `**Sector:** ${alphaData.Sector}\n`;
+      }
+      if (alphaData.Industry) {
+        result += `**Industry:** ${alphaData.Industry}\n`;
+      }
+    }
+    
+    // Financial queries
+    if (/financial|revenue|profit|earnings|margin/i.test(query)) {
+      const financials = [];
+      if (alphaData.MarketCapitalization) {
+        const marketCap = (parseFloat(alphaData.MarketCapitalization) / 1e9).toFixed(1);
+        financials.push(`Market cap: $${marketCap}B`);
+      }
+      if (alphaData.ProfitMargin) {
+        const margin = (parseFloat(alphaData.ProfitMargin) * 100).toFixed(1);
+        financials.push(`Profit margin: ${margin}%`);
+      }
+      if (alphaData.RevenueTTM) {
+        const revenue = (parseFloat(alphaData.RevenueTTM) / 1e9).toFixed(1);
+        financials.push(`Revenue: $${revenue}B`);
+      }
+      if (financials.length > 0) {
+        result += financials.join(' | ') + '\n';
+      }
+    }
+    
+    // Risk/analysis queries
+    if (/risk|competition|challenge/i.test(query)) {
+      const risks = [];
+      if (alphaData.Beta) {
+        risks.push(`Beta: ${parseFloat(alphaData.Beta).toFixed(2)} (volatility vs market)`);
+      }
+      if (alphaData.PERatio) {
+        risks.push(`P/E: ${parseFloat(alphaData.PERatio).toFixed(1)}`);
+      }
+      if (risks.length > 0) {
+        result += risks.join(' | ') + '\n';
       }
     }
     
@@ -30,10 +97,10 @@ async function searchWeb(query: string): Promise<string> {
       return result.trim();
     }
     
-    // Strategy 2: Return structured placeholder with actionable info
+    // Fallback: Return structured placeholder with actionable info
     return buildPlaceholderResponse(query);
   } catch (error) {
-    console.error('Search error:', error);
+    console.error('Alpha Vantage error:', error);
     return buildPlaceholderResponse(query);
   }
 }
@@ -179,7 +246,7 @@ function getDiverseTickerExamples(): string {
 }
 
 /**
- * Get stock quote using DuckDuckGo (rich-text summary; no direct price API)
+ * Get stock quote using Alpha Vantage (real financial data API)
  * ALWAYS includes TradingView chart data
  */
 async function getStockQuote(symbol: string): Promise<string> {
@@ -193,7 +260,7 @@ async function getStockQuote(symbol: string): Promise<string> {
     
     const sourcesPayload = {
       sources: [
-        { name: 'DuckDuckGo Search', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' stock price today')}` }
+        { name: 'Alpha Vantage', url: `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${upper}` }
       ]
     };
     return `
@@ -209,7 +276,7 @@ ${summary || 'No concise summary available right now.'}
 ${chartData}
     `.trim();
   } catch (error) {
-    console.error('Stock quote (DuckDuckGo) error:', error);
+    console.error('Stock quote (Alpha Vantage) error:', error);
     
     // Still try to include chart even on error
     let chartData = '';
@@ -221,7 +288,7 @@ ${chartData}
     
     const sourcesPayload = {
       sources: [
-        { name: 'DuckDuckGo Search', url: `https://duckduckgo.com/?q=${encodeURIComponent(String(symbol) + ' stock price today')}` }
+        { name: 'Alpha Vantage', url: `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${String(symbol).toUpperCase()}` }
       ]
     };
     return `
@@ -236,7 +303,7 @@ ${chartData}
 }
 
 /**
- * Analyze company using DuckDuckGo (rich-text summary; no direct financials API)
+ * Analyze company using Alpha Vantage (real financial data API)
  * ALWAYS includes TradingView chart data
  */
 async function analyzeCompany(symbol: string): Promise<string> {
@@ -251,9 +318,7 @@ async function analyzeCompany(symbol: string): Promise<string> {
     
     const sourcesPayload = {
       sources: [
-        { name: 'DuckDuckGo: Overview', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' company overview')}` },
-        { name: 'DuckDuckGo: Financials', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' financials')}` },
-        { name: 'DuckDuckGo: Risks', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' risks competition')}` }
+        { name: 'Alpha Vantage', url: `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${upper}` }
       ]
     };
     return `
@@ -272,7 +337,7 @@ ${risks || '- Unable to fetch risks summary right now.'}
 ${chartData}
     `.trim();
   } catch (error) {
-    console.error('Analysis (DuckDuckGo) error:', error);
+    console.error('Analysis (Alpha Vantage) error:', error);
     const upper = String(symbol || '').toUpperCase();
     
     // Still try to include chart even on error
@@ -285,7 +350,7 @@ ${chartData}
     
     const sourcesPayload = {
       sources: [
-        { name: 'DuckDuckGo: Overview', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' company overview')}` }
+        { name: 'Alpha Vantage', url: `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${upper}` }
       ]
     };
     return `
@@ -393,7 +458,7 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
   
   // Generate chart data payload
   const chartPayload = `[CHART_DATA]${JSON.stringify({
-    type: 'stock_chart',
+      type: 'stock_chart',
     symbol: fullSymbol,
     companyName,
     assetType,
@@ -401,7 +466,7 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
     priceSymbol,
     data: [],
     note: 'Rendering via TradingView widget'
-  })}[/CHART_DATA]`;
+    })}[/CHART_DATA]`;
     
   // ALSO include company analysis with proper error handling
   let overview = '';
@@ -423,9 +488,7 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
   
   const sourcesPayload = {
     sources: [
-      { name: 'DuckDuckGo: Overview', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' company overview')}` },
-      { name: 'DuckDuckGo: Financials', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' financials')}` },
-      { name: 'DuckDuckGo: Risks', url: `https://duckduckgo.com/?q=${encodeURIComponent(upper + ' risks competition')}` }
+      { name: 'Alpha Vantage', url: `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${upper}` }
     ]
   };
   

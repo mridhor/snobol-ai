@@ -1,10 +1,43 @@
 # snobol-ai
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+A financial AI chatbot built with Next.js, featuring real-time stock analysis, TradingView charts, and value investing insights.
+
+## Features
+
+- 🤖 **AI-Powered Financial Analysis** - Powered by OpenAI GPT
+- 📊 **TradingView Charts** - Interactive charts for stocks, crypto, commodities, and forex
+- 🔍 **Brave Search Integration** - Privacy-focused web search for financial data
+- 💡 **Value Investing Focus** - Fundamental analysis and business quality assessments
+- 📱 **Responsive Design** - Beautiful UI that works on all devices
+
+## Setup
+
+### Prerequisites
+
+1. **Node.js** (v18 or higher)
+2. **OpenAI API Key** - Get from [OpenAI Platform](https://platform.openai.com/)
+3. **Brave Search API Key** - Get free key at [Brave Search API](https://api.search.brave.com/register)
+
+### Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+BRAVE_SEARCH_API_KEY=your_brave_search_api_key_here
+```
+
+See [BRAVE_SEARCH_SETUP.md](./BRAVE_SEARCH_SETUP.md) for detailed Brave Search setup instructions.
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies:
+
+```bash
+npm install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev

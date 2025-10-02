@@ -5,7 +5,7 @@ export const AI_TOOLS = [
     type: "function" as const,
     function: {
       name: "search_web",
-      description: "Search the web for current information, news, or recent events about finance, markets, or companies. Use this when you need up-to-date information that you don't have.",
+      description: "Search for current news, events, or sentiment about markets/companies. Use to check: What's the current fear level? What are people panicking about? What's the news causing the selloff?",
       parameters: {
         type: "object",
         properties: {
@@ -22,13 +22,13 @@ export const AI_TOOLS = [
     type: "function" as const,
     function: {
       name: "get_stock_quote",
-      description: "Get ONLY current stock price and basic quote data. Use this when user asks specifically for 'price', 'quote', 'trading at', 'current value' WITHOUT asking for analysis or company information. Always includes a chart.",
+      description: "Get current price and basic data. Use when user asks for 'price', 'quote', 'how much', 'trading at' WITHOUT deeper analysis. Always includes chart. Good for quick price checks.",
       parameters: {
         type: "object",
         properties: {
           symbol: {
             type: "string",
-            description: "Stock ticker symbol in UPPERCASE (e.g., AAPL for Apple, TSLA for Tesla, GOOGL for Google)"
+            description: "Ticker symbol (stocks, crypto, commodities). E.g., AAPL, BTC, GOLD"
           }
         },
         required: ["symbol"]
@@ -39,13 +39,13 @@ export const AI_TOOLS = [
     type: "function" as const,
     function: {
       name: "analyze_company",
-      description: "Get comprehensive company analysis with chart. Use when user wants to: 'analyze', 'research', 'understand', 'learn about', 'tell me about', 'what does X do', 'company overview', 'business model', 'financials', 'risks', or any in-depth information about a company. Always includes business description, financial health, risks, AND a TradingView chart.",
+      description: "Deep dive analysis with chart. Use for: 'analyze', 'research', 'what's the deal with X', 'should I look at X', 'tell me about X', 'is X opportunity'. Focus on: business reality, what they do, risks, if panic is justified. Always includes chart.",
       parameters: {
         type: "object",
         properties: {
           symbol: {
             type: "string",
-            description: "Stock ticker symbol in UPPERCASE (e.g., AAPL, MSFT, AMZN)"
+            description: "Ticker symbol. E.g., AAPL, TSLA, NVDA"
           }
         },
         required: ["symbol"]
@@ -56,13 +56,13 @@ export const AI_TOOLS = [
     type: "function" as const,
     function: {
       name: "show_stock_chart",
-      description: "Display interactive TradingView chart with company analysis. Use when user explicitly asks to: 'show chart', 'display chart', 'visualize', 'graph', 'chart for', 'see chart', or wants to see price trends/patterns. Always includes both chart AND company analysis (business overview, financials, risks).",
+      description: "Show chart + analysis. Use when user says: 'show chart', 'chart for X', 'visualize X', 'graph X', 'see X chart'. Includes full analysis (business, risks) + interactive TradingView chart. Works for all assets.",
       parameters: {
         type: "object",
         properties: {
           symbol: {
             type: "string",
-            description: "Stock ticker symbol in UPPERCASE (e.g., AAPL, TSLA, GOOGL). Supports stocks, crypto (BTC, ETH), commodities (GOLD, OIL), forex (EURUSD), indices (SPX500)."
+            description: "Any ticker: stocks (AAPL), crypto (BTC), commodities (GOLD), forex (EURUSD), indices (SPX500)"
           },
           period: {
             type: "string",

@@ -9,32 +9,48 @@ function getOpenAIClient() {
 }
 
 // System prompt for generating suggestions
-const SUGGESTION_PROMPT = `You are a helpful assistant that generates follow-up questions for a financial advice chatbot.
+const SUGGESTION_PROMPT = `You are a helpful assistant that generates follow-up questions for Snobol AI, a contrarian investing chatbot.
 
-Given a conversation between a user and Snobol AI (a financial/investment advisor), generate exactly 3 relevant follow-up questions that:
-1. Build naturally on the conversation topic
-2. Help the user dive deeper into related concepts
-3. Are specific, actionable, and within Snobol AI's domain (finance, investing, crisis investing, risk management)
-4. Are phrased as questions the user would ask (first person perspective)
-5. Are concise (max 12 words each)
+**Snobol's Philosophy:**
+Snobol is NOT value investing. Snobol is contrarian and opportunistic.
+- We invest where fear dominates
+- We're open to ALL asset types
+- We look for opportunities when others panic
 
-Rules:
-- Questions must be relevant to the last exchange
-- Avoid repeating what was already discussed
-- Focus on practical, beginner-friendly questions
-- Stay within finance/investing topics only
-- Make questions progressively helpful (easy to more advanced)
+Given a conversation, generate exactly 3 relevant follow-up questions that:
+1. Build on the conversation naturally
+2. Are concise (max 10 words each)
+3. Focus on contrarian/opportunistic thinking
+4. Are phrased as user questions (first person)
+5. Are beginner-friendly but curious
 
-**CRITICAL FOR STOCK ANALYSIS:**
-When the conversation is about stocks, companies, or investments:
-- NEVER suggest technical analysis (charts, indicators, patterns, support/resistance, moving averages, RSI, MACD, etc.)
-- ALWAYS focus on VALUE INVESTING frameworks (intrinsic value, margin of safety, quality of business, competitive advantages/moats)
-- ALWAYS focus on FUNDAMENTAL ANALYSIS (revenue growth, profit margins, debt levels, cash flow, P/E ratios, earnings quality)
-- Suggest questions about business quality, management, competitive position, financial health, long-term prospects
-- Examples: "What's the company's competitive moat?", "How strong is their balance sheet?", "What's their free cash flow like?"
+**Question Style:**
+✅ Good: "Is this panic overdone?"
+✅ Good: "What's the crowd missing here?"
+✅ Good: "Where's the fear greatest right now?"
+❌ Bad: "What's the company's EBITDA margin?"
+❌ Bad: "Should I use dollar-cost averaging?"
+
+**For Stock/Company Discussions:**
+- NEVER suggest technical analysis (charts, RSI, moving averages, patterns, etc.)
+- ALWAYS focus on contrarian angles:
+  * "Is the market overreacting?"
+  * "What's the fear vs reality here?"
+  * "Is everyone selling? Why?"
+  * "What's the worst that could happen?"
+  * "Is this panic justified?"
+- Focus on business reality, not financial metrics
+- Keep it simple and opportunistic
+
+**Rules:**
+- Short, punchy questions (max 10 words)
+- Contrarian perspective
+- Plain English, no jargon
+- Progressive difficulty (easy → medium → challenging)
+- Stay in finance/investing domain
 
 Format: Return ONLY a JSON array of 3 strings, nothing else.
-Example: ["How much should I invest monthly?", "What are index funds?", "When should I sell stocks?"]`;
+Example: ["Is this fear justified?", "What's the real risk here?", "Where are others panicking?"]`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -112,24 +128,24 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ suggestions: questions });
       }
 
-      // Final fallback to default suggestions (value investing focused)
+      // Final fallback to default suggestions (contrarian focused)
       return NextResponse.json({
         suggestions: [
-          "What fundamentals should I look for in a company?",
-          "How do I assess a company's competitive advantage?",
-          "What's a safe margin of safety when investing?"
+          "Where is fear greatest right now?",
+          "Is this panic overdone?",
+          "What's the crowd missing?"
         ]
       });
     }
   } catch (error: unknown) {
     console.error("Suggestions API Error:", error);
     
-    // Return fallback suggestions on error (value investing focused)
+    // Return fallback suggestions on error (contrarian focused)
     return NextResponse.json({
       suggestions: [
-        "What fundamentals should I look for in a company?",
-        "How do I assess a company's competitive advantage?",
-        "What's a safe margin of safety when investing?"
+        "Where is fear greatest right now?",
+        "Is this panic overdone?",
+        "What's the crowd missing?"
       ]
     });
   }
