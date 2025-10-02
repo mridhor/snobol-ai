@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function TestCMSPage() {
   const [testResults, setTestResults] = useState<string[]>([]);
@@ -95,7 +96,7 @@ export default function TestCMSPage() {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Test Results</h2>
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {testResults.length === 0 ? (
-              <p className="text-gray-500">Click "Run CMS Tests" to start testing</p>
+              <p className="text-gray-500">Click &quot;Run CMS Tests&quot; to start testing</p>
             ) : (
               testResults.map((result, index) => (
                 <div key={index} className="text-sm font-mono">
@@ -109,9 +110,9 @@ export default function TestCMSPage() {
         <div className="mt-6 bg-blue-50 rounded-lg p-4">
           <h3 className="font-semibold text-blue-900 mb-2">CMS Access Points</h3>
           <ul className="text-sm text-blue-700 space-y-1">
-            <li>• <a href="/" className="underline">Public Site</a> - Main investor page</li>
-            <li>• <a href="/cms" className="underline">CMS Interface</a> - Content management system</li>
-            <li>• <a href="/admin" className="underline">Admin Page</a> - Alternative admin interface</li>
+            <li>• <Link href="/" className="underline">Public Site</Link> - Main investor page</li>
+            <li>• <Link href="/cms" className="underline">CMS Interface</Link> - Content management system</li>
+            <li>• <Link href="/admin" className="underline">Admin Page</Link> - Alternative admin interface</li>
           </ul>
         </div>
       </div>
