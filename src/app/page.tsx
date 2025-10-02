@@ -103,7 +103,7 @@ export default function Homepage() {
         <div className="w-full max-w-6xl">
           <div className="flex gap-2 items-center justify-center">
             <Image
-              src="/snobol-ai-logo.svg"
+              src="./snobol-ai-logo.svg"
               alt="Snobol"
               width={120}
               height={48}
