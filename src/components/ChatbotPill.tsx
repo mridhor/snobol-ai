@@ -60,6 +60,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   const [thinkingDuration, setThinkingDuration] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState("Thinking...");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastRequestTime = useRef<number>(0);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -436,11 +437,24 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     };
   }, [isOpen]);
 
+  // Robust scroll function
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    // Try multiple methods to ensure scroll works
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior, block: "end" });
+    }
+    
+    // Also scroll the container directly
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
+  };
+
   // Auto scroll to bottom when new messages arrive or loading state changes
   useEffect(() => {
     // Use setTimeout to ensure DOM has updated
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      scrollToBottom("smooth");
     }, 50);
   }, [messages, isLoading]);
 
@@ -449,7 +463,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     if (isLoading) {
       // Small delay to ensure the loading message is rendered
       setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        scrollToBottom("smooth");
       }, 50);
     }
   }, [isLoading]);
@@ -457,16 +471,11 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   // Keep scrolling during streaming to follow the response
   useEffect(() => {
     if (isStreaming) {
-      // Use instant scroll during streaming for better follow effect
-      const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "instant", block: "end" });
-      };
-      
       // Scroll immediately
-      scrollToBottom();
+      scrollToBottom("instant");
       
       // Continue scrolling at intervals during streaming
-      const scrollInterval = setInterval(scrollToBottom, 100);
+      const scrollInterval = setInterval(() => scrollToBottom("instant"), 100);
       
       return () => clearInterval(scrollInterval);
     }
@@ -534,7 +543,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       
       // Immediately scroll to bottom when user sends message
       setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+        scrollToBottom("smooth");
       }, 100);
 
       // Create abort controller for this request
@@ -902,7 +911,9 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           </div>
 
           {/* Messages */}
-          <div className={`h-full pt-12 sm:pt-14 pb-28 sm:pb-32 overflow-y-auto ${
+          <div 
+            ref={messagesContainerRef}
+            className={`h-full pt-12 sm:pt-14 pb-28 sm:pb-32 overflow-y-auto ${
             isClosing ? 'animate-out fade-out duration-200' : 'animate-in fade-in duration-600 delay-150 ease-out'
           }`}>
             <div className="max-w-3xl mx-auto px-3 sm:px-4 space-y-4 sm:space-y-6 py-4 sm:py-6">
