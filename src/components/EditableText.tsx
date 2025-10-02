@@ -18,14 +18,7 @@ export default function EditableText({
   tag = "div",
 }: EditableTextProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [content, setContent] = useState("");
   const elementRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (elementRef.current) {
-      setContent(elementRef.current.innerHTML);
-    }
-  }, [children]);
 
   const handleFocus = () => {
     if (editMode) {
@@ -38,7 +31,6 @@ export default function EditableText({
       setIsEditing(false);
       if (elementRef.current) {
         const newContent = elementRef.current.innerHTML;
-        setContent(newContent);
         onSave(newContent);
       }
     }
@@ -65,6 +57,7 @@ export default function EditableText({
     : {};
 
   const baseProps = {
+    ref: elementRef,
     contentEditable: editMode && isEditing,
     suppressContentEditableWarning: true,
     onFocus: handleFocus,
@@ -72,29 +65,28 @@ export default function EditableText({
     onKeyDown: handleKeyDown,
     className,
     style: editStyles,
-    dangerouslySetInnerHTML: { __html: content },
   };
 
   switch (tag) {
     case "h1":
-      return <h1 ref={elementRef as React.RefObject<HTMLHeadingElement>} {...baseProps} />;
+      return <h1 {...baseProps}>{children}</h1>;
     case "h2":
-      return <h2 ref={elementRef as React.RefObject<HTMLHeadingElement>} {...baseProps} />;
+      return <h2 {...baseProps}>{children}</h2>;
     case "h3":
-      return <h3 ref={elementRef as React.RefObject<HTMLHeadingElement>} {...baseProps} />;
+      return <h3 {...baseProps}>{children}</h3>;
     case "h4":
-      return <h4 ref={elementRef as React.RefObject<HTMLHeadingElement>} {...baseProps} />;
+      return <h4 {...baseProps}>{children}</h4>;
     case "p":
-      return <p ref={elementRef as React.RefObject<HTMLParagraphElement>} {...baseProps} />;
+      return <p {...baseProps}>{children}</p>;
     case "span":
-      return <span ref={elementRef as React.RefObject<HTMLSpanElement>} {...baseProps} />;
+      return <span {...baseProps}>{children}</span>;
     case "button":
-      return <button ref={elementRef as React.RefObject<HTMLButtonElement>} {...baseProps} />;
+      return <button {...baseProps}>{children}</button>;
     case "ul":
-      return <ul ref={elementRef as React.RefObject<HTMLUListElement>} {...baseProps} />;
+      return <ul {...baseProps}>{children}</ul>;
     case "li":
-      return <li ref={elementRef as React.RefObject<HTMLLIElement>} {...baseProps} />;
+      return <li {...baseProps}>{children}</li>;
     default:
-      return <div ref={elementRef as React.RefObject<HTMLDivElement>} {...baseProps} />;
+      return <div {...baseProps}>{children}</div>;
   }
 }
