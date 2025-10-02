@@ -81,7 +81,7 @@ export default function ChatbotPill() {
         // Add error message as assistant response
         setMessages([...newMessages, {
           role: "assistant",
-          content: "I apologize, but I&apos;m having trouble responding right now. Please try again or contact us at hello@snobol.com for assistance.",
+          content: "I apologize, but I am having trouble responding right now. Please try again or contact us at hello@snobol.com for assistance.",
         }]);
       } finally {
         setIsLoading(false);
