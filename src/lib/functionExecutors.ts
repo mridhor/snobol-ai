@@ -107,25 +107,31 @@ async function searchWeb(query: string): Promise<string> {
 
 /**
  * Build a helpful placeholder when external APIs fail
+ * MUST be Nordic style: short, direct, playful
  */
 function buildPlaceholderResponse(query: string): string {
   const isStockQuery = /stock|price|ticker|symbol/i.test(query);
   const isCompanyQuery = /company|overview|business|profile/i.test(query);
   const isFinancialsQuery = /financial|revenue|profit|earnings|balance sheet/i.test(query);
+  const isMarketQuery = /market|opportunity|fear|panic|contrarian/i.test(query);
   
   if (isStockQuery) {
-    return `**Real-time stock data** is available via financial portals like Yahoo Finance, Google Finance, or your brokerage platform. Check the sources below for live pricing and charts.`;
+    return `Live price data needs a ticker. Got a specific stock in mind?`;
   }
   
   if (isCompanyQuery) {
-    return `**Company overview:** Most publicly traded companies publish their business description, mission, and key products on their investor relations website. You can also find summaries on financial news sites and SEC filings (10-K annual reports).`;
+    return `Need a ticker symbol to pull company details. Which one?`;
   }
   
   if (isFinancialsQuery) {
-    return `**Financial statements** (income statement, balance sheet, cash flow) are published quarterly and annually. Check the company's investor relations page or SEC.gov for official filings.`;
+    return `Give me a ticker and I'll get the numbers.`;
   }
   
-  return `For the most current information about "${query}", I recommend checking recent financial news sources, company investor relations pages, or financial data platforms.`;
+  if (isMarketQuery) {
+    return `Market's always moving. What sector or asset are you curious about?`;
+  }
+  
+  return `Not finding data on that. Try a specific ticker or topic?`;
 }
 
 /**
@@ -305,6 +311,7 @@ ${chartData}
 /**
  * Analyze company using Alpha Vantage (real financial data API)
  * ALWAYS includes TradingView chart data
+ * MUST be Nordic style: short, direct, playful
  */
 async function analyzeCompany(symbol: string): Promise<string> {
   try {
@@ -321,21 +328,29 @@ async function analyzeCompany(symbol: string): Promise<string> {
         { name: 'Alpha Vantage', url: `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${upper}` }
       ]
     };
-    return `
-**${upper} – Beginner-Friendly Company Snapshot**
-
-**What the company does (in plain English):**
-${overview || '- Unable to fetch an overview right now.'}
-
-**Financial health (high level):**
-${financials || '- Unable to fetch financial highlights right now.'}
-
-**What to watch (risks & context):**
-${risks || '- Unable to fetch risks summary right now.'}
-
-[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
-${chartData}
-    `.trim();
+    
+    // Build Nordic-style response: short, direct, 2-4 bullets max
+    let response = `**${upper} - Quick Take**\n\n`;
+    
+    // Only add non-placeholder content
+    if (overview && !overview.includes('Not finding data') && !overview.includes('Need a ticker')) {
+      response += `${overview}\n\n`;
+    }
+    
+    if (financials && !financials.includes('Not finding data') && !financials.includes('Give me a ticker')) {
+      response += `**Money:** ${financials}\n\n`;
+    }
+    
+    if (risks && !risks.includes('Not finding data') && !risks.includes('Give me a ticker')) {
+      response += `**Watch:** ${risks}\n\n`;
+    }
+    
+    // If we got no real data, use Nordic fallback
+    if (!overview || overview.includes('Not finding data') || overview.includes('Need a ticker')) {
+      response = `**${upper} - Quick Take**\n\nCouldn't pull detailed data right now. Check the source link for full info.\n\n`;
+    }
+    
+    return `${response.trim()}\n\n[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]\n${chartData}`.trim();
   } catch (error) {
     console.error('Analysis (Alpha Vantage) error:', error);
     const upper = String(symbol || '').toUpperCase();
@@ -354,9 +369,9 @@ ${chartData}
       ]
     };
     return `
-**${upper} – Company Snapshot**
+**${upper} - Quick Take**
 
-- Web search temporarily unavailable. Please open the source below for details.
+Couldn't pull data right now. Check the source link below for full info.
 
 [SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
 ${chartData}
@@ -535,23 +550,28 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
     ]
   };
   
-  const analysisText = `
-**${upper} – Company Snapshot with Chart**
-
-**What the company does (in plain English):**
-${overview || '- Unable to fetch an overview right now.'}
-
-**Financial health (high level):**
-${financials || '- Unable to fetch financial highlights right now.'}
-
-**What to watch (risks & context):**
-${risks || '- Unable to fetch risks summary right now.'}
-
-[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
-${chartPayload}
-  `.trim();
+  // Build Nordic-style response: short, direct, 2-4 bullets max
+  let response = `**${upper} - Quick Take**\n\n`;
   
-  return analysisText;
+  // Only add non-placeholder content
+  if (overview && !overview.includes('Unable to fetch') && !overview.includes('Not finding data')) {
+    response += `${overview}\n\n`;
+  }
+  
+  if (financials && !financials.includes('Unable to fetch') && !financials.includes('Not finding data')) {
+    response += `**Money:** ${financials}\n\n`;
+  }
+  
+  if (risks && !risks.includes('Unable to fetch') && !risks.includes('Not finding data')) {
+    response += `**Watch:** ${risks}\n\n`;
+  }
+  
+  // If we got no real data, use Nordic fallback
+  if (overview.includes('Unable to fetch') || overview.includes('Not finding data')) {
+    response = `**${upper} - Quick Take**\n\nCouldn't pull detailed data right now. Check the source link for full info.\n\n`;
+  }
+  
+  return `${response.trim()}\n\n[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]\n${chartPayload}`.trim();
 }
 
 /**
