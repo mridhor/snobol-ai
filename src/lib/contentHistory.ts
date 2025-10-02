@@ -12,7 +12,7 @@ export interface ContentVersion {
 }
 
 // In-memory version history (replace with database in production)
-const contentHistory: ContentVersion[] = [];
+let contentHistory: ContentVersion[] = [];
 
 export function addContentVersion(
   contentId: string,

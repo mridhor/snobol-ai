@@ -5,7 +5,7 @@ import {
   getRecentChanges,
   getChangesByUser,
   getContentStats 
-} from "../../../../lib/contentHistory";
+} from "../../../lib/contentHistory";
 
 export async function GET(request: NextRequest) {
   try {
