@@ -46,7 +46,15 @@ async function searchWeb(query: string): Promise<string> {
 /**
  * Helper function to determine asset type based on symbol info
  */
-function getAssetType(symbolInfo: any): string {
+interface TradingViewSymbolInfo {
+  symbol?: string;
+  exchange?: string;
+  type?: string;
+  country?: string;
+  description?: string;
+}
+
+function getAssetType(symbolInfo: TradingViewSymbolInfo): string {
   const symbol = symbolInfo.symbol?.toUpperCase() || '';
   const exchange = symbolInfo.exchange?.toUpperCase() || '';
   const type = symbolInfo.type?.toLowerCase() || '';
