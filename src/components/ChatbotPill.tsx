@@ -911,6 +911,13 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                 
                 return (
                   <div key={index}>
+                    {/* Render TradingView chart ABOVE the message bubble if present */}
+                    {message.role === "assistant" && message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol && (
+                      <div className="w-full mb-3 message-appear" style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}>
+                        <TradingViewWidget symbol={message.chartData.symbol} height={420} />
+                      </div>
+                    )}
+                    
                     <div
                       className={`flex ${
                         message.role === "user" ? "justify-end" : "justify-start"
@@ -1033,13 +1040,6 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                                 <span className="truncate max-w-[160px] sm:max-w-[220px]">{src.name}</span>
                               </a>
                             ))}
-                          </div>
-                        )}
-
-                        {/* Render TradingView widget if we have a proper symbol */}
-                        {message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol && (
-                          <div className="mt-3">
-                            <TradingViewWidget symbol={message.chartData.symbol} height={420} />
                           </div>
                         )}
                       </div>

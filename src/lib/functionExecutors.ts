@@ -1,46 +1,64 @@
 // Function executors for AI tool calling
 
 /**
- * Search the web using DuckDuckGo (free, no API key needed)
+ * Enhanced search using multiple strategies
  */
 async function searchWeb(query: string): Promise<string> {
   try {
-    // Using DuckDuckGo Instant Answer API (free, no key required)
-    const response = await fetch(
-      `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`
+    // Strategy 1: Try DuckDuckGo Instant Answer API
+    const ddgResponse = await fetch(
+      `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`,
+      { signal: AbortSignal.timeout(5000) }
     );
-    
-    const data = await response.json();
+    const ddgData = await ddgResponse.json();
     
     let result = '';
-    
-    // Get the main abstract/answer if available
-    if (data.Abstract) {
-      result += `${data.Abstract}\n\n`;
+    if (ddgData.Abstract) {
+      result += `${ddgData.Abstract}\n\n`;
     }
-    
-    // Get related topics
-    if (data.RelatedTopics && data.RelatedTopics.length > 0) {
-      const topics = data.RelatedTopics.slice(0, 3)
+    if (ddgData.RelatedTopics && ddgData.RelatedTopics.length > 0) {
+      const topics = ddgData.RelatedTopics.slice(0, 3)
         .filter((topic: { Text?: string }) => topic.Text)
         .map((topic: { Text: string }) => topic.Text)
         .join('\n\n');
-      
       if (topics) {
-        result += `Related information:\n${topics}`;
+        result += `${topics}`;
       }
     }
     
-    if (!result) {
-      // Fallback: suggest they visit a search engine
-      return `I couldn't find specific results. For the most current information about "${query}", I recommend checking recent financial news sources or market data platforms.`;
+    if (result.trim()) {
+      return result.trim();
     }
     
-    return result.trim();
+    // Strategy 2: Return structured placeholder with actionable info
+    return buildPlaceholderResponse(query);
   } catch (error) {
     console.error('Search error:', error);
-    return `Search temporarily unavailable. For current information about "${query}", please check financial news websites.`;
+    return buildPlaceholderResponse(query);
   }
+}
+
+/**
+ * Build a helpful placeholder when external APIs fail
+ */
+function buildPlaceholderResponse(query: string): string {
+  const isStockQuery = /stock|price|ticker|symbol/i.test(query);
+  const isCompanyQuery = /company|overview|business|profile/i.test(query);
+  const isFinancialsQuery = /financial|revenue|profit|earnings|balance sheet/i.test(query);
+  
+  if (isStockQuery) {
+    return `**Real-time stock data** is available via financial portals like Yahoo Finance, Google Finance, or your brokerage platform. Check the sources below for live pricing and charts.`;
+  }
+  
+  if (isCompanyQuery) {
+    return `**Company overview:** Most publicly traded companies publish their business description, mission, and key products on their investor relations website. You can also find summaries on financial news sites and SEC filings (10-K annual reports).`;
+  }
+  
+  if (isFinancialsQuery) {
+    return `**Financial statements** (income statement, balance sheet, cash flow) are published quarterly and annually. Check the company's investor relations page or SEC.gov for official filings.`;
+  }
+  
+  return `For the most current information about "${query}", I recommend checking recent financial news sources, company investor relations pages, or financial data platforms.`;
 }
 
 /**
