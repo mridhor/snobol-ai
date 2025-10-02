@@ -130,8 +130,8 @@ export default function Homepage() {
                 </div>
               </div>
               <div className="flex-1 w-full max-w-lg lg:max-w-none" data-name="Container" data-node-id="1:162">
-                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-64 md:h-80 items-center justify-center relative w-full outline-none focus:outline-none">
-                  <div className="h-full w-full relative outline-none focus:outline-none" data-name="LineChart" data-node-id="1:163">
+                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-64 md:h-80 items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
+                  <div className="h-full w-full relative outline-none focus:outline-none focus-visible:outline-none select-none" data-name="LineChart" data-node-id="1:163">
                     <SimpleLineChart currentPrice={18.49} currentSP500Price={3.30} />
                   </div>
                 </div>
