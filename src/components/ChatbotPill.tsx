@@ -22,6 +22,7 @@ export default function ChatbotPill() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -187,6 +188,15 @@ export default function ChatbotPill() {
     }
   };
 
+  const handleClose = () => {
+    setIsClosing(true);
+    // Wait for exit animation to complete before actually closing
+    setTimeout(() => {
+      setIsOpen(false);
+      setIsClosing(false);
+    }, 400); // Match animation duration
+  };
+
   return (
     <>
       <style jsx>{`
@@ -202,6 +212,69 @@ export default function ChatbotPill() {
         }
         .streaming-text {
           animation: smoothReveal 0.6s ease-out forwards;
+        }
+        
+        @keyframes elegantSlideIn {
+          0% {
+            opacity: 0;
+            transform: translateY(8px) scale(0.96);
+            filter: blur(4px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0px);
+          }
+        }
+        
+        .message-appear {
+          animation: elegantSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        /* Exit animations */
+        @keyframes fadeOutZoom {
+          from {
+            opacity: 1;
+            transform: scale(1);
+          }
+          to {
+            opacity: 0;
+            transform: scale(0.98);
+          }
+        }
+        
+        @keyframes slideOutTop {
+          from {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(-8px);
+          }
+        }
+        
+        @keyframes slideOutBottom {
+          from {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+        }
+        
+        .exit-overlay {
+          animation: fadeOutZoom 0.4s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+        
+        .exit-top {
+          animation: slideOutTop 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+        }
+        
+        .exit-bottom {
+          animation: slideOutBottom 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
         }
       `}</style>
       
@@ -221,9 +294,13 @@ export default function ChatbotPill() {
 
       {/* Full Page Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] bg-white/90 backdrop-blur-sm animate-in fade-in duration-300 ease-out">
+        <div className={`fixed inset-0 z-[100] bg-white/90 backdrop-blur-sm ${
+          isClosing ? 'exit-overlay' : 'animate-in fade-in zoom-in-98 duration-600 ease-out'
+        }`}>
           {/* Header */}
-          <div className="absolute top-0 left-0 right-0 z-10 bg-white/70 backdrop-blur-sm">
+          <div className={`absolute top-0 left-0 right-0 z-10 bg-white/70 backdrop-blur-sm ${
+            isClosing ? 'exit-top' : 'animate-in slide-in-from-top-2 fade-in duration-500 ease-out'
+          }`}>
             <div className="max-w-3xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Image 
@@ -235,7 +312,7 @@ export default function ChatbotPill() {
                 />
               </div>
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={handleClose}
                 className="text-gray-400 hover:text-gray-600 p-1 sm:p-1.5 rounded-full hover:bg-gray-100 transition-colors -mr-1"
                 aria-label="Close chat"
               >
@@ -245,7 +322,9 @@ export default function ChatbotPill() {
           </div>
 
           {/* Messages */}
-          <div className="h-full pt-12 sm:pt-14 pb-28 sm:pb-32 overflow-y-auto">
+          <div className={`h-full pt-12 sm:pt-14 pb-28 sm:pb-32 overflow-y-auto ${
+            isClosing ? 'animate-out fade-out duration-300' : 'animate-in fade-in duration-600 delay-150 ease-out'
+          }`}>
             <div className="max-w-3xl mx-auto px-3 sm:px-4 space-y-4 sm:space-y-6 py-4 sm:py-6">
               {messages.map((message, index) => {
                 // Hide the empty streaming message while loading dots are showing
@@ -259,17 +338,22 @@ export default function ChatbotPill() {
                     key={index}
                     className={`flex ${
                       message.role === "user" ? "justify-end" : "justify-start"
-                    } animate-in fade-in slide-in-from-bottom-1 duration-300`}
-                    style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
+                    }`}
                   >
                     {message.role === "user" ? (
-                      <div className="bg-gray-900 text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm max-w-[85%] sm:max-w-[75%] break-words">
+                      <div 
+                        className="bg-gray-900 text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm max-w-[85%] sm:max-w-[75%] break-words message-appear"
+                        style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
+                      >
                         {message.content}
                       </div>
                     ) : (
-                      <div className={`bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] break-words relative ${
-                        isStreaming && index === messages.length - 1 && message.content !== "" ? 'streaming-text' : ''
-                      }`}>
+                      <div 
+                        className={`bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base text-gray-800 max-w-[85%] sm:max-w-[75%] break-words relative ${
+                          isStreaming && index === messages.length - 1 && message.content !== "" ? 'streaming-text' : 'message-appear'
+                        }`}
+                        style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
+                      >
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
@@ -317,9 +401,9 @@ export default function ChatbotPill() {
               })}
 
               {isLoading && !isStreaming && (
-                <div className="flex justify-start animate-in fade-in duration-300">
-                  <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5">
-                    <div className="flex items-center space-x-1">
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 max-w-[85%] sm:max-w-[75%] message-appear">
+                    <div className="flex items-center space-x-1.5">
                       <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" />
                       <span
                         className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"
@@ -340,7 +424,9 @@ export default function ChatbotPill() {
 
           {/* Input Area */}
           <div 
-            className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md pt-3 sm:pt-4"
+            className={`absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md pt-3 sm:pt-4 ${
+              isClosing ? 'exit-bottom' : 'animate-in slide-in-from-bottom-2 fade-in duration-600 delay-100 ease-out'
+            }`}
             style={{ 
               paddingBottom: 'max(1rem, env(safe-area-inset-bottom))'
             }}
