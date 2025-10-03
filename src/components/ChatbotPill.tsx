@@ -595,7 +595,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       const userMessage = textToSend;
       setInputValue("");
       setError(null);
-      setInputContext(""); // Clear context when sending message
+      setInputContext("");
       
       // Reset textarea height
       if (textareaRef.current) {
@@ -833,28 +833,21 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   };
 
   const handleToolkitClick = (toolkitText: string) => {
-    setInputValue(toolkitText);
-    
-    // Set context info based on the toolkit button clicked
-    if (toolkitText === "Do contrarian discovery for") {
-      setInputContext("Discover hidden opportunities that the market is overlooking or undervaluing");
-    } else if (toolkitText === "Find fear opportunities of") {
-      setInputContext("Identify investment opportunities where fear and panic have created attractive entry points");
-    } else {
-      setInputContext("");
+    if (toolkitText === "Do contrarian discovery for " || toolkitText === "Do contrarian discovery for ") {
+      setInputContext("Type a company, asset, or commodity to discover hidden opportunities");
+      setInputValue("Do contrarian discovery for ");
+    } else if (toolkitText === "Find fear opportunities of " || toolkitText === "Find fear opportunities of ") {
+      setInputContext("Type a company, sector, or market to find fear-driven opportunities");
+      setInputValue("Find fear opportunities of ");
     }
     
-    // Focus on the input box
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
-        // Position cursor at the end of the text
         const length = textareaRef.current.value.length;
         textareaRef.current.setSelectionRange(length, length);
       }
     }, 100);
-    
-    // Don't auto-send, let user continue typing
   };
 
   return (
@@ -1166,20 +1159,20 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   {message.role === "assistant" && message.suggestions && message.suggestions.length > 0 && (
                     <div className="flex justify-start mt-4">
                       <div className="max-w-[85%] sm:max-w-[75%] flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-1 duration-300 delay-200">
-                        <button
-                          onClick={() => handleToolkitClick("Do contrarian discovery for ")}
-                          disabled={isLoading || isStreaming}
-                          className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm"
-                        >
-                          <span className="line-clamp-1">🔍 Do contrarian discovery</span>
-                        </button>
-                        <button
-                          onClick={() => handleToolkitClick("Find fear opportunities of ")}
-                          disabled={isLoading || isStreaming}
-                          className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm"
-                        >
-                          <span className="line-clamp-1">⚡ Find fear opportunities</span>
-                        </button>
+                         <button
+                           onClick={() => handleToolkitClick("Do contrarian discovery for ")}
+                           disabled={isLoading || isStreaming}
+                           className="px-2 py-1 rounded-full text-xs transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm"
+                         >
+                           <span className="line-clamp-1">🔍 Do contrarian discovery</span>
+                         </button>
+                         <button
+                           onClick={() => handleToolkitClick("Find fear opportunities of ")}
+                           disabled={isLoading || isStreaming}
+                           className="px-2 py-1 rounded-full text-xs transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm"
+                         >
+                           <span className="line-clamp-1">⚡ Find fear opportunities</span>
+                         </button>
                       </div>
                     </div>
                   )}
@@ -1243,30 +1236,79 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
               )}
               
               
+              
               <div className="flex items-end gap-2 sm:gap-2.5 bg-white border border-gray-300 rounded-[1.625em] p-2 sm:p-2.5">
-                <textarea
-                  ref={textareaRef}
-                  value={inputValue}
-                  onChange={(e) => {
-                    setInputValue(e.target.value);
-                    
-                    // Only clear context if template text is deleted or incomplete
-                    const currentValue = e.target.value;
-                    const hasContrarianTemplate = currentValue.includes("Do contrarian discovery for");
-                    const hasFearTemplate = currentValue.includes("Find fear opportunities of");
-                    
-                    // Clear context only if neither complete template is present
-                    if (inputContext && !hasContrarianTemplate && !hasFearTemplate) {
-                      setInputContext("");
-                    }
-                  }}
-                  onKeyDown={handleKeyPress}
-                  placeholder="Message Snobol AI..."
-                  rows={1}
-                  disabled={isLoading || isStreaming}
-                  className="flex-1 px-2.5 py-2 sm:px-3 sm:py-2 bg-transparent resize-none focus:outline-none text-[14px] sm:text-sm leading-relaxed disabled:opacity-50 overflow-y-auto"
-                  style={{ minHeight: "40px", maxHeight: "120px" }}
-                />
+                <div className="flex-1 relative">
+                   <textarea
+                     ref={textareaRef}
+                     value={inputValue}
+                     onChange={(e) => {
+                       setInputValue(e.target.value);
+                       
+                       const currentValue = e.target.value;
+                       
+                       // Show context when user types the template text
+                       if (currentValue.includes("Do contrarian discovery for ") || currentValue.includes("Do contrarian discovery for")) {
+                         setInputContext("Type a company, stock ticker, asset, or any market commodity to discover hidden opportunities");
+                       } else if (currentValue.includes("Find fear opportunities of ") || currentValue.includes("Find fear opportunities of")) {
+                         setInputContext("Type a company, sector, or market to find fear-driven opportunities");
+                       } else if (currentValue.includes("Do contrarian discovery")) {
+                         setInputContext("Type a company, stock ticker, asset, or any market commodity to discover hidden opportunities");
+                       } else if (currentValue.includes("Find fear opportunities")) {
+                         setInputContext("Type a company, sector, or market to find fear-driven opportunities");
+                       } else if (!currentValue.includes("Do contrarian discovery") && !currentValue.includes("Find fear opportunities")) {
+                         setInputContext("");
+                       }
+                     }}
+                     onKeyDown={handleKeyPress}
+                     placeholder="Message Snobol AI..."
+                     rows={1}
+                     disabled={isLoading || isStreaming}
+                     className={`w-full py-2 sm:py-2 bg-transparent resize-none focus:outline-none text-[14px] sm:text-sm leading-relaxed disabled:opacity-50 overflow-y-auto relative z-10 ${
+                       (inputValue.includes("Do contrarian discovery for ") || inputValue.includes("Do contrarian discovery for ") ||
+                        inputValue.includes("Find fear opportunities of ") || inputValue.includes("Find fear opportunities of "))
+                       ? 'pl-2 pr-2.5 sm:pl-5 sm:pr-3' : 'px-2.5 sm:px-3'
+                     }`}
+                     style={{ minHeight: "40px", maxHeight: "120px" }}
+                   />
+                  
+                   {/* Text highlighter overlay */}
+                   {inputValue && (
+                     <div className="absolute inset-0 pointer-events-none z-20 px-2.5 py-2 sm:px-3 sm:py-2 text-[14px] sm:text-sm leading-relaxed whitespace-pre-wrap overflow-hidden" style={{ marginLeft: '-6px' }}>
+                      {(() => {
+                        // Highlight "Do contrarian discovery for " (with space)
+                        if (inputValue.includes("Do contrarian discovery for ")) {
+                          const before = inputValue.substring(0, inputValue.indexOf("Do contrarian discovery for "));
+                          const highlight = "Do contrarian discovery for";
+                          const after = inputValue.substring(inputValue.indexOf("Do contrarian discovery for ") + highlight.length);
+                          return (
+                            <>
+                              <span className="text-transparent">{before}</span>
+                               <span className="bg-gray-200 rounded px-1.5 py-1 text-gray-800">{highlight}</span>
+                              <span className="text-transparent">{after}</span>
+                            </>
+                          );
+                        }
+                        
+                        // Highlight "Find fear opportunities of " (with space)
+                        if (inputValue.includes("Find fear opportunities of ")) {
+                          const before = inputValue.substring(0, inputValue.indexOf("Find fear opportunities of "));
+                          const highlight = "Find fear opportunities of";
+                          const after = inputValue.substring(inputValue.indexOf("Find fear opportunities of ") + highlight.length);
+                          return (
+                            <>
+                              <span className="text-transparent">{before}</span>
+                               <span className="bg-gray-200 rounded px-2 py-1 text-gray-800">{highlight}</span>
+                              <span className="text-transparent">{after}</span>
+                            </>
+                          );
+                        }
+                        
+                        return <span className="text-transparent">{inputValue}</span>;
+                      })()}
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => handleSendMessage()}
                   disabled={!inputValue.trim() || isLoading || isStreaming}
