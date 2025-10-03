@@ -1331,7 +1331,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
-                              <span className="bg-gray-200 rounded pl-1.5 pr-1.95 py-1 text-gray-800">{highlight}</span>
+                              <span className="bg-gray-200 rounded pl-1.5 pr-2 py-1 text-gray-800">{highlight}</span>
                               <span className="text-transparent">{after}</span>
                             </>
                           );
