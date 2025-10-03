@@ -1472,23 +1472,25 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                        
                        const currentValue = e.target.value;
                        
-                       // Show context when user types the template text
-                       if (currentValue.includes("Do contrarian discovery for ") || currentValue.includes("Do contrarian discovery for")) {
+                       // Show context when user types the template text (case insensitive)
+                       const lowerValue = currentValue.toLowerCase();
+                       
+                       if (lowerValue.includes("do contrarian discovery for ") || lowerValue.includes("do contrarian discovery for")) {
                          setInputContext("Type a company, stock ticker, asset, or any market commodity to discover hidden opportunities");
 
-                       } else if (currentValue.includes("Find fear opportunities of ") || currentValue.includes("Find fear opportunities of")) {
+                       } else if (lowerValue.includes("find fear opportunities of ") || lowerValue.includes("find fear opportunities of")) {
                          setInputContext("Type a company, sector, or market to find fear-driven opportunities");
 
-                       } else if (currentValue.includes("Analyze ") || currentValue.includes("Analyze")) {
+                       } else if (lowerValue.includes("analyze ") || lowerValue.includes("analyze")) {
                          setInputContext("Type a company, stock ticker, asset, or any market commodity to analyze");
 
-                       } else if (currentValue.includes("Do contrarian discovery")) {
+                       } else if (lowerValue.includes("do contrarian discovery")) {
                          setInputContext("Type a company, stock ticker, asset, or any market commodity to discover hidden opportunities");
 
-                       } else if (currentValue.includes("Find fear opportunities")) {
+                       } else if (lowerValue.includes("find fear opportunities")) {
                          setInputContext("Type a company, sector, or market to find fear-driven opportunities");
 
-                       } else if (!currentValue.includes("Do contrarian discovery") && !currentValue.includes("Find fear opportunities")) {
+                       } else if (!lowerValue.includes("do contrarian discovery") && !lowerValue.includes("find fear opportunities")) {
                          setInputContext("");
                        }
                      }}
@@ -1509,10 +1511,12 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                      rows={1}
                      disabled={isLoading || isStreaming}
                      className={`w-full py-2 sm:py-2 bg-transparent resize-none focus:outline-none text-[14px] sm:text-sm leading-relaxed disabled:opacity-50 overflow-y-auto relative z-10 touch-manipulation ${
-                       (inputValue.includes("Do contrarian discovery for ") || inputValue.includes("Do contrarian discovery for ") ||   
-                        inputValue.includes("Find fear opportunities of ") || inputValue.includes("Find fear opportunities of ") || 
-                        inputValue.includes("Analyze ") || inputValue.includes("Analyze ")
-                        )
+                       (() => {
+                         const lowerValue = inputValue.toLowerCase();
+                         return lowerValue.includes("do contrarian discovery for ") || lowerValue.includes("do contrarian discovery for") ||   
+                                lowerValue.includes("find fear opportunities of ") || lowerValue.includes("find fear opportunities of") || 
+                                lowerValue.includes("analyze ") || lowerValue.includes("analyze");
+                       })()
                        ? 'pl-4 pr-2.5 md:pl-5 md:pr-3' : 'px-2.5 sm:px-3'
                      }`}
                      style={{ 
@@ -1532,11 +1536,14 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                    {inputValue && (
                      <div className="absolute inset-0 pointer-events-none z-20 px-2.5 py-2 sm:px-3 sm:py-2 text-[14px] sm:text-sm leading-relaxed whitespace-pre-wrap overflow-hidden" style={{ marginLeft: '-6px' }}>
                       {(() => {
-                        // Highlight "Do contrarian discovery for " (with space)
-                        if (inputValue.includes("Do contrarian discovery for ")) {
-                          const before = inputValue.substring(0, inputValue.indexOf("Do contrarian discovery for "));
-                          const highlight = "Do contrarian discovery for";
-                          const after = inputValue.substring(inputValue.indexOf("Do contrarian discovery for ") + highlight.length);
+                        const lowerValue = inputValue.toLowerCase();
+                        
+                        // Highlight "Do contrarian discovery for " (case insensitive)
+                        if (lowerValue.includes("do contrarian discovery for ")) {
+                          const index = lowerValue.indexOf("do contrarian discovery for ");
+                          const before = inputValue.substring(0, index);
+                          const highlight = inputValue.substring(index, index + "do contrarian discovery for".length);
+                          const after = inputValue.substring(index + "do contrarian discovery for".length);
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
@@ -1546,11 +1553,12 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           );
                         }
                         
-                        // Highlight "Find fear opportunities of " (with space)
-                        if (inputValue.includes("Find fear opportunities of ")) {
-                          const before = inputValue.substring(0, inputValue.indexOf("Find fear opportunities of "));
-                          const highlight = "Find fear opportunities of";
-                          const after = inputValue.substring(inputValue.indexOf("Find fear opportunities of ") + highlight.length);
+                        // Highlight "Find fear opportunities of " (case insensitive)
+                        if (lowerValue.includes("find fear opportunities of ")) {
+                          const index = lowerValue.indexOf("find fear opportunities of ");
+                          const before = inputValue.substring(0, index);
+                          const highlight = inputValue.substring(index, index + "find fear opportunities of".length);
+                          const after = inputValue.substring(index + "find fear opportunities of".length);
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
@@ -1560,11 +1568,12 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           );
                         }
 
-                        // Highlight "Analyze " (with space)
-                        if (inputValue.includes("Analyze ")) {
-                          const before = inputValue.substring(0, inputValue.indexOf("Analyze "));
-                          const highlight = "Analyze";
-                          const after = inputValue.substring(inputValue.indexOf("Analyze ") + highlight.length);
+                        // Highlight "Analyze " (case insensitive)
+                        if (lowerValue.includes("analyze ")) {
+                          const index = lowerValue.indexOf("analyze ");
+                          const before = inputValue.substring(0, index);
+                          const highlight = inputValue.substring(index, index + "analyze".length);
+                          const after = inputValue.substring(index + "analyze".length);
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
@@ -1598,7 +1607,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   aria-label={isLoading || isStreaming ? "Stop streaming" : "Send message"}
                 >
                   {isLoading || isStreaming ? (
-                    <Square className="w-2 h-2 sm:w-2 sm:h-2 bg-white rounded-2xs" />
+                    <Square className="w-4 h-4 sm:w-2 sm:h-2 bg-white rounded-2xs" />
                   ) : (
                     <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
