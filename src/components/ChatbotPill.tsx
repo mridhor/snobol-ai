@@ -853,6 +853,9 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         
         // Generate suggestions with AI priority
         if (accumulatedContent) {
+          // Clean the content before generating suggestions
+          const { cleanContent } = extractChartData(accumulatedContent);
+          
           // Show loading state for suggestions
           setMessages(prev => {
             const updated = [...prev];
@@ -865,7 +868,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           });
 
           // Try AI suggestions first, fallback only if AI fails
-          generateAISuggestions(userMessage, accumulatedContent)
+          generateAISuggestions(userMessage, cleanContent)
             .then((aiSuggestions) => {
               // AI suggestions succeeded - use them
               setMessages(prev => {
@@ -881,7 +884,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
             .catch((error) => {
               console.error("AI suggestions failed, using fallback:", error);
               // AI suggestions failed - use fallback
-              const fallbackSuggestions = getFallbackSuggestions(userMessage, accumulatedContent);
+              const fallbackSuggestions = getFallbackSuggestions(userMessage, cleanContent);
               setMessages(prev => {
                 const updated = [...prev];
                 updated[updated.length - 1] = {
@@ -1134,7 +1137,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <button
             onClick={() => setIsOpen(true)}
-            className="group flex items-center gap-2 sm:gap-2.5 bg-white hover:bg-gray-900 text-white pl-3 pr-4 sm:pl-4 sm:pr-5 py-2.5 sm:py-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl border border-gray-200"
+            className="group flex items-center gap-2 sm:gap-2.5 bg-white hover:bg-gray-900 text-white pl-3 pr-4 sm:pl-4 sm:pr-5 py-2.5 sm:py-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl border border-gray-200 cursor-pointer"
             aria-label="Open chat"
           >
             <MessageCircle className="w-5 h-5 text-black group-hover:text-white transition-colors" />
@@ -1164,7 +1167,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
               </div>
               <button
                 onClick={handleClose}
-                className="text-gray-400 hover:text-gray-600 p-1 sm:p-1.5 rounded-full hover:bg-gray-100 transition-colors -mr-1"
+                className="text-gray-400 hover:text-gray-600 p-1 sm:p-1.5 rounded-full hover:bg-gray-100 transition-colors -mr-1 cursor-pointer"
                 aria-label="Close chat"
               >
                 <X className="w-5 h-5 sm:w-6 sm:h-6" />
@@ -1334,8 +1337,8 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                     </div>
                   )}
 
-                  {/* Toolkit Pills Below Every 3 Suggestions */}
-                  {message.role === "assistant" && message.suggestions && message.suggestions.length > 0 && (
+                  {/* Toolkit Pills Below Every 3 Suggestions - Only show on latest message */}
+                  {message.role === "assistant" && message.suggestions && message.suggestions.length > 0 && index === messages.length - 1 && (
                     <div className="flex justify-start mt-4">
                       <div className="max-w-[85%] sm:max-w-[75%] flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-1 duration-300 delay-200">
                          <button
@@ -1523,13 +1526,13 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   disabled={!isLoading && !isStreaming && !inputValue.trim()}
                   className={`flex-shrink-0 p-2 sm:p-2.5 rounded-full transition-colors self-end ${
                     isLoading || isStreaming 
-                      ? "bg-black text-white hover:bg-gray-900" 
+                      ? "bg-black text-white hover:bg-gray-900 cursor-pointer" 
                       : "bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed"
                   }`}
                   aria-label={isLoading || isStreaming ? "Stop streaming" : "Send message"}
                 >
                   {isLoading || isStreaming ? (
-                    <Square className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Square className="w-3 h-3 sm:w-3 sm:h-3 bg-white rounded-2xs" />
                   ) : (
                     <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}

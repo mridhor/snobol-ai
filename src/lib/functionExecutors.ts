@@ -611,93 +611,58 @@ function getPriceSymbol(assetType: string, exchange: string): string {
 
 
 /**
- * Get real-time price data using a free API
+ * Get real-time price data using server-side API to avoid CORS issues
  */
 async function getRealTimePriceData(symbol: string): Promise<string> {
   const upper = String(symbol || '').toUpperCase();
   
   try {
-    // Try multiple free APIs for real-time data
-    const apis = [
-      // Alpha Vantage (free tier)
-      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${upper}&apikey=demo`,
-      // Yahoo Finance alternative
-      `https://query1.finance.yahoo.com/v8/finance/chart/${upper}?interval=1d&range=1d`,
-      // IEX Cloud (free tier)
-      `https://cloud.iexapis.com/stable/stock/${upper}/quote?token=pk_test_123`
-    ];
+    // Use our server-side API to avoid CORS issues
+    const response = await fetch(`/api/stock-price?symbol=${upper}`);
     
-    for (const apiUrl of apis) {
-      try {
-        const response = await fetch(apiUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        });
-        
-        if (!response.ok) continue;
-        
-        const data = await response.json();
-        
-        // Parse Alpha Vantage format
-        if (data['Global Quote']) {
-          const quote = data['Global Quote'];
-          const price = quote['05. price'];
-          const change = quote['09. change'];
-          const changePercent = quote['10. change percent'];
-          
-          if (price && change !== undefined && changePercent) {
-            const changeValue = parseFloat(change);
-            const isPositive = changeValue >= 0;
-            const changeSign = isPositive ? '+' : '';
-            
-            return `**Price:** ${price} USD
-**Change:** ${changeSign}${changeValue.toFixed(2)} (${changeSign}${parseFloat(changePercent.replace('%', '')).toFixed(2)}%)
-**Status:** ${isPositive ? '📈 Up' : '📉 Down'}`;
-          }
-        }
-        
-        // Parse Yahoo Finance format
-        if (data.chart && data.chart.result && data.chart.result[0]) {
-          const result = data.chart.result[0];
-          const meta = result.meta;
-          const currentPrice = meta.regularMarketPrice;
-          const previousClose = meta.previousClose;
-          
-          if (currentPrice && previousClose) {
-            const change = currentPrice - previousClose;
-            const changePercent = (change / previousClose) * 100;
-            const isPositive = change >= 0;
-            const changeSign = isPositive ? '+' : '';
-            
-            return `**Price:** ${currentPrice.toFixed(2)} USD
-**Change:** ${changeSign}${change.toFixed(2)} (${changeSign}${changePercent.toFixed(2)}%)
-**Status:** ${isPositive ? '📈 Up' : '📉 Down'}`;
-          }
-        }
-        
-      } catch (apiError) {
-        console.log(`API ${apiUrl} failed:`, apiError);
-        continue;
+    if (response.ok) {
+      const data = await response.json();
+      
+      if (data.price) {
+        return `**Price:** ${data.price} USD
+**Change:** ${data.change} (${data.changePercent})
+**Status:** ${data.status}
+
+*Market's always moving - that's what makes it interesting!*`;
       }
     }
     
-    // If all APIs fail, try a simple web search approach
-    const summary = await generateWebSearchAnalysis(`${upper} current stock price today`, upper);
-    
-    // Extract price information from the AI response
-    const priceMatch = summary.match(/(\$?\d+\.?\d*)/g);
-    if (priceMatch && priceMatch.length > 0) {
-      const price = priceMatch[0];
-      return `**Price:** ${price} USD
-**Note:** Price data from AI analysis - for real-time data, check the chart below`;
+    // If server-side API fails, try AI analysis as fallback
+    try {
+      const summary = await generateWebSearchAnalysis(`${upper} current stock price today`, upper);
+      
+      // Extract price information from the AI response
+      // Look for complete price patterns like $150.25, 150.25, etc.
+      const priceMatch = summary.match(/\$?(\d+\.\d{2,4})/g);
+      if (priceMatch && priceMatch.length > 0) {
+        const price = priceMatch[0].replace('$', ''); // Remove dollar sign if present
+        return `**Price:** ${price} USD
+**Note:** Price data from AI analysis - for real-time data, check the chart below
+
+*Sometimes the AI knows what's up!*`;
+      }
+    } catch (aiError) {
+      console.log('AI price extraction failed:', aiError);
     }
     
-    throw new Error('No price data available');
+    // If no price found in AI response, return a better fallback
+    return `**Price:** Data unavailable
+**Note:** Real-time price data temporarily unavailable - check the chart below for current pricing
+
+*Even the best systems need a coffee break sometimes!*`;
     
   } catch (error) {
     console.error('Real-time price data error:', error);
-    throw error;
+    // Return a better error message instead of throwing
+    return `**Price:** Data unavailable
+**Note:** Real-time price data temporarily unavailable - check the chart below for current pricing
+
+*Even the best systems need a coffee break sometimes!*`;
   }
 }
 
