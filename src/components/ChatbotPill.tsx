@@ -450,11 +450,24 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     };
   }, [isOpen]);
   // Auto scroll to bottom when new messages arrive or loading state changes
+  // BUT disable auto-scroll for stock analysis cases
   useEffect(() => {
-    // Use setTimeout to ensure DOM has updated
-    setTimeout(() => {
-      scrollToBottom("smooth");
-    }, 50);
+    // Check if the latest message is a stock analysis
+    const latestMessage = messages[messages.length - 1];
+    const isStockAnalysis = latestMessage && 
+      latestMessage.role === "assistant" && 
+      latestMessage.content && 
+      (latestMessage.content.includes("stock") || 
+       latestMessage.content.includes("analysis") ||
+       latestMessage.content.includes("Company Deep Dive") ||
+       latestMessage.chartData);
+    
+    // Only auto-scroll if it's NOT a stock analysis
+    if (!isStockAnalysis) {
+      setTimeout(() => {
+        scrollToBottom("smooth");
+      }, 50);
+    }
   }, [messages, isLoading]);
 
   // Ensure scroll to bottom when loading state changes (Thinking... message appears)
@@ -468,15 +481,29 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   }, [isLoading]);
 
   // Keep scrolling during streaming to follow the response
+  // BUT disable for stock analysis cases
   useEffect(() => {
     if (isStreaming) {
-      // Scroll immediately
-      scrollToBottom("instant");
+      // Check if current streaming is for stock analysis
+      const latestMessage = messages[messages.length - 1];
+      const isStockAnalysis = latestMessage && 
+        latestMessage.role === "assistant" && 
+        latestMessage.content && 
+        (latestMessage.content.includes("stock") || 
+         latestMessage.content.includes("analysis") ||
+         latestMessage.content.includes("Company Deep Dive") ||
+         latestMessage.chartData);
       
-      // Continue scrolling at intervals during streaming
-      const scrollInterval = setInterval(() => scrollToBottom("instant"), 100);
-      
-      return () => clearInterval(scrollInterval);
+      // Only auto-scroll if it's NOT a stock analysis
+      if (!isStockAnalysis) {
+        // Scroll immediately
+        scrollToBottom("instant");
+        
+        // Continue scrolling at intervals during streaming
+        const scrollInterval = setInterval(() => scrollToBottom("instant"), 100);
+        
+        return () => clearInterval(scrollInterval);
+      }
     }
   }, [isStreaming, messages]);
 
@@ -1031,16 +1058,16 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           {message.content}
                         </ReactMarkdown>
                         
+                        {/* Render TradingView chart RIGHT AFTER the main analysis text for stock analysis */}
+                        {message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol && (
+                          <div className="w-full mt-4 message-appear" style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}>
+                            <TradingViewWidget symbol={message.chartData.symbol} height={420} />
+                          </div>
+                        )}
+                        
                       </div>
                     )}
                   </div>
-                  
-                  {/* Render TradingView chart BELOW the message bubble if present */}
-                  {message.role === "assistant" && message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol && (
-                    <div className="w-full mt-3 message-appear" style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}>
-                      <TradingViewWidget symbol={message.chartData.symbol} height={420} />
-                    </div>
-                  )}
                   
                   {/* Suggestion Pills Below Message */}
                   {message.role === "assistant" && message.suggestions && message.suggestions.length > 0 && (
