@@ -1599,7 +1599,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                     e.stopPropagation();
                   }}
                   disabled={!isLoading && !isStreaming && !inputValue.trim()}
-                  className={`flex-shrink-0 p-2 sm:p-2.5 rounded-full transition-colors self-end z-30 touch-manipulation ${
+                  className={`flex p-2 sm:p-2.5 rounded-full transition-colors self-end z-30 touch-manipulation ${
                     isLoading || isStreaming 
                       ? "bg-black text-white hover:bg-gray-900 cursor-pointer" 
                       : "bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed"
@@ -1607,7 +1607,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   aria-label={isLoading || isStreaming ? "Stop streaming" : "Send message"}
                 >
                   {isLoading || isStreaming ? (
-                    <Square className="w-4 h-4 sm:w-2 sm:h-2 bg-white rounded-2xs" />
+                    <Square className="w-2 h-2 sm:w-2 sm:h-2 bg-white rounded-2xs" />
                   ) : (
                     <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
