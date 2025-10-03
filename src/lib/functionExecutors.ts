@@ -676,33 +676,69 @@ async function getChartDataForSymbol(symbol: string): Promise<string> {
     })}[/CHART_DATA]`;
   }
   
-  // For stocks: existing logic
-  function guessExchangeForSymbol(sym: string): string {
-    const nasdaqLikely = ['AAPL','MSFT','GOOGL','AMZN','NVDA','META','TSLA','AMD','INTC','ADBE','NFLX'];
-    if (nasdaqLikely.includes(sym)) return 'NASDAQ';
-    return 'NYSE';
-  }
-
-  let fullSymbol = `${guessExchangeForSymbol(upper)}:${upper}`;
+  // Generic approach: Let TradingView API determine the exchange and asset type
+  let fullSymbol = upper; // Start with just the symbol
   let companyName = upper;
-  let assetType = 'Stock';
+  let assetType = 'Stock'; // Default fallback
   let priceSymbol = '$';
 
   try {
+    // Try TradingView search with multiple strategies
     const searchUrl = `https://symbol-search.tradingview.com/symbol_search/?text=${upper}&exchange=&lang=en&search_type=undefined&domain=production&sort_by_country=`;
     const res = await fetch(searchUrl);
     const searchData = await res.json();
+    
     if (Array.isArray(searchData) && searchData.length > 0) {
-      const info = searchData[0];
+      // Find the best match - prioritize exact symbol matches and popular exchanges
+      let bestMatch = searchData[0];
+      
+      // Look for exact symbol match first
+      const exactMatch = searchData.find(item => 
+        item.symbol?.toUpperCase() === upper
+      );
+      if (exactMatch) {
+        bestMatch = exactMatch;
+      }
+      
+      // If no exact match, look for popular exchanges (more likely to have data)
+      if (!exactMatch) {
+        const popularExchanges = ['NYSE', 'NASDAQ', 'AMEX', 'LSE', 'TSE', 'HKEX', 'SSE'];
+        const popularMatch = searchData.find(item => 
+          popularExchanges.includes(item.exchange?.toUpperCase())
+        );
+        if (popularMatch) {
+          bestMatch = popularMatch;
+        }
+      }
+      
+      const info = bestMatch;
       const tradingViewSymbol = info.symbol;
       const exchange = info.exchange;
+      
       companyName = info.description || tradingViewSymbol || upper;
-      fullSymbol = `${exchange}:${tradingViewSymbol}`;
+      
+      // Use exchange if available, otherwise try to infer from context
+      if (exchange && exchange.trim()) {
+        fullSymbol = `${exchange}:${tradingViewSymbol}`;
+      } else {
+        // Generic fallback without hardcoded assumptions
+        fullSymbol = tradingViewSymbol || upper;
+      }
+      
       assetType = getAssetType(info);
-      priceSymbol = getPriceSymbol(assetType, exchange);
+      priceSymbol = getPriceSymbol(assetType, exchange || '');
+    } else {
+      // No results from TradingView - use generic fallback
+      fullSymbol = upper;
+      companyName = `${upper} Asset`;
     }
-  } catch {
-    // If search fails, we still proceed with guessed fullSymbol
+  } catch (error) {
+    // If search fails completely, use a generic fallback
+    console.warn(`TradingView search failed for ${upper}:`, error);
+    fullSymbol = upper;
+    companyName = `${upper} Asset`;
+    assetType = 'Stock';
+    priceSymbol = '$';
   }
 
   return `[CHART_DATA]${JSON.stringify({

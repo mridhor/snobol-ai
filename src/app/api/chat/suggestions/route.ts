@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
           content: `User: "${userMessage}"\nAI: "${assistantMessage}"\nGenerate 3 follow-up questions:` 
         }
       ],
-      temperature: 0.7, // Lower temperature for faster, more focused responses
-      max_completion_tokens: 150, // Reduced tokens for faster generation
+      temperature: 0.5, // Even lower temperature for faster, more focused responses
+      max_completion_tokens: 100, // Further reduced tokens for faster generation
     });
 
     // Reduced logging for performance
