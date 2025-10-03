@@ -11,12 +11,213 @@ function getOpenAIClient() {
 }
 
 /**
+ * Detect language from text input
+ */
+function detectLanguage(text: string): string {
+  const lowerText = text.toLowerCase();
+  
+  // Spanish
+  if (/[ñáéíóúü]/.test(text) || /\b(es|español|spanish|hola|como|que|donde|cuando|porque|muy|más|pero|también|aunque|desde|hasta|sobre|bajo|entre|durante|después|antes|siempre|nunca|ahora|aquí|allí|este|esta|ese|esa|aquel|aquella|mis|tus|sus|nuestro|nuestra|vuestro|vuestra|con|sin|para|por|de|en|a|la|el|los|las|un|una|uno|unas|unos|y|o|pero|sí|no|muy|mucho|poco|todo|nada|algo|alguien|nadie|alguno|ninguno|otro|mismo|todo|nada|más|menos|mejor|peor|mayor|menor|primero|último|nuevo|viejo|joven|grande|pequeño|alto|bajo|largo|corto|ancho|estrecho|gordo|delgado|fuerte|débil|rápido|lento|fácil|difícil|bueno|malo|bonito|feo|limpio|sucio|rico|pobre|feliz|triste|contento|enojado|caliente|frío|nuevo|viejo|joven|mayor|menor|primero|último|mejor|peor|más|menos|mucho|poco|todo|nada|algo|alguien|nadie|alguno|ninguno|otro|mismo)\b/.test(lowerText)) {
+    return 'Spanish';
+  }
+  
+  // French
+  if (/[àâäéèêëïîôöùûüÿç]/.test(text) || /\b(fr|français|french|bonjour|salut|comment|que|où|quand|pourquoi|très|plus|mais|aussi|bien|encore|depuis|jusqu|sur|sous|entre|pendant|après|avant|toujours|jamais|maintenant|ici|là|ce|cette|ces|mon|ma|mes|ton|ta|tes|son|sa|ses|notre|nos|votre|vos|leur|leurs|avec|sans|pour|par|de|en|à|le|la|les|un|une|des|et|ou|mais|oui|non|très|beaucoup|peu|tout|rien|quelque|quelqu|personne|aucun|autre|même|tout|rien|plus|moins|mieux|pire|plus|moins|premier|dernier|nouveau|vieux|jeune|grand|petit|haut|bas|long|court|large|étroit|gros|mince|fort|faible|rapide|lent|facile|difficile|bon|mauvais|beau|laid|propre|sale|riche|pauvre|heureux|triste|content|fâché|chaud|froid|nouveau|vieux|jeune|grand|petit|premier|dernier|mieux|pire|plus|moins|beaucoup|peu|tout|rien|quelque|quelqu|personne|aucun|autre|même)\b/.test(lowerText)) {
+    return 'French';
+  }
+  
+  // German
+  if (/[äöüß]/.test(text) || /\b(de|deutsch|german|hallo|wie|was|wo|wann|warum|sehr|mehr|aber|auch|gut|noch|seit|bis|über|unter|zwischen|während|nach|vor|immer|nie|jetzt|hier|dort|dieser|diese|dieses|mein|dein|sein|ihr|unser|euer|mit|ohne|für|von|in|an|der|die|das|ein|eine|einen|und|oder|aber|ja|nein|sehr|viel|wenig|alles|nichts|etwas|jemand|niemand|irgend|kein|ander|selbst|alles|nichts|mehr|weniger|besser|schlechter|größer|kleiner|erster|letzter|neu|alt|jung|groß|klein|hoch|niedrig|lang|kurz|breit|schmal|dick|dünn|stark|schwach|schnell|langsam|einfach|schwer|gut|schlecht|schön|hässlich|sauber|schmutzig|reich|arm|glücklich|traurig|zufrieden|wütend|heiß|kalt|neu|alt|jung|groß|klein|erster|letzter|besser|schlechter|mehr|weniger|viel|wenig|alles|nichts|etwas|jemand|niemand|irgend|kein|ander|selbst)\b/.test(lowerText)) {
+    return 'German';
+  }
+  
+  // Italian
+  if (/[àèéìíîòóù]/.test(text) || /\b(it|italiano|italian|ciao|come|cosa|dove|quando|perché|molto|più|ma|anche|bene|ancora|da|fino|sopra|sotto|tra|durante|dopo|prima|sempre|mai|ora|qui|lì|questo|questa|mio|mia|tuo|tua|suo|sua|nostro|nostra|vostro|vostra|loro|con|senza|per|da|di|in|a|il|la|i|le|un|una|e|o|ma|sì|no|molto|molto|poco|tutto|niente|qualcosa|qualcuno|nessuno|alcuni|nessun|altro|stesso|tutto|niente|più|meno|meglio|peggio|più|meno|primo|ultimo|nuovo|vecchio|giovane|grande|piccolo|alto|basso|lungo|corto|largo|stretto|grasso|magro|forte|debole|veloce|lento|facile|difficile|buono|cattivo|bello|brutto|pulito|sporco|ricco|povero|felice|triste|contento|arrabbiato|caldo|freddo|nuovo|vecchio|giovane|grande|piccolo|primo|ultimo|meglio|peggio|più|meno|molto|poco|tutto|niente|qualcosa|qualcuno|nessuno|alcuni|nessun|altro|stesso)\b/.test(lowerText)) {
+    return 'Italian';
+  }
+  
+  // Portuguese
+  if (/[ãõçáéíóúâêô]/.test(text) || /\b(pt|português|portuguese|olá|como|o que|onde|quando|porquê|muito|mais|mas|também|bem|ainda|desde|até|sobre|sob|entre|durante|depois|antes|sempre|nunca|agora|aqui|ali|este|esta|meu|minha|teu|tua|seu|sua|nosso|nossa|vosso|vossa|deles|com|sem|para|por|de|em|a|o|a|os|as|um|uma|e|ou|mas|sim|não|muito|muito|pouco|tudo|nada|algo|alguém|ninguém|algum|nenhum|outro|mesmo|tudo|nada|mais|menos|melhor|pior|maior|menor|primeiro|último|novo|velho|jovem|grande|pequeno|alto|baixo|longo|curto|largo|estreito|gordo|magro|forte|fraco|rápido|lento|fácil|difícil|bom|mau|bonito|feio|limpo|sujo|rico|pobre|feliz|triste|contente|zangado|quente|frio|novo|velho|jovem|grande|pequeno|primeiro|último|melhor|pior|mais|menos|muito|pouco|tudo|nada|algo|alguém|ninguém|algum|nenhum|outro|mesmo)\b/.test(lowerText)) {
+    return 'Portuguese';
+  }
+  
+  // Dutch
+  if (/\b(nl|nederlands|dutch|hallo|hoe|wat|waar|wanneer|waarom|zeer|meer|maar|ook|goed|nog|sinds|tot|over|onder|tussen|tijdens|na|voor|altijd|nooit|nu|hier|daar|deze|mijn|jouw|zijn|haar|ons|jullie|hun|met|zonder|voor|van|in|op|de|het|een|en|of|maar|ja|nee|zeer|veel|weinig|alles|niets|iets|iemand|niemand|enige|geen|ander|zelf|alles|niets|meer|minder|beter|slechter|groter|kleiner|eerste|laatste|nieuw|oud|jong|groot|klein|hoog|laag|lang|kort|breed|smal|dik|dun|sterk|zwak|snel|langzaam|gemakkelijk|moeilijk|goed|slecht|mooi|lelijk|schoon|vuil|rijk|arm|gelukkig|verdrietig|tevreden|boos|heet|koud|nieuw|oud|jong|groot|klein|eerste|laatste|beter|slechter|meer|minder|veel|weinig|alles|niets|iets|iemand|niemand|enige|geen|ander|zelf)\b/.test(lowerText)) {
+    return 'Dutch';
+  }
+  
+  // Japanese
+  if (/[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]/.test(text) || /\b(jp|japanese|こんにちは|こんばんは|おはよう|さようなら|ありがとう|すみません|はい|いいえ|どう|何|どこ|いつ|なぜ|とても|もっと|でも|また|良い|まだ|から|まで|上|下|間|中|後|前|いつも|決して|今|ここ|そこ|これ|私|あなた|彼|彼女|私たち|あなたたち|彼ら|と|なし|のため|の|で|に|は|が|を|と|や|しかし|はい|いいえ|とても|たくさん|少し|すべて|何も|何か|誰か|誰も|いくつか|何も|他|同じ|すべて|何も|もっと|より少なく|より良い|より悪い|より大きい|より小さい|最初|最後|新しい|古い|若い|大きい|小さい|高い|低い|長い|短い|広い|狭い|太い|薄い|強い|弱い|速い|遅い|簡単|難しい|良い|悪い|美しい|醜い|清潔|汚い|豊か|貧しい|幸せ|悲しい|満足|怒っている|熱い|寒い|新しい|古い|若い|大きい|小さい|最初|最後|より良い|より悪い|もっと|より少なく|たくさん|少し|すべて|何も|何か|誰か|誰も|いくつか|何も|他|同じ)\b/.test(lowerText)) {
+    return 'Japanese';
+  }
+  
+  // Chinese
+  if (/[\u4e00-\u9fff]/.test(text) || /\b(cn|chinese|中文|你好|再见|谢谢|对不起|是的|不是|怎么|什么|哪里|什么时候|为什么|非常|更多|但是|也|好|还|从|到|上|下|之间|在|后|前|总是|从不|现在|这里|那里|这个|我的|你的|他的|她的|我们的|你们的|他们的|和|没有|为了|的|在|在|是|的|一|和|或|但是|是的|不是|非常|很多|很少|所有|没有|某事|某人|没有人|一些|没有|其他|相同|所有|没有|更多|更少|更好|更糟|更大|更小|第一|最后|新|旧|年轻|大|小|高|低|长|短|宽|窄|厚|薄|强|弱|快|慢|容易|困难|好|坏|美丽|丑陋|干净|脏|富有|贫穷|快乐|悲伤|满意|愤怒|热|冷|新|旧|年轻|大|小|第一|最后|更好|更糟|更多|更少|很多|很少|所有|没有|某事|某人|没有人|一些|没有|其他|相同)\b/.test(lowerText)) {
+    return 'Chinese';
+  }
+  
+  // Korean
+  if (/[\uac00-\ud7af]/.test(text) || /\b(kr|korean|안녕하세요|안녕히가세요|감사합니다|죄송합니다|네|아니요|어떻게|무엇|어디|언제|왜|매우|더|하지만|또한|좋은|아직|부터|까지|위|아래|사이|중|후|전|항상|절대|지금|여기|거기|이|나의|당신의|그의|그녀의|우리의|당신들의|그들의|와|없이|위해|의|에서|에|는|이|을|와|하지만|네|아니요|매우|많은|적은|모든|아무것도|무언가|누군가|아무도|일부|없음|다른|같은|모든|아무것도|더|덜|더 좋은|더 나쁜|더 큰|더 작은|첫 번째|마지막|새로운|오래된|젊은|큰|작은|높은|낮은|긴|짧은|넓은|좁은|두꺼운|얇은|강한|약한|빠른|느린|쉬운|어려운|좋은|나쁜|아름다운|못생긴|깨끗한|더러운|부유한|가난한|행복한|슬픈|만족한|화난|뜨거운|차가운|새로운|오래된|젊은|큰|작은|첫 번째|마지막|더 좋은|더 나쁜|더|덜|많은|적은|모든|아무것도|무언가|누군가|아무도|일부|없음|다른|같은)\b/.test(lowerText)) {
+    return 'Korean';
+  }
+  
+  // Russian
+  if (/[а-яё]/i.test(text) || /\b(ru|russian|русский|привет|до свидания|спасибо|извините|да|нет|как|что|где|когда|почему|очень|больше|но|также|хорошо|еще|с|до|над|под|между|во время|после|перед|всегда|никогда|сейчас|здесь|там|этот|мой|твой|его|её|наш|ваш|их|с|без|для|от|в|на|это|и|или|но|да|нет|очень|много|мало|все|ничего|что-то|кто-то|никто|некоторые|никакой|другой|тот же|все|ничего|больше|меньше|лучше|хуже|больше|меньше|первый|последний|новый|старый|молодой|большой|маленький|высокий|низкий|длинный|короткий|широкий|узкий|толстый|тонкий|сильный|слабый|быстрый|медленный|легкий|трудный|хороший|плохой|красивый|уродливый|чистый|грязный|богатый|бедный|счастливый|грустный|довольный|сердитый|горячий|холодный|новый|старый|молодой|большой|маленький|первый|последний|лучше|хуже|больше|меньше|много|мало|все|ничего|что-то|кто-то|никто|некоторые|никакой|другой|тот же)\b/.test(lowerText)) {
+    return 'Russian';
+  }
+  
+  // Arabic
+  if (/[\u0600-\u06ff]/.test(text) || /\b(ar|arabic|العربية|مرحبا|وداعا|شكرا|آسف|نعم|لا|كيف|ماذا|أين|متى|لماذا|جداً|أكثر|لكن|أيضاً|جيد|بعد|من|إلى|فوق|تحت|بين|أثناء|بعد|قبل|دائماً|أبداً|الآن|هنا|هناك|هذا|هذه|لي|لك|له|لها|لنا|لكم|لهم|مع|بدون|من أجل|من|في|على|هذا|و|أو|لكن|نعم|لا|جداً|كثير|قليل|كل شيء|لا شيء|شيء ما|شخص ما|لا أحد|بعض|لا شيء|آخر|نفس|كل شيء|لا شيء|أكثر|أقل|أفضل|أسوأ|أكبر|أصغر|أول|آخر|جديد|قديم|شاب|كبير|صغير|عالي|منخفض|طويل|قصير|واسع|ضيق|سميك|رقيق|قوي|ضعيف|سريع|بطيء|سهل|صعب|جيد|سيء|جميل|قبيح|نظيف|وسخ|غني|فقير|سعيد|حزين|راضي|غاضب|ساخن|بارد|جديد|قديم|شاب|كبير|صغير|أول|آخر|أفضل|أسوأ|أكثر|أقل|كثير|قليل|كل شيء|لا شيء|شيء ما|شخص ما|لا أحد|بعض|لا شيء|آخر|نفس)\b/.test(lowerText)) {
+    return 'Arabic';
+  }
+  
+  // Estonian
+  if (/[äöüõ]/.test(text) || /\b(et|eesti|estonian|tere|nägemist|aitäh|vabandust|jah|ei|kuidas|mis|kus|millal|miks|väga|rohkem|aga|ka|hea|veel|alates|kuni|üle|alla|vahel|ajal|pärast|enne|alati|mitte kunagi|nüüd|siin|seal|see|minu|sinu|tema|tema|meie|teie|nende|koos|ilma|jaoks|alates|sisse|peale|see|ja|või|aga|jah|ei|väga|palju|vähe|kõik|midagi|keegi|mitte keegi|mõned|mitte ükski|teine|sama|kõik|midagi|rohkem|vähem|parem|halb|suurem|väiksem|esimene|viimane|uus|vana|noor|suur|väike|kõrge|madal|pikk|lühike|lai|kitsas|paks|õhuke|tugev|nõrk|kiire|aeglane|lihtne|raske|hea|halb|ilus|inetu|puhas|must|rikas|vaene|õnnelik|kurb|rahul|vihane|kuum|külm|uus|vana|noor|suur|väike|esimene|viimane|parem|halb|rohkem|vähem|palju|vähe|kõik|midagi|keegi|mitte keegi|mõned|mitte ükski|teine|sama)\b/.test(lowerText)) {
+    return 'Estonian';
+  }
+  
+  // Default to English if no other language detected
+  return 'English';
+}
+
+/**
+ * Get fallback response in the detected language
+ */
+function getFallbackResponse(ticker: string, language: string): string {
+  const upper = ticker.toUpperCase();
+  
+  const responses: { [key: string]: string } = {
+    'Spanish': `**${upper} - Análisis Contrario** 📊
+
+El mercado siempre se mueve, pero esto es lo que importa:
+- El miedo crea oportunidades cuando otros entran en pánico
+- Los fundamentos de calidad no desaparecen de la noche a la mañana
+- El timing contrario vence al timing perfecto
+
+*Cuando todos están vendiendo, ahí es cuando miramos más de cerca.*`,
+    
+    'French': `**${upper} - Analyse Contrarienne** 📊
+
+Le marché bouge toujours, mais voici ce qui compte :
+- La peur crée des opportunités quand les autres paniquent
+- Les fondamentaux de qualité ne disparaissent pas du jour au lendemain
+- Le timing contrarien bat le timing parfait
+
+*Quand tout le monde vend, c'est là qu'on regarde de plus près.*`,
+    
+    'German': `**${upper} - Konträre Analyse** 📊
+
+Der Markt bewegt sich immer, aber das ist wichtig:
+- Angst schafft Chancen, wenn andere in Panik geraten
+- Qualitätsfundamente verschwinden nicht über Nacht
+- Konträres Timing schlägt perfektes Timing
+
+*Wenn alle verkaufen, dann schauen wir genauer hin.*`,
+    
+    'Italian': `**${upper} - Analisi Contraria** 📊
+
+Il mercato si muove sempre, ma questo conta:
+- La paura crea opportunità quando altri vanno nel panico
+- I fondamentali di qualità non scompaiono dall'oggi al domani
+- Il timing contrario batte il timing perfetto
+
+*Quando tutti vendono, è lì che guardiamo più da vicino.*`,
+    
+    'Portuguese': `**${upper} - Análise Contrária** 📊
+
+O mercado sempre se move, mas isso importa:
+- O medo cria oportunidades quando outros entram em pânico
+- Fundamentos de qualidade não desaparecem da noite para o dia
+- Timing contrário vence timing perfeito
+
+*Quando todos estão vendendo, é aí que olhamos mais de perto.*`,
+    
+    'Dutch': `**${upper} - Contrarian Analyse** 📊
+
+De markt beweegt altijd, maar dit telt:
+- Angst creëert kansen wanneer anderen in paniek raken
+- Kwaliteitsfundamenten verdwijnen niet van de ene op de andere dag
+- Contrarian timing verslaat perfect timing
+
+*Wanneer iedereen verkoopt, dan kijken we beter.*`,
+    
+    'Japanese': `**${upper} - 逆張り分析** 📊
+
+市場は常に動いていますが、重要なのは：
+- 恐怖は他者がパニックになったときに機会を作る
+- 質の高いファンダメンタルは一夜にして消えない
+- 逆張りのタイミングは完璧なタイミングを上回る
+
+*みんなが売っているときこそ、よく見てみよう。*`,
+    
+    'Chinese': `**${upper} - 逆向分析** 📊
+
+市场总是在变化，但重要的是：
+- 恐惧在他人恐慌时创造机会
+- 优质基本面不会一夜消失
+- 逆向时机胜过完美时机
+
+*当每个人都在卖出时，那就是我们更仔细看的时候。*`,
+    
+    'Korean': `**${upper} - 반대 분석** 📊
+
+시장은 항상 움직이지만, 중요한 것은:
+- 두려움이 다른 사람들이 공황에 빠질 때 기회를 만든다
+- 질 좋은 펀더멘털은 하룻밤 사이에 사라지지 않는다
+- 반대 타이밍이 완벽한 타이밍을 이긴다
+
+*모든 사람이 팔 때, 그때 우리가 더 자세히 본다.*`,
+    
+    'Russian': `**${upper} - Контр-анализ** 📊
+
+Рынок всегда движется, но важно:
+- Страх создает возможности, когда другие паникуют
+- Качественные основы не исчезают за одну ночь
+- Контр-тайминг побеждает идеальный тайминг
+
+*Когда все продают, вот тогда мы смотрим внимательнее.*`,
+    
+    'Arabic': `**${upper} - التحليل المعاكس** 📊
+
+السوق يتحرك دائماً، لكن المهم:
+- الخوف يخلق الفرص عندما يدخل الآخرون في الذعر
+- الأسس الجيدة لا تختفي بين عشية وضحاها
+- التوقيت المعاكس يتفوق على التوقيت المثالي
+
+*عندما يبيع الجميع، هذا عندما ننظر عن كثب.*`,
+    
+    'Estonian': `**${upper} - Vastandlik Analüüs** 📊
+
+Turg liigub alati, aga see on oluline:
+- Hirm loob võimalusi, kui teised paanikasse langevad
+- Kvaliteetsed põhifaktorid ei kao üleöö
+- Vastandlik ajastamine võidab täiuslikku ajastamist
+
+*Kui kõik müüvad, siis vaatame lähemalt.*`,
+    
+    'English': `**${upper} - Contrarian Take** 📊
+
+Market's always moving, but here's what matters:
+- Fear creates opportunity when others panic
+- Quality fundamentals don't disappear overnight
+- Contrarian timing beats perfect timing
+
+*When everyone's selling, that's when we look closer.*`
+  };
+  
+  return responses[language] || responses['English'];
+}
+
+/**
  * Generate web search powered financial analysis responses
  * Uses free web search for real-time data and analysis
  * MUST be Nordic style: short, direct, playful, max 2-3 emojis
  * ALWAYS focus on contrarian perspective and fear-driven opportunities
  */
 async function generateWebSearchAnalysis(query: string, ticker?: string): Promise<string> {
+  
+  // Detect language from query
+  const detectedLanguage = detectLanguage(query);
   
   // Check for suggestion questions that need direct answers
   const isSuggestionQuestion = /what.*market.*ignoring|where.*fear.*stockpiled|is.*panic.*overreaction|everyone.*panicking|market.*overlooking|decline.*overdone|panic.*creating|fundamentals.*stable|market.*ignoring|greatest.*potential|biggest.*fear/i.test(query);
@@ -33,11 +234,11 @@ async function generateWebSearchAnalysis(query: string, ticker?: string): Promis
         messages: [
           {
             role: "system",
-            content: `You are Snobol AI - a contrarian opportunistic investing guide. Provide direct, Nordic-style answers to suggestion questions. Be playful, witty, and use MAXIMUM 2-3 emojis. Focus on contrarian insights and fear-driven opportunities.`
+            content: `You are Snobol AI - a contrarian opportunistic investing guide. Provide direct, Nordic-style answers to suggestion questions. Be playful, witty, and use MAXIMUM 2-3 emojis. Focus on contrarian insights and fear-driven opportunities. IMPORTANT: Respond in ${detectedLanguage} language while maintaining the Nordic direct style.`
           },
           {
             role: "user",
-            content: `Question: ${query}\nTicker: ${upper}\n\nProvide a direct contrarian answer in Nordic style (short, playful, max 2-3 emojis).`
+            content: `Question: ${query}\nTicker: ${upper}\n\nProvide a direct contrarian answer in Nordic style (short, playful, max 2-3 emojis) in ${detectedLanguage} language.`
           }
         ],
         max_completion_tokens: 300,
@@ -49,24 +250,10 @@ async function generateWebSearchAnalysis(query: string, ticker?: string): Promis
       
       const completion = await Promise.race([completionPromise, timeoutPromise]) as OpenAI.Chat.Completions.ChatCompletion;
       
-      return completion.choices[0]?.message?.content || `**${upper} - Contrarian Take**
-
-Market's always moving, but here's what matters:
-- Fear creates opportunity when others panic
-- Quality fundamentals don't disappear overnight
-- Contrarian timing beats perfect timing
-
-*When everyone's selling, that's when we look closer.*`;
+      return completion.choices[0]?.message?.content || getFallbackResponse(upper, detectedLanguage);
     } catch (error) {
       console.error('GPT-5-mini error:', error);
-      return `**${upper} - Contrarian Take**
-
-Market's always moving, but here's what matters:
-- Fear creates opportunity when others panic
-- Quality fundamentals don't disappear overnight
-- Contrarian timing beats perfect timing
-
-*When everyone's selling, that's when we look closer.*`;
+      return getFallbackResponse(upper, detectedLanguage);
     }
   }
   
@@ -80,21 +267,8 @@ Market's always moving, but here's what matters:
     return analysis;
   } catch (error) {
     console.error('Web search analysis error:', error);
-    return `**${ticker ? `${ticker.toUpperCase()} ` : ''}Analysis**
-
-Market's always moving. Here's the contrarian take:
-
-**Current situation:**
-- Market sentiment driving price action
-- Fear creating opportunities for patient investors
-- Quality fundamentals don't disappear overnight
-
-**Contrarian angle:**
-- Where others see risk, we see potential
-- Market overreactions create entry points
-- Hidden catalysts everyone's ignoring
-
-*When everyone's selling, that's when we look closer.*`;
+    const detectedLanguage = detectLanguage(query);
+    return getFallbackResponse(ticker || 'MARKET', detectedLanguage);
   }
 }
 
@@ -437,27 +611,138 @@ function getPriceSymbol(assetType: string, exchange: string): string {
 
 
 /**
- * Get stock quote using ChatGPT-5 analysis
+ * Get real-time price data using a free API
+ */
+async function getRealTimePriceData(symbol: string): Promise<string> {
+  const upper = String(symbol || '').toUpperCase();
+  
+  try {
+    // Try multiple free APIs for real-time data
+    const apis = [
+      // Alpha Vantage (free tier)
+      `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${upper}&apikey=demo`,
+      // Yahoo Finance alternative
+      `https://query1.finance.yahoo.com/v8/finance/chart/${upper}?interval=1d&range=1d`,
+      // IEX Cloud (free tier)
+      `https://cloud.iexapis.com/stable/stock/${upper}/quote?token=pk_test_123`
+    ];
+    
+    for (const apiUrl of apis) {
+      try {
+        const response = await fetch(apiUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        });
+        
+        if (!response.ok) continue;
+        
+        const data = await response.json();
+        
+        // Parse Alpha Vantage format
+        if (data['Global Quote']) {
+          const quote = data['Global Quote'];
+          const price = quote['05. price'];
+          const change = quote['09. change'];
+          const changePercent = quote['10. change percent'];
+          
+          if (price && change !== undefined && changePercent) {
+            const changeValue = parseFloat(change);
+            const isPositive = changeValue >= 0;
+            const changeSign = isPositive ? '+' : '';
+            
+            return `**Price:** ${price} USD
+**Change:** ${changeSign}${changeValue.toFixed(2)} (${changeSign}${parseFloat(changePercent.replace('%', '')).toFixed(2)}%)
+**Status:** ${isPositive ? '📈 Up' : '📉 Down'}`;
+          }
+        }
+        
+        // Parse Yahoo Finance format
+        if (data.chart && data.chart.result && data.chart.result[0]) {
+          const result = data.chart.result[0];
+          const meta = result.meta;
+          const currentPrice = meta.regularMarketPrice;
+          const previousClose = meta.previousClose;
+          
+          if (currentPrice && previousClose) {
+            const change = currentPrice - previousClose;
+            const changePercent = (change / previousClose) * 100;
+            const isPositive = change >= 0;
+            const changeSign = isPositive ? '+' : '';
+            
+            return `**Price:** ${currentPrice.toFixed(2)} USD
+**Change:** ${changeSign}${change.toFixed(2)} (${changeSign}${changePercent.toFixed(2)}%)
+**Status:** ${isPositive ? '📈 Up' : '📉 Down'}`;
+          }
+        }
+        
+      } catch (apiError) {
+        console.log(`API ${apiUrl} failed:`, apiError);
+        continue;
+      }
+    }
+    
+    // If all APIs fail, try a simple web search approach
+    const summary = await generateWebSearchAnalysis(`${upper} current stock price today`, upper);
+    
+    // Extract price information from the AI response
+    const priceMatch = summary.match(/(\$?\d+\.?\d*)/g);
+    if (priceMatch && priceMatch.length > 0) {
+      const price = priceMatch[0];
+      return `**Price:** ${price} USD
+**Note:** Price data from AI analysis - for real-time data, check the chart below`;
+    }
+    
+    throw new Error('No price data available');
+    
+  } catch (error) {
+    console.error('Real-time price data error:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get stock quote with real-time price data
  * ALWAYS includes TradingView chart data
  */
 async function getStockQuote(symbol: string): Promise<string> {
   try {
     const upper = String(symbol || '').toUpperCase();
-    const summary = await generateWebSearchAnalysis(`${upper} stock price today summary`, upper);
+    
+    // Try to get real-time price data first
+    let priceData = '';
+    try {
+      priceData = await getRealTimePriceData(upper);
+    } catch {
+      console.log('Real-time price data unavailable, using fallback');
+    }
     
     // Get TradingView chart data
     const chartData = await getChartDataForSymbol(upper);
     
-    return `
+    // If we have real-time price data, use it; otherwise use AI analysis
+    if (priceData) {
+      return `
+**${upper} – Stock Price Snapshot** 📊
+
+${priceData}
+
+${chartData}
+      `.trim();
+    } else {
+      // Fallback to AI analysis
+      const summary = await generateWebSearchAnalysis(`${upper} stock price today summary`, upper);
+      return `
 **${upper} – Stock Deep Dive** 📊
 
 **What's happening:**
 ${summary}
 
 ${chartData}
-    `.trim();
+      `.trim();
+    }
   } catch (error) {
-    console.error('Stock quote (ChatGPT-5) error:', error);
+    console.error('Stock quote error:', error);
     
     // Still try to include chart even on error
     let chartData = '';
@@ -470,7 +755,7 @@ ${chartData}
     return `
 **${String(symbol).toUpperCase()} – Quick Stock Snapshot**
 
-- AI analysis temporarily unavailable
+- Price data temporarily unavailable
 - Check the chart below for visual data
 
 ${chartData}
