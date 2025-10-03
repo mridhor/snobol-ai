@@ -439,6 +439,20 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         if (chatContainer && chatContainer.contains(e.target as Node)) {
           return; // Allow scrolling within chat
         }
+        
+        // Allow touch events on interactive elements (buttons, inputs, etc.)
+        const target = e.target as HTMLElement;
+        if (target && (
+          target.tagName === 'BUTTON' ||
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.closest('button') ||
+          target.closest('input') ||
+          target.closest('textarea')
+        )) {
+          return; // Allow touch events on interactive elements
+        }
+        
         e.preventDefault();
       };
       
@@ -1484,8 +1498,8 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                        e.currentTarget.focus();
                      }}
                      onTouchEnd={(e) => {
-                       // Prevent default touch behavior that might interfere
-                       e.preventDefault();
+                       // Only prevent default for specific cases that might interfere with typing
+                       // Don't prevent all touch events as it can interfere with other elements
                      }}
                      onClick={(e) => {
                        // Ensure focus on click
@@ -1499,7 +1513,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                         inputValue.includes("Find fear opportunities of ") || inputValue.includes("Find fear opportunities of ") || 
                         inputValue.includes("Analyze ") || inputValue.includes("Analyze ")
                         )
-                       ? 'pl-4 pr-2.5 md:pl-4 md:pr-3' : 'px-2.5 sm:px-3'
+                       ? 'pl-4 pr-2.5 md:pl-5 md:pr-3' : 'px-2.5 sm:px-3'
                      }`}
                      style={{ 
                        minHeight: "40px", 
@@ -1554,7 +1568,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
-                              <span className="bg-gray-200 rounded pl-1.5 pr-1.5 md:pr-1.5 py-1 text-gray-800">{highlight}</span>
+                              <span className="bg-gray-200 rounded pl-1.5 pr-1.5 md:pr-2 py-1 text-gray-800">{highlight}</span>
                               <span className="text-transparent">{after}</span>
                             </>
                           );
@@ -1567,8 +1581,16 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                 </div>
                 <button
                   onClick={() => (isLoading || isStreaming) ? handleStopStreaming() : handleSendMessage()}
+                  onTouchStart={(e) => {
+                    // Ensure touch events work properly on mobile
+                    e.stopPropagation();
+                  }}
+                  onTouchEnd={(e) => {
+                    // Prevent event bubbling that might interfere with click
+                    e.stopPropagation();
+                  }}
                   disabled={!isLoading && !isStreaming && !inputValue.trim()}
-                  className={`flex-shrink-0 p-2 sm:p-2.5 rounded-full transition-colors self-end z-30 ${
+                  className={`flex-shrink-0 p-2 sm:p-2.5 rounded-full transition-colors self-end z-30 touch-manipulation ${
                     isLoading || isStreaming 
                       ? "bg-black text-white hover:bg-gray-900 cursor-pointer" 
                       : "bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed"
