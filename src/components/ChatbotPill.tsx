@@ -641,6 +641,20 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     }
   }, [inputValue, historyIndex, inputHistory]);
 
+  // Auto-focus textarea on mobile when chat opens
+  useEffect(() => {
+    if (isOpen && textareaRef.current) {
+      // Small delay to ensure the overlay is fully rendered on mobile
+      const timer = setTimeout(() => {
+        if (textareaRef.current && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          textareaRef.current.focus();
+        }
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   const handleStopStreaming = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -1426,7 +1440,15 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
               
               
               
-              <div className="flex items-end gap-2 sm:gap-2.5 bg-white border border-gray-300 rounded-[1.625em] p-2 sm:p-2.5">
+              <div 
+                className="flex items-end gap-2 sm:gap-2.5 bg-white border border-gray-300 rounded-[1.625em] p-2 sm:p-2.5"
+                onTouchStart={(e) => {
+                  // Ensure textarea gets focus when touching the input container
+                  if (textareaRef.current) {
+                    textareaRef.current.focus();
+                  }
+                }}
+              >
                 <div className="flex-1 relative">
                    <textarea
                      ref={textareaRef}
@@ -1457,17 +1479,39 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                        }
                      }}
                      onKeyDown={handleKeyPress}
+                     onTouchStart={(e) => {
+                       // Force focus on touch for iOS Safari
+                       e.currentTarget.focus();
+                     }}
+                     onTouchEnd={(e) => {
+                       // Prevent default touch behavior that might interfere
+                       e.preventDefault();
+                     }}
+                     onClick={(e) => {
+                       // Ensure focus on click
+                       e.currentTarget.focus();
+                     }}
                      placeholder="Message Snobol AI..."
                      rows={1}
                      disabled={isLoading || isStreaming}
-                     className={`w-full py-2 sm:py-2 bg-transparent resize-none focus:outline-none text-[14px] sm:text-sm leading-relaxed disabled:opacity-50 overflow-y-auto relative z-10 ${
+                     className={`w-full py-2 sm:py-2 bg-transparent resize-none focus:outline-none text-[14px] sm:text-sm leading-relaxed disabled:opacity-50 overflow-y-auto relative z-10 touch-manipulation ${
                        (inputValue.includes("Do contrarian discovery for ") || inputValue.includes("Do contrarian discovery for ") ||   
                         inputValue.includes("Find fear opportunities of ") || inputValue.includes("Find fear opportunities of ") || 
                         inputValue.includes("Analyze ") || inputValue.includes("Analyze ")
                         )
                        ? 'pl-2 pr-2.5 sm:pl-5 sm:pr-3' : 'px-2.5 sm:px-3'
                      }`}
-                     style={{ minHeight: "40px", maxHeight: "120px" }}
+                     style={{ 
+                       minHeight: "40px", 
+                       maxHeight: "120px",
+                       WebkitTouchCallout: "none",
+                       WebkitUserSelect: "text",
+                       userSelect: "text"
+                     }}
+                     autoComplete="off"
+                     autoCorrect="off"
+                     autoCapitalize="off"
+                     spellCheck="false"
                    />
                   
                    {/* Text highlighter overlay */}
