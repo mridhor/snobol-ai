@@ -446,27 +446,6 @@ async function getStockQuote(symbol: string): Promise<string> {
 **What's happening:**
 ${summary}
 
-**The real story:**
-- **Price action**: Where it's trading and why it matters
-- **Market mood**: Is everyone panicking or celebrating?
-- **Contrarian angle**: What's the crowd missing here?
-- **Risk check**: What could go wrong (or right)?
-
-**Market Dynamics:**
-- Trading patterns that matter
-- Key market levels to watch
-- Volume tells a story
-
-**Business reality:**
-- What they actually do (in plain English)
-- Money situation: good, bad, or ugly?
-- Industry trends: friend or foe?
-
-**Fear = Opportunity:**
-- Where others see risk, we see potential
-- What's the market overreacting to?
-- Hidden catalysts everyone's ignoring
-
 ${chartData}
     `.trim();
   } catch (error) {
