@@ -282,7 +282,7 @@ async function generateStructuredAnalysis(query: string, ticker?: string, search
     
     // Use GPT to synthesize the search results into contrarian analysis - optimized for speed
     const completion = await openai.chat.completions.create({
-      model: "gpt-5-mini",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
