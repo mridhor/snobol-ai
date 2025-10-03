@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Snobol - AI Crisis Investing",
     description: "Snobol invests in various crisis",
-    images: ["/snobol-og-image.png"],
+    images: ["./public/snobol-og-image.png"],
   },
 };
 
