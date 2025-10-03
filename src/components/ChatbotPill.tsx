@@ -1568,7 +1568,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                 <button
                   onClick={() => (isLoading || isStreaming) ? handleStopStreaming() : handleSendMessage()}
                   disabled={!isLoading && !isStreaming && !inputValue.trim()}
-                  className={`flex-shrink-0 p-2 sm:p-2.5 rounded-full transition-colors self-end ${
+                  className={`flex-shrink-0 p-2 sm:p-2.5 rounded-full transition-colors self-end z-10 ${
                     isLoading || isStreaming 
                       ? "bg-black text-white hover:bg-gray-900 cursor-pointer" 
                       : "bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed"
