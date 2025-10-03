@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: "Snobol AI",
     images: [
       {
-        url: "/snobol-ai-logo.png",
+        url: "/snobol-og-image.png",
         width: 1200,
         height: 630,
         alt: "Snobol AI - Crisis Investing",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Snobol - AI Crisis Investing",
     description: "Snobol invests in various crisis",
-    images: ["./public/snobol-og-image.png"],
+    images: ["/snobol-og-image.png"],
   },
 };
 
