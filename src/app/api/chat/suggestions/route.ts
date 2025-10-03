@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     // Call OpenAI API to generate suggestions - optimized for speed
     const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-nano", // Faster model
+      model: "gpt-4.1-nano", // Faster model
       messages: [
         { role: "system", content: SUGGESTION_PROMPT },
         { 
