@@ -62,7 +62,6 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   const [inputContext, setInputContext] = useState<string>("");
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
-  const [streamingComplete, setStreamingComplete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -654,7 +653,6 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       ];
       setMessages(newMessages);
       setIsLoading(true);
-      setStreamingComplete(false);
       // Don't set isStreaming yet - wait for stream to actually start
       lastRequestTime.current = now;
       
@@ -808,7 +806,6 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       } finally {
         setIsLoading(false);
         setIsStreaming(false);
-        setStreamingComplete(true);
         setLoadingMessage("Thinking..."); // Reset to default
         abortControllerRef.current = null;
         
@@ -1104,29 +1101,10 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           }
         }
         
-        @keyframes blink {
-          0%, 50% {
-            border-color: transparent;
-          }
-          51%, 100% {
-            border-color: #666;
-          }
-        }
         
         .streaming-text {
           position: relative;
           animation: typewriter 0.3s ease-out forwards;
-        }
-        
-        .streaming-text::after {
-          content: '|';
-          color: #666;
-          animation: blink 1s infinite;
-          font-weight: normal;
-        }
-        
-        .streaming-text.typing-complete::after {
-          display: none;
         }
       `}</style>
       
@@ -1259,7 +1237,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                         )}
                         
                         {isStreaming && index === messages.length - 1 ? (
-                          <div className={`streaming-text ${streamingComplete ? 'typing-complete' : ''}`}>
+                          <div className="streaming-text">
                             <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
                               components={{
