@@ -1499,7 +1499,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                         inputValue.includes("Find fear opportunities of ") || inputValue.includes("Find fear opportunities of ") || 
                         inputValue.includes("Analyze ") || inputValue.includes("Analyze ")
                         )
-                       ? 'pl-4 pr-2.5 md:pl-2 md:pr-3' : 'px-2.5 sm:px-3'
+                       ? 'pl-4 pr-2.5 md:pl-4 md:pr-3' : 'px-2.5 sm:px-3'
                      }`}
                      style={{ 
                        minHeight: "40px", 
@@ -1554,7 +1554,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
-                              <span className="bg-gray-200 rounded pl-1.5 pr-1.5 md:pr-2 py-1 text-gray-800">{highlight}</span>
+                              <span className="bg-gray-200 rounded pl-1.5 pr-1.5 md:pr-1.5 py-1 text-gray-800">{highlight}</span>
                               <span className="text-transparent">{after}</span>
                             </>
                           );
