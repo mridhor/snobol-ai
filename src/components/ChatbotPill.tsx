@@ -462,8 +462,18 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
        latestMessage.content.includes("Company Deep Dive") ||
        latestMessage.chartData);
     
-    // Only auto-scroll if it's NOT a stock analysis
-    if (!isStockAnalysis) {
+    // For stock analysis, scroll to top of the analysis content
+    if (isStockAnalysis) {
+      setTimeout(() => {
+        // Find the latest analysis message element and scroll to its top
+        const analysisElements = document.querySelectorAll('[data-message-index]');
+        const latestAnalysisElement = analysisElements[analysisElements.length - 1];
+        if (latestAnalysisElement) {
+          latestAnalysisElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 200);
+    } else {
+      // Only auto-scroll if it's NOT a stock analysis
       setTimeout(() => {
         scrollToBottom("smooth");
       }, 50);
@@ -471,17 +481,39 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   }, [messages, isLoading]);
 
   // Ensure scroll to bottom when loading state changes (Thinking... message appears)
+  // BUT handle stock analysis differently
   useEffect(() => {
     if (isLoading) {
-      // Small delay to ensure the loading message is rendered
-      setTimeout(() => {
-        scrollToBottom("smooth");
-      }, 50);
+      // Check if we're about to start a stock analysis
+      const latestMessage = messages[messages.length - 1];
+      const isStockAnalysis = latestMessage && 
+        latestMessage.role === "assistant" && 
+        latestMessage.content && 
+        (latestMessage.content.includes("stock") || 
+         latestMessage.content.includes("analysis") ||
+         latestMessage.content.includes("Company Deep Dive") ||
+         latestMessage.chartData);
+      
+      if (isStockAnalysis) {
+        // For stock analysis, scroll to top of the analysis content during loading
+        setTimeout(() => {
+          const analysisElements = document.querySelectorAll('[data-message-index]');
+          const latestAnalysisElement = analysisElements[analysisElements.length - 1];
+          if (latestAnalysisElement) {
+            latestAnalysisElement.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 100);
+      } else {
+        // Small delay to ensure the loading message is rendered
+        setTimeout(() => {
+          scrollToBottom("smooth");
+        }, 50);
+      }
     }
   }, [isLoading]);
 
   // Keep scrolling during streaming to follow the response
-  // BUT disable for stock analysis cases
+  // BUT handle stock analysis differently
   useEffect(() => {
     if (isStreaming) {
       // Check if current streaming is for stock analysis
@@ -494,8 +526,17 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
          latestMessage.content.includes("Company Deep Dive") ||
          latestMessage.chartData);
       
-      // Only auto-scroll if it's NOT a stock analysis
-      if (!isStockAnalysis) {
+      if (isStockAnalysis) {
+        // For stock analysis, scroll to top of the analysis content during streaming
+        setTimeout(() => {
+          const analysisElements = document.querySelectorAll('[data-message-index]');
+          const latestAnalysisElement = analysisElements[analysisElements.length - 1];
+          if (latestAnalysisElement) {
+            latestAnalysisElement.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 100);
+      } else {
+        // Only auto-scroll if it's NOT a stock analysis
         // Scroll immediately
         scrollToBottom("instant");
         
@@ -954,7 +995,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                 const isLatestSuggestion = index === lastAssistantWithSuggestions;
                 
                 return (
-                  <div key={index}>
+                  <div key={index} data-message-index={index}>
                     <div
                       className={`flex ${
                         message.role === "user" ? "justify-end" : "justify-start"
