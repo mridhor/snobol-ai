@@ -519,104 +519,34 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   }, [isOpen]);
 
   // Auto scroll to bottom when new messages arrive or loading state changes
-  // BUT disable auto-scroll for stock analysis cases
+  // Disabled auto-scroll to top for stock analysis - let users stay where they are
   useEffect(() => {
-    // Check if the latest message is a stock analysis
-    const latestMessage = messages[messages.length - 1];
-    const isStockAnalysis = latestMessage && 
-      latestMessage.role === "assistant" && 
-      latestMessage.content && 
-      (latestMessage.content.includes("stock") || 
-       latestMessage.content.includes("analysis") ||
-       latestMessage.content.includes("Company Deep Dive") ||
-       latestMessage.chartData);
-    
-    // For stock analysis, scroll to the user's prompt request first
-    if (isStockAnalysis) {
-      setTimeout(() => {
-        // Find the user's prompt message (the request) and scroll to its top
-        const userMessageElements = document.querySelectorAll('[data-message-index]');
-        // Find the second-to-last message (user's prompt) since the last one is the assistant's response
-        const userPromptElement = userMessageElements[userMessageElements.length - 2];
-        if (userPromptElement) {
-          userPromptElement.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }, 200);
-    } else {
-      // Only auto-scroll if it's NOT a stock analysis
+    // Always scroll to bottom for all message types
+    setTimeout(() => {
+      scrollToBottom("smooth");
+    }, 50);
+  }, [messages, isLoading]);
+
+  // Ensure scroll to bottom when loading state changes (Thinking... message appears)
+  useEffect(() => {
+    if (isLoading) {
+      // Small delay to ensure the loading message is rendered
       setTimeout(() => {
         scrollToBottom("smooth");
       }, 50);
     }
-  }, [messages, isLoading]);
-
-  // Ensure scroll to bottom when loading state changes (Thinking... message appears)
-  // BUT handle stock analysis differently
-  useEffect(() => {
-    if (isLoading) {
-      // Check if we're about to start a stock analysis
-      const latestMessage = messages[messages.length - 1];
-      const isStockAnalysis = latestMessage && 
-        latestMessage.role === "assistant" && 
-        latestMessage.content && 
-        (latestMessage.content.includes("stock") || 
-         latestMessage.content.includes("analysis") ||
-         latestMessage.content.includes("Company Deep Dive") ||
-         latestMessage.chartData);
-      
-      if (isStockAnalysis) {
-        // For stock analysis, scroll to the user's prompt request during loading
-        setTimeout(() => {
-          const userMessageElements = document.querySelectorAll('[data-message-index]');
-          // Find the second-to-last message (user's prompt) since the last one is the assistant's response
-          const userPromptElement = userMessageElements[userMessageElements.length - 2];
-          if (userPromptElement) {
-            userPromptElement.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        }, 100);
-      } else {
-        // Small delay to ensure the loading message is rendered
-        setTimeout(() => {
-          scrollToBottom("smooth");
-        }, 50);
-      }
-    }
   }, [isLoading, messages]);
 
   // Keep scrolling during streaming to follow the response
-  // BUT handle stock analysis differently
   useEffect(() => {
     if (isStreaming) {
-      // Check if current streaming is for stock analysis
-      const latestMessage = messages[messages.length - 1];
-      const isStockAnalysis = latestMessage && 
-        latestMessage.role === "assistant" && 
-        latestMessage.content && 
-        (latestMessage.content.includes("stock") || 
-         latestMessage.content.includes("analysis") ||
-         latestMessage.content.includes("Company Deep Dive") ||
-         latestMessage.chartData);
+      // Scroll immediately
+      scrollToBottom("instant");
       
-      if (isStockAnalysis) {
-        // For stock analysis, scroll to the user's prompt request during streaming
-        setTimeout(() => {
-          const userMessageElements = document.querySelectorAll('[data-message-index]');
-          // Find the second-to-last message (user's prompt) since the last one is the assistant's response
-          const userPromptElement = userMessageElements[userMessageElements.length - 2];
-          if (userPromptElement) {
-            userPromptElement.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        }, 100);
-      } else {
-        // Only auto-scroll if it's NOT a stock analysis
-        // Scroll immediately
-        scrollToBottom("instant");
-        
-        // Continue scrolling at intervals during streaming
-        const scrollInterval = setInterval(() => scrollToBottom("instant"), 100);
-        
-        return () => clearInterval(scrollInterval);
-      }
+      // Continue scrolling at intervals during streaming
+      const scrollInterval = setInterval(() => scrollToBottom("instant"), 100);
+      
+      return () => clearInterval(scrollInterval);
     }
   }, [isStreaming, messages]);
 
