@@ -1532,7 +1532,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   aria-label={isLoading || isStreaming ? "Stop streaming" : "Send message"}
                 >
                   {isLoading || isStreaming ? (
-                    <Square className="w-3 h-3 sm:w-3 sm:h-3 bg-white rounded-2xs" />
+                    <Square className="w-2 h-2 sm:w-2 sm:h-2 bg-white rounded-2xs" />
                   ) : (
                     <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
