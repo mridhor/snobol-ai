@@ -466,7 +466,7 @@ async function generateStructuredAnalysis(query: string, ticker?: string, search
 
 **Your task:** Synthesize web search results into specific, contrarian financial analysis that ANYONE can understand - no finance jargon!, BUT REMEMBER TO not persuade or recommend to buy or sell.
 
-**Style:** Nordic - direct, playful, witty, insightful. Minimum 2 emojis, Maximum 3 emojis per response, never put two emojis in a row.
+**Style:** Nordic - direct, use simple language, avoid jargon, fun, wholesome, playful, use expressive emojis sparingly, minimum 2 emojis, maximum 3 emojis per response, never put two emojis in a row. 2-4 bullets max.
 
 **Writing Requirements:**
 - Keep responses to the point,concise and punchy - aim for 2-3 key points maximum
