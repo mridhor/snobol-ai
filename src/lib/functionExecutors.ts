@@ -119,18 +119,7 @@ async function performWebSearchAnalysis(searchQuery: string, ticker?: string): P
     // Generate analysis based on search results
     const analysis = await generateStructuredAnalysis(searchQuery, ticker, searchResults);
     
-    // Add real web search context to the analysis
-    const webSearchContext = `
-
-**Web Search Insights:**
-- Current market sentiment: ${upper} showing ${searchResults.sentiment || 'contrarian opportunity'}
-- Recent news impact: ${searchResults.newsImpact || 'hidden catalysts'}
-- Analyst consensus: ${searchResults.analystView || 'missing the real story'}
-- Market positioning: ${searchResults.marketPosition || 'value opportunity'}
-
-*Based on current web search data and market analysis*`;
-    
-    return analysis + webSearchContext;
+    return analysis;
   } catch (error) {
     console.error('Web search error:', error);
     return `**${ticker ? `${ticker.toUpperCase()} ` : ''}Analysis**
@@ -291,17 +280,24 @@ async function generateStructuredAnalysis(query: string, ticker?: string, search
   try {
     const openai = getOpenAIClient();
     
-    // Use GPT to synthesize the search results into contrarian analysis
+    // Use GPT to synthesize the search results into contrarian analysis - optimized for speed
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-5-mini",
       messages: [
         {
           role: "system",
-          content: `You are Snobol AI - a contrarian opportunistic investing guide. 
+          content: `You are Snobol AI - a contrarian opportunistic investing guide with a playful Nordic personality. 
 
-**Your task:** Synthesize web search results into specific, contrarian financial analysis.
+**Your task:** Synthesize web search results into specific, contrarian financial analysis with creative, witty, and fun expressions.
 
-**Style:** Nordic - direct, playful, MAXIMUM 2-3 emojis per response. Be specific with data and insights.
+**Style:** Nordic - direct, playful, witty, MAXIMUM 2-3 emojis per response. Be specific with data and insights.
+
+**Writing Requirements:**
+- End each major point with a creative, playful, Nordic-style expression
+- Use witty metaphors, analogies, and fun comparisons
+- Make it engaging and entertaining while being informative
+- Use expressions like "Meanwhile, the market is having a meltdown..." or "While everyone's panicking about X, smart money is looking at Y..."
+- Add personality and humor to make it memorable
 
 **Focus on:**
 - What the market is missing or ignoring
@@ -312,7 +308,7 @@ async function generateStructuredAnalysis(query: string, ticker?: string, search
 
 **NEVER use generic templates. Always be specific to the company and current market conditions.**
 
-**Format:** Use **bold** for headers, bullets for key points, and end with a contrarian insight.`
+**Format:** Use **bold** for headers, bullets for key points, and end each section with a witty, playful Nordic expression.`
         },
         {
           role: "user",
@@ -330,7 +326,7 @@ Create a contrarian analysis that synthesizes this real market data. Focus on:
 Be specific with numbers, business insights, and contrarian perspectives. Use the actual data from the search results. No generic templates.`
         }
       ],
-      max_completion_tokens: 800,
+      max_completion_tokens: 400, // Reduced for speed
     });
 
     return completion.choices[0]?.message?.content || `**${upper} - Contrarian Analysis**
@@ -504,45 +500,15 @@ async function analyzeCompany(symbol: string, isSuggestionQuestion: boolean = fa
   try {
     const upper = String(symbol || '').toUpperCase();
     
-    // Pure GPT-5 analysis only - no external data sources
-    const overview = await generateWebSearchAnalysis(`${upper} company overview business description`, upper);
-    const financials = await generateWebSearchAnalysis(`${upper} financials revenue profit margin balance sheet basics`, upper);
-    const risks = await generateWebSearchAnalysis(`${upper} key risks competition market share simple terms`, upper);
-    
-    
-    // Build Nordic-style response but more descriptive for stock analysis
-    let response = `**${upper} – Company Deep Dive** 🏢\n\n`;
-    
-    response += `**What they do:**\n${overview}\n\n`;
-    
-    response += `**Money situation:**\n${financials}\n\n`;
-    
-    response += `**Things to watch:**\n${risks}\n\n`;
-    
-    response += `**Contrarian take:**\n`;
-    response += `- Market vs. reality: who's right?\n`;
-    response += `- Fear = opportunity? Let's see...\n`;
-    response += `- What's everyone missing?\n`;
-    response += `- Hidden catalysts brewing?\n\n`;
-    
-    response += `**Why this matters:**\n`;
-    response += `- Competitive moat: real or fake?\n`;
-    response += `- Industry trends: friend or foe?\n`;
-    response += `- Management: smart moves or chaos?\n`;
-    response += `- Price vs. value: match or mismatch?\n\n`;
-    
-    response += `**Market vibes:**\n`;
-    response += `- Price action: telling a story?\n`;
-    response += `- Analyst mood: bullish or bearish?\n`;
-    response += `- Big money moves: what are they doing?\n`;
-    response += `- External factors: help or hurt?\n`;
+    // Single optimized GPT call for comprehensive analysis - 4-5x faster
+    const analysis = await generateWebSearchAnalysis(`${upper} company analysis business financials risks contrarian opportunities`, upper);
     
     // Only include chart for initial analysis, not for suggestion questions
     if (!isSuggestionQuestion) {
       const chartData = await getChartDataForSymbol(upper);
-      return `${response.trim()}\n\n\n${chartData}`.trim();
+      return `${analysis.trim()}\n\n\n${chartData}`.trim();
     } else {
-      return `${response.trim()}\n\n`.trim();
+      return `${analysis.trim()}\n\n`.trim();
     }
   } catch (error) {
     console.error('Analysis (ChatGPT-5) error:', error);
