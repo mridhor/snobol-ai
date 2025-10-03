@@ -27,12 +27,121 @@ function getOpenAIClient() {
   });
 }
 
-// System prompt - optimized for speed
+// Helper function to extract last mentioned company from conversation history
+function getLastMentionedCompany(messages: Array<{ role: string; content: string }>): string | null {
+  // Look through recent messages for company mentions
+  for (let i = messages.length - 1; i >= Math.max(0, messages.length - 10); i--) {
+    const message = messages[i];
+    if (message.role === 'user' || message.role === 'assistant') {
+      const content = message.content.toLowerCase();
+      
+      // Look for explicit company mentions
+      const companyMatches = content.match(/\b(apple|aapl|microsoft|msft|google|googl|amazon|amzn|tesla|tsla|meta|facebook|fb|nvidia|nvda|netflix|nflx|alphabet|uber|uber|spotify|spot|paypal|pypl|adobe|adbe|salesforce|crm|oracle|orcl|intel|intc|amd|advanced micro devices|coca-cola|ko|pepsi|pep|mcdonalds|mcd|walmart|wmt|home depot|hd|nike|nke|disney|dis|jpmorgan|jpm|bank of america|bac|wells fargo|wfc|goldman sachs|gs|morgan stanley|ms|visa|v|mastercard|ma|american express|axp|berkshire hathaway|brk\.a|brk\.b|brka|brkb|procter & gamble|pg|johnson & johnson|jnj|unilever|ul|p&g|3m|mmm|general electric|ge|boeing|ba|general motors|gm|ford|f|chevron|cvx|exxon|xom|shell|rds\.a|rds\.b|bp|british petroleum|total|ttf|eni|eni|repsol|rep|petrobras|pbr|vale|vale|bhp|bhp|rio tinto|rio|glencore|glen|anglo american|aal|freeport-mcmoran|fcx|newmont|nem|barrick|gld|gold|silver|slv|platinum|palladium|copper|oil|crude|natural gas|wheat|corn|soybeans|coffee|sugar|cocoa|cotton|lumber|steel|aluminum|nickel|zinc|lead|tin|uranium|bitcoin|btc|ethereum|eth|binance coin|bnb|cardano|ada|solana|sol|polkadot|dot|chainlink|link|litecoin|ltc|bitcoin cash|bch|stellar|xlm|monero|xmr|dash|dash|zcash|zec|ripple|xrp|dogecoin|doge|shiba inu|shib|avalanche|avax|polygon|matic|cosmos|atom|algorand|algo|vechain|vet|filecoin|fil|internet computer|icp|the graph|grt|uniswap|uni|aave|aave|compound|comp|maker|mkr|sushi|sushi|yearn|yfi|curve|crv|balancer|bal|1inch|1inch|pancakeswap|cake|bancor|bnt|kyber|knc|0x|zrx|augur|rep|golem|gnt|basic attention token|bat|civic|cvc|district0x|dnt|funfair|fun|gnosis|gno|icon|icx|kyber network|knc|lisk|lsk|loopring|lrc|omisego|omg|quant|qnt|request|req|status|snt|storj|storj|tron|trx|verge|xvg|waves|waves|waltonchain|wtc|zilliqa|zil)\b/g);
+      
+      if (companyMatches && companyMatches.length > 0) {
+        const lastMatch = companyMatches[companyMatches.length - 1];
+        // Convert company name to ticker symbol
+        const tickerMap: { [key: string]: string } = {
+          'apple': 'AAPL', 'aapl': 'AAPL',
+          'microsoft': 'MSFT', 'msft': 'MSFT',
+          'google': 'GOOGL', 'googl': 'GOOGL', 'alphabet': 'GOOGL',
+          'amazon': 'AMZN', 'amzn': 'AMZN',
+          'tesla': 'TSLA', 'tsla': 'TSLA',
+          'meta': 'META', 'facebook': 'META', 'fb': 'META',
+          'nvidia': 'NVDA', 'nvda': 'NVDA',
+          'netflix': 'NFLX', 'nflx': 'NFLX',
+          'uber': 'UBER', 'spotify': 'SPOT', 'spot': 'SPOT',
+          'paypal': 'PYPL', 'pypl': 'PYPL',
+          'adobe': 'ADBE', 'adbe': 'ADBE',
+          'salesforce': 'CRM', 'crm': 'CRM',
+          'oracle': 'ORCL', 'orcl': 'ORCL',
+          'intel': 'INTC', 'intc': 'INTC',
+          'amd': 'AMD', 'advanced micro devices': 'AMD',
+          'coca-cola': 'KO', 'ko': 'KO',
+          'pepsi': 'PEP', 'pep': 'PEP',
+          'mcdonalds': 'MCD', 'mcd': 'MCD',
+          'walmart': 'WMT', 'wmt': 'WMT',
+          'home depot': 'HD', 'hd': 'HD',
+          'nike': 'NKE', 'nke': 'NKE',
+          'disney': 'DIS', 'dis': 'DIS',
+          'bitcoin': 'BTC', 'btc': 'BTC',
+          'ethereum': 'ETH', 'eth': 'ETH',
+          'binance coin': 'BNB', 'bnb': 'BNB',
+          'cardano': 'ADA', 'ada': 'ADA',
+          'solana': 'SOL', 'sol': 'SOL',
+          'polkadot': 'DOT', 'dot': 'DOT',
+          'chainlink': 'LINK', 'link': 'LINK',
+          'litecoin': 'LTC', 'ltc': 'LTC',
+          'bitcoin cash': 'BCH', 'bch': 'BCH',
+          'stellar': 'XLM', 'xlm': 'XLM',
+          'monero': 'XMR', 'xmr': 'XMR',
+          'dash': 'DASH',
+          'zcash': 'ZEC', 'zec': 'ZEC',
+          'ripple': 'XRP', 'xrp': 'XRP',
+          'dogecoin': 'DOGE', 'doge': 'DOGE',
+          'shiba inu': 'SHIB', 'shib': 'SHIB',
+          'avalanche': 'AVAX', 'avax': 'AVAX',
+          'polygon': 'MATIC', 'matic': 'MATIC',
+          'cosmos': 'ATOM', 'atom': 'ATOM',
+          'algorand': 'ALGO', 'algo': 'ALGO',
+          'vechain': 'VET', 'vet': 'VET',
+          'filecoin': 'FIL', 'fil': 'FIL',
+          'internet computer': 'ICP', 'icp': 'ICP',
+          'the graph': 'GRT', 'grt': 'GRT',
+          'uniswap': 'UNI', 'uni': 'UNI',
+          'aave': 'AAVE',
+          'compound': 'COMP', 'comp': 'COMP',
+          'maker': 'MKR', 'mkr': 'MKR',
+          'sushi': 'SUSHI',
+          'yearn': 'YFI', 'yfi': 'YFI',
+          'curve': 'CRV', 'crv': 'CRV',
+          'balancer': 'BAL', 'bal': 'BAL',
+          '1inch': '1INCH',
+          'pancakeswap': 'CAKE', 'cake': 'CAKE',
+          'bancor': 'BNT', 'bnt': 'BNT',
+          'kyber': 'KNC', 'knc': 'KNC',
+          '0x': 'ZRX', 'zrx': 'ZRX',
+          'augur': 'REP',
+          'golem': 'GNT', 'gnt': 'GNT',
+          'basic attention token': 'BAT', 'bat': 'BAT',
+          'civic': 'CVC', 'cvc': 'CVC',
+          'district0x': 'DNT', 'dnt': 'DNT',
+          'funfair': 'FUN', 'fun': 'FUN',
+          'gnosis': 'GNO', 'gno': 'GNO',
+          'icon': 'ICX', 'icx': 'ICX',
+          'kyber network': 'KNC',
+          'lisk': 'LSK', 'lsk': 'LSK',
+          'loopring': 'LRC', 'lrc': 'LRC',
+          'omisego': 'OMG', 'omg': 'OMG',
+          'quant': 'QNT', 'qnt': 'QNT',
+          'request': 'REQ', 'req': 'REQ',
+          'status': 'SNT', 'snt': 'SNT',
+          'storj': 'STORJ',
+          'tron': 'TRX', 'trx': 'TRX',
+          'verge': 'XVG', 'xvg': 'XVG',
+          'waves': 'WAVES',
+          'waltonchain': 'WTC', 'wtc': 'WTC',
+          'zilliqa': 'ZIL', 'zil': 'ZIL'
+        };
+        
+        return tickerMap[lastMatch.toLowerCase()] || lastMatch.toUpperCase();
+      }
+    }
+  }
+  return null;
+}
+
+// System prompt - optimized for speed with context awareness
 const SYSTEM_PROMPT = `You are Snobol AI - a contrarian opportunistic investing guide. 🎯
 
 **Philosophy:** Contrarian, opportunistic. Invest where fear dominates. Open to ALL assets.
 
 **Style:** Nordic - direct, playful, MAXIMUM 2-3 emojis per response. 2-4 bullets max.
+
+**CONTEXT AWARENESS:**
+- If user says "this company", "analyze this", "tell me about this", etc., use the last mentioned company from conversation history
+- Look for company names or tickers in recent messages to understand context
+- When in doubt, ask for clarification
 
 **Tools:**
 - get_stock_quote: Price requests, quotes, "how much" → AI + chart
@@ -88,9 +197,15 @@ export async function POST(req: NextRequest) {
 
     console.log('API key found, initializing OpenAI client');
 
-    // Prepare messages with system prompt
+    // Get last mentioned company for context awareness
+    const lastMentionedCompany = getLastMentionedCompany(messages);
+    const contextInfo = lastMentionedCompany 
+      ? `\n\n**CURRENT CONTEXT:** The last mentioned company in this conversation is ${lastMentionedCompany}. If the user refers to "this company", "analyze this", "tell me about this", etc., they are referring to ${lastMentionedCompany}.`
+      : '';
+
+    // Prepare messages with system prompt including context
     const openaiMessages = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: SYSTEM_PROMPT + contextInfo },
       ...messages.map((msg: { role: string; content: string }) => ({
         role: msg.role,
         content: msg.content,

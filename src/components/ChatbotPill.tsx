@@ -976,11 +976,11 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
 
       {/* Full Page Overlay */}
       {isOpen && (
-        <div className={`fixed inset-0 z-[100] bg-white/90 backdrop-blur-sm ${
+        <div className={`fixed inset-0 z-[100] bg-white ${
           isClosing ? 'exit-overlay' : 'animate-in fade-in zoom-in-98 duration-600 ease-out'
         }`}>
           {/* Header */}
-          <div className={`absolute top-0 left-0 right-0 z-10 bg-white/70 backdrop-blur-sm ${
+          <div className={`absolute top-0 left-0 right-0 z-10 bg-0 ${
             isClosing ? 'exit-top' : 'animate-in slide-in-from-top-2 fade-in duration-500 ease-out'
           }`}>
             <div className="max-w-full mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
