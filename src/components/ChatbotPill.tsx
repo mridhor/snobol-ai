@@ -58,6 +58,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   const [expandedThinking, setExpandedThinking] = useState<Set<number>>(new Set());
   const [thinkingDuration, setThinkingDuration] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState("Thinking...");
+  const [inputContext, setInputContext] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -462,14 +463,15 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
        latestMessage.content.includes("Company Deep Dive") ||
        latestMessage.chartData);
     
-    // For stock analysis, scroll to top of the analysis content
+    // For stock analysis, scroll to the user's prompt request first
     if (isStockAnalysis) {
       setTimeout(() => {
-        // Find the latest analysis message element and scroll to its top
-        const analysisElements = document.querySelectorAll('[data-message-index]');
-        const latestAnalysisElement = analysisElements[analysisElements.length - 1];
-        if (latestAnalysisElement) {
-          latestAnalysisElement.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Find the user's prompt message (the request) and scroll to its top
+        const userMessageElements = document.querySelectorAll('[data-message-index]');
+        // Find the second-to-last message (user's prompt) since the last one is the assistant's response
+        const userPromptElement = userMessageElements[userMessageElements.length - 2];
+        if (userPromptElement) {
+          userPromptElement.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, 200);
     } else {
@@ -495,12 +497,13 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
          latestMessage.chartData);
       
       if (isStockAnalysis) {
-        // For stock analysis, scroll to top of the analysis content during loading
+        // For stock analysis, scroll to the user's prompt request during loading
         setTimeout(() => {
-          const analysisElements = document.querySelectorAll('[data-message-index]');
-          const latestAnalysisElement = analysisElements[analysisElements.length - 1];
-          if (latestAnalysisElement) {
-            latestAnalysisElement.scrollIntoView({ behavior: "smooth", block: "start" });
+          const userMessageElements = document.querySelectorAll('[data-message-index]');
+          // Find the second-to-last message (user's prompt) since the last one is the assistant's response
+          const userPromptElement = userMessageElements[userMessageElements.length - 2];
+          if (userPromptElement) {
+            userPromptElement.scrollIntoView({ behavior: "smooth", block: "start" });
           }
         }, 100);
       } else {
@@ -527,12 +530,13 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
          latestMessage.chartData);
       
       if (isStockAnalysis) {
-        // For stock analysis, scroll to top of the analysis content during streaming
+        // For stock analysis, scroll to the user's prompt request during streaming
         setTimeout(() => {
-          const analysisElements = document.querySelectorAll('[data-message-index]');
-          const latestAnalysisElement = analysisElements[analysisElements.length - 1];
-          if (latestAnalysisElement) {
-            latestAnalysisElement.scrollIntoView({ behavior: "smooth", block: "start" });
+          const userMessageElements = document.querySelectorAll('[data-message-index]');
+          // Find the second-to-last message (user's prompt) since the last one is the assistant's response
+          const userPromptElement = userMessageElements[userMessageElements.length - 2];
+          if (userPromptElement) {
+            userPromptElement.scrollIntoView({ behavior: "smooth", block: "start" });
           }
         }, 100);
       } else {
@@ -591,6 +595,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       const userMessage = textToSend;
       setInputValue("");
       setError(null);
+      setInputContext(""); // Clear context when sending message
       
       // Reset textarea height
       if (textareaRef.current) {
@@ -825,6 +830,31 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     
     // Send the suggestion immediately
     handleSendMessage(suggestion);
+  };
+
+  const handleToolkitClick = (toolkitText: string) => {
+    setInputValue(toolkitText);
+    
+    // Set context info based on the toolkit button clicked
+    if (toolkitText === "Do contrarian discovery for") {
+      setInputContext("Discover hidden opportunities that the market is overlooking or undervaluing");
+    } else if (toolkitText === "Find fear opportunities of") {
+      setInputContext("Identify investment opportunities where fear and panic have created attractive entry points");
+    } else {
+      setInputContext("");
+    }
+    
+    // Focus on the input box
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        // Position cursor at the end of the text
+        const length = textareaRef.current.value.length;
+        textareaRef.current.setSelectionRange(length, length);
+      }
+    }, 100);
+    
+    // Don't auto-send, let user continue typing
   };
 
   return (
@@ -1131,6 +1161,28 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                       </div>
                     </div>
                   )}
+
+                  {/* Toolkit Pills Below Every 3 Suggestions */}
+                  {message.role === "assistant" && message.suggestions && message.suggestions.length > 0 && (
+                    <div className="flex justify-start mt-4">
+                      <div className="max-w-[85%] sm:max-w-[75%] flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-1 duration-300 delay-200">
+                        <button
+                          onClick={() => handleToolkitClick("Do contrarian discovery for ")}
+                          disabled={isLoading || isStreaming}
+                          className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm"
+                        >
+                          <span className="line-clamp-1">🔍 Do contrarian discovery</span>
+                        </button>
+                        <button
+                          onClick={() => handleToolkitClick("Find fear opportunities of ")}
+                          disabled={isLoading || isStreaming}
+                          className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm"
+                        >
+                          <span className="line-clamp-1">⚡ Find fear opportunities</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
               })}
@@ -1182,11 +1234,32 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   {error}
                 </div>
               )}
+              
+              {/* Context info text above input */}
+              {inputContext && (
+                <div className="mb-2 px-3 py-1.5 text-xs text-gray-500 bg-gray-50 rounded-lg border border-gray-200">
+                  {inputContext}
+                </div>
+              )}
+              
+              
               <div className="flex items-end gap-2 sm:gap-2.5 bg-white border border-gray-300 rounded-[1.625em] p-2 sm:p-2.5">
                 <textarea
                   ref={textareaRef}
                   value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
+                  onChange={(e) => {
+                    setInputValue(e.target.value);
+                    
+                    // Only clear context if template text is deleted or incomplete
+                    const currentValue = e.target.value;
+                    const hasContrarianTemplate = currentValue.includes("Do contrarian discovery for");
+                    const hasFearTemplate = currentValue.includes("Find fear opportunities of");
+                    
+                    // Clear context only if neither complete template is present
+                    if (inputContext && !hasContrarianTemplate && !hasFearTemplate) {
+                      setInputContext("");
+                    }
+                  }}
                   onKeyDown={handleKeyPress}
                   placeholder="Message Snobol AI..."
                   rows={1}
