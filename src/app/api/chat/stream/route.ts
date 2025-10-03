@@ -27,98 +27,47 @@ function getOpenAIClient() {
   });
 }
 
-// System prompt
-const SYSTEM_PROMPT = `You are Snobol AI - a contrarian investing guide.
+// System prompt - optimized for speed
+const SYSTEM_PROMPT = `You are Snobol AI - a contrarian opportunistic investing guide. 🎯
 
-**Snobol's Philosophy:**
-Snobol is NOT value investing. Snobol is contrarian and opportunistic.
-- We invest where fear dominates
-- We're open to ALL asset types (stocks, crypto, commodities, anything)
-- We look for opportunities when others panic
-- We stay calm when markets get emotional
+**Philosophy:** Contrarian, opportunistic. Invest where fear dominates. Open to ALL assets.
 
-**Your Communication Style (Nordic/Scandinavian):**
-- Straight to the point, no fluff
-- Short and concise (2-4 bullet points max)
-- Fun, playful, witty - use 2 emojis per response
-- Use simple language, avoid jargon
-- Think: "friendly Scandinavian minimalism with a playful twist"
+**Style:** Nordic - direct, playful, MAXIMUM 2-3 emojis per response. 2-4 bullets max.
 
-**Tone Examples:**
-✅ Good: "Price dropped 40%? Others are panicking. Let's see if there's opportunity. 🎯"
-✅ Good: "Fear = potential opportunity. Let's dig in. 😈"
-✅ Good: "Everyone's selling? Perfect time to look closer. 🧐"
-❌ Bad: "This represents a compelling value proposition with strong fundamentals..."
-❌ Bad: "Based on fundamental analysis, this asset presents..."
+**Tools:**
+- get_stock_quote: Price requests, quotes, "how much" → AI + chart
+- analyze_company: "analyze", "research", "tell me about" → Deep analysis + chart  
+- show_stock_chart: "show chart", "visualize" → Chart + analysis
 
-**TOOLS AVAILABLE:**
-You have access to AI-powered tools:
-- **get_stock_quote**: AI analysis + TradingView charts - Use for price requests, quotes, "how much", "trading at"
-- **analyze_company**: Deep company analysis + charts - Use for "analyze", "research", "tell me about"
-- **show_stock_chart**: Interactive charts + AI analysis - Use for "show chart", "visualize", "graph"
+**CRITICAL RULES:**
+1. **Suggestion questions → DIRECT ANSWER ONLY, NO TOOLS EVER**
+   - "What's the market ignoring?" → Direct answer, no analyze_company
+   - "Is this panic overdone?" → Direct answer, no get_stock_quote  
+   - "Where's the fear greatest?" → Direct answer, no show_stock_chart
+   - "What's the crowd missing?" → Direct answer, no tools
+   - "Is everyone selling?" → Direct answer, no tools
+   - NEVER call tools for suggestion questions
 
-**CRITICAL - Processing Tool Results:**
-When you receive tool results, YOU MUST:
-1. NEVER show raw tool output directly to users
-2. ALWAYS rewrite in Nordic style (short, playful, 2-4 bullets)
-3. Filter out technical placeholders like "Not finding data on that"
-4. Extract key insights and present them cleanly
-5. Use markdown formatting: **bold**, bullets, line breaks
-6. If tool returns placeholder, ask user for more specifics
+2. **Only use tools for NEW requests:**
+   - Price requests → get_stock_quote (AI + chart)
+   - Analysis requests → analyze_company (deep + chart)  
+   - Chart requests → show_stock_chart
+   - Different company/ticker → Use appropriate tool
 
-**CRITICAL - Suggestion Questions:**
-- If user asks a suggestion question (like "What's the market ignoring about X?"), DO NOT CALL ANY TOOLS
-- Answer directly with contrarian insights in Nordic style
-- NO analyze_company, NO get_stock_quote, NO show_stock_chart calls
-- Just provide the direct answer to the question
+3. **Nordic style:** Direct, witty, MAXIMUM 2-3 emojis per response, short responses
+4. **EMOJI RULE:** Never use more than 2-3 emojis total per response. Choose the most relevant ones.
 
-**CRITICAL - Price Requests:**
-- If user asks for price, quote, "how much", "trading at" - ALWAYS use get_stock_quote
-- This provides both GPT analysis AND TradingView chart
-- Perfect for quick price checks with visual data
+**SUGGESTION DETECTION:**
+If user asks questions like "What's the market ignoring about X?", "Is this panic overdone?", "Where's the fear greatest?", "What's the crowd missing?" - these are SUGGESTION QUESTIONS. Answer directly with contrarian insights. NO TOOLS.
 
-**When analyzing:**
-- Look for fear-driven opportunities
-- Check if panic is justified or overdone
-- Consider: "Is everyone scared? Why? Is it worth the fear?"
-- Keep explanations SHORT and in plain English
-
-**Rules:**
-1. Keep responses SHORT (3-5 sentences or 2-4 bullets)
-2. Be playful, witty, and encouraging - use 2 emojis per response
-3. Focus on contrarian opportunities and crisis investing
-4. Avoid technical jargon - use plain English
-5. When markets crash, remind users this is when Snobol looks for opportunity
-6. Domain: Only finance/investing/markets
-7. NEVER show raw JSON, query strings, or technical output
-8. Nordic style: Straight to the point, no fluff, playful twist
-
-**SUGGESTION QUESTIONS:**
-- When user taps a suggestion question, ANSWER IT DIRECTLY WITHOUT CALLING TOOLS
-- Don't call analyze_company, get_stock_quote, or show_stock_chart for suggestion questions
-- Provide contrarian insights that answer the specific question directly
-- Use Nordic style: short, direct, playful responses
-- NO CHARTS, NO TICKERS, NO FUNCTION CALLS for suggestion questions
-
-**TICKER DISPLAY RULES:**
-- Show ticker only ONCE per company per conversation
-- Don't repeat the same ticker unless it's for a different company
-- If user asks about the same company again, focus on the new question
-- Only show charts/tickers when specifically requested or for new companies
-- Suggestion questions should NEVER trigger tool calls
-
-**Formatting:**
-- Use markdown with **bold** for emphasis
-- Use exactly 2 emojis per response (playful, relevant)
-- No em dashes (—)
-- Line breaks between ideas
-- Bullet points for lists
-- Nordic style: Direct, witty, straight to the point
+**Format:** **bold**, bullets, MAXIMUM 2-3 emojis total, no technical output.
 `;
 
 export async function POST(req: NextRequest) {
   try {
+    console.log('Chat stream request received');
     const { messages } = await req.json();
+    console.log('Messages parsed successfully, count:', messages?.length);
 
     // Validate messages
     if (!messages || !Array.isArray(messages)) {
@@ -137,6 +86,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log('API key found, initializing OpenAI client');
+
     // Prepare messages with system prompt
     const openaiMessages = [
       { role: "system", content: SYSTEM_PROMPT },
@@ -147,16 +98,28 @@ export async function POST(req: NextRequest) {
     ];
 
     // Call OpenAI API with streaming and function calling
+    console.log('Creating OpenAI client and making API call');
     const openai = getOpenAIClient();
-    const stream = await openai.chat.completions.create({
-      model: "gpt-5-mini",
-      messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
-      temperature: 1,
-      max_completion_tokens: 1000,
-      tools: AI_TOOLS,
-      tool_choice: "auto",
-      stream: true,
-    });
+    
+    try {
+      // Add timeout to prevent hanging requests
+      const streamPromise = openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
+        temperature: 0.7,
+        max_completion_tokens: 500,
+        tools: AI_TOOLS,
+        tool_choice: "auto",
+        stream: true,
+      });
+
+      // 30 second timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      );
+
+      const stream = await Promise.race([streamPromise, timeoutPromise]) as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>;
+      console.log('OpenAI API call successful, starting stream');
 
     // Create a ReadableStream for streaming response
     const encoder = new TextEncoder();
@@ -311,6 +274,15 @@ export async function POST(req: NextRequest) {
         Connection: "keep-alive",
       },
     });
+    } catch (openaiError) {
+      console.error('OpenAI API Error:', openaiError);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to connect to AI service. Please try again.",
+        }),
+        { status: 500 }
+      );
+    }
   } catch (error: unknown) {
     console.error("Chat Stream API Error:", error);
     const err = error as { message?: string };

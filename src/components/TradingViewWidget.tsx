@@ -58,7 +58,9 @@ export default function TradingViewWidget({
         console.warn('TradingView iframe contentWindow access blocked - this is normal for security reasons');
         return;
       }
-      originalConsoleError.apply(console, args);
+      if (originalConsoleError) {
+        originalConsoleError.apply(console, args);
+      }
     };
 
     const script = document.createElement("script");
@@ -111,7 +113,9 @@ export default function TradingViewWidget({
       window.removeEventListener('error', handleIframeError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
       // Restore original console.error
-      console.error = originalConsoleError;
+      if (originalConsoleError) {
+        console.error = originalConsoleError;
+      }
       if (containerRef.current) {
         containerRef.current.innerHTML = "";
       }

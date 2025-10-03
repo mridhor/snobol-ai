@@ -8,49 +8,21 @@ function getOpenAIClient() {
   });
 }
 
-// System prompt for generating suggestions
-const SUGGESTION_PROMPT = `You are a helpful assistant that generates follow-up questions for Snobol AI, a contrarian investing chatbot.
+// Optimized system prompt for speed
+const SUGGESTION_PROMPT = `Generate 3 contrarian follow-up questions for Snobol AI (contrarian investing chatbot).
 
-**Snobol's Philosophy:**
-Snobol is NOT value investing. Snobol is contrarian and opportunistic.
-- We invest where fear dominates
-- We're open to ALL asset types
-- We look for opportunities when others panic
+**Style:** Short, contrarian, max 10 words each. Focus on fear/opportunity.
 
-Given a conversation, generate exactly 3 relevant follow-up questions that:
-1. Build on the conversation naturally
-2. Are concise (max 10 words each)
-3. Focus on contrarian/opportunistic thinking
-4. Are phrased as user questions (first person)
-5. Are beginner-friendly but curious
-
-**Question Style:**
-✅ Good: "Is this panic overdone?"
-✅ Good: "What's the crowd missing here?"
-✅ Good: "Where's the fear greatest right now?"
-❌ Bad: "What's the company's EBITDA margin?"
-❌ Bad: "Should I use dollar-cost averaging?"
-
-**For Stock/Company Discussions:**
-- NEVER suggest technical analysis (charts, RSI, moving averages, patterns, etc.)
-- ALWAYS focus on contrarian angles:
-  * "Is the market overreacting?"
-  * "What's the fear vs reality here?"
-  * "Is everyone selling? Why?"
-  * "What's the worst that could happen?"
-  * "Is this panic justified?"
-- Focus on business reality, not financial metrics
-- Keep it simple and opportunistic
+**Good examples:**
+- "Is this panic overdone?"
+- "What's the crowd missing?"
+- "Where's the fear greatest?"
 
 **Rules:**
-- Short, punchy questions (max 10 words)
 - Contrarian perspective
 - Plain English, no jargon
-- Progressive difficulty (easy → medium → challenging)
-- Stay in finance/investing domain
-
-Format: Return ONLY a JSON array of 3 strings, nothing else.
-Example: ["Is this fear justified?", "What's the real risk here?", "Where are others panicking?"]`;
+- Business reality, not technical analysis
+- Return JSON array: ["question1", "question2", "question3"]`;
 
 export async function POST(req: NextRequest) {
   try {
@@ -73,34 +45,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Call OpenAI API to generate suggestions
+    // Call OpenAI API to generate suggestions - optimized for speed
     const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
-      model: "gpt-4.1-nano",
+      model: "gpt-4o-mini", // Faster model
       messages: [
         { role: "system", content: SUGGESTION_PROMPT },
         { 
           role: "user", 
-          content: `User asked: "${userMessage}"\n\nSnobol AI responded: "${assistantMessage}"\n\nGenerate 3 relevant follow-up questions:` 
+          content: `User: "${userMessage}"\nAI: "${assistantMessage}"\nGenerate 3 follow-up questions:` 
         }
       ],
-      temperature: 1, // Slightly creative but focused
-      max_completion_tokens: 200, // Enough for 3 short questions
+      temperature: 0.7, // Lower temperature for faster, more focused responses
+      max_completion_tokens: 150, // Reduced tokens for faster generation
     });
 
-    console.log("OpenAI completion response:", JSON.stringify(completion, null, 2));
+    // Reduced logging for performance
+    console.log("Suggestions generated successfully");
 
     const suggestionsText = completion.choices[0]?.message?.content;
 
     if (!suggestionsText) {
       console.error("No suggestions generated");
-      console.error("Completion object:", completion);
-      console.error("Choices array:", completion.choices);
-      console.error("First choice:", completion.choices[0]);
-      return NextResponse.json(
-        { error: "Failed to generate suggestions" },
-        { status: 500 }
-      );
+      // Return fallback suggestions immediately
+      return NextResponse.json({
+        suggestions: [
+          "Where is fear greatest right now?",
+          "Is this panic overdone?",
+          "What's the crowd missing?"
+        ]
+      });
     }
 
     // Clean up the response text (remove markdown code blocks if present)
@@ -109,72 +83,41 @@ export async function POST(req: NextRequest) {
       cleanedText = cleanedText.replace(/^```(?:json)?\s*\n?/, '').replace(/\n?```\s*$/, '');
     }
     
-    // Parse the JSON response
+    // Fast JSON parsing with fallback
     try {
       const suggestions = JSON.parse(cleanedText);
       
-      // Validate it's an array
-      if (!Array.isArray(suggestions)) {
-        console.error("Parsed value is not an array:", typeof suggestions, suggestions);
-        throw new Error("Not an array");
-      }
-      
-      // Validate array contains strings
-      const validSuggestions = suggestions.filter(s => typeof s === 'string' && s.trim().length > 0);
-      
-      if (validSuggestions.length === 0) {
-        console.error("No valid string suggestions found:", suggestions);
-        throw new Error("No valid strings");
-      }
-
-      // If we got exactly 3 suggestions, return them
-      if (validSuggestions.length === 3) {
+      if (Array.isArray(suggestions) && suggestions.length >= 1) {
+        // Take first 3 valid suggestions
+        const validSuggestions = suggestions
+          .filter(s => typeof s === 'string' && s.trim().length > 0)
+          .slice(0, 3);
+        
+        // Pad with defaults if needed
+        const defaults = [
+          "Where is fear greatest right now?",
+          "Is this panic overdone?", 
+          "What's the crowd missing?"
+        ];
+        
+        while (validSuggestions.length < 3) {
+          validSuggestions.push(defaults[validSuggestions.length]);
+        }
+        
         return NextResponse.json({ suggestions: validSuggestions });
       }
-
-      // If we got fewer or more, try to fix it
-      console.warn(`Got ${validSuggestions.length} suggestions instead of 3, padding with defaults`);
-      
-      // Take up to 3 suggestions, pad if needed
-      const paddedSuggestions = validSuggestions.slice(0, 3);
-      
-      // Pad with contrarian defaults if needed
-      const defaults = [
-        "Where is fear greatest right now?",
-        "Is this panic overdone?",
-        "What's the crowd missing?"
-      ];
-      
-      while (paddedSuggestions.length < 3) {
-        paddedSuggestions.push(defaults[paddedSuggestions.length]);
-      }
-      
-      return NextResponse.json({ suggestions: paddedSuggestions });
-    } catch (parseError) {
-      console.error("Failed to parse suggestions:", parseError);
-      console.error("Raw response:", suggestionsText);
-      console.error("Cleaned text:", cleanedText);
-      
-      // Fallback: try to extract questions manually
-      const lines = suggestionsText.split('\n').filter(line => line.trim());
-      const questions = lines
-        .map(line => line.replace(/^[\d\-\*\.]+\s*/, '').replace(/^["']|["']$/g, '').trim())
-        .filter(line => line.length > 0 && line.includes('?'))
-        .slice(0, 3);
-
-      // Pad with defaults if we got fewer than 3
-      const defaults = [
-        "Where is fear greatest right now?",
-        "Is this panic overdone?",
-        "What's the crowd missing?"
-      ];
-      
-      while (questions.length < 3) {
-        questions.push(defaults[questions.length]);
-      }
-
-      return NextResponse.json({ suggestions: questions });
+    } catch {
+      console.warn("JSON parse failed, using fallback");
     }
+    
+    // Fast fallback - return defaults immediately
+    return NextResponse.json({
+      suggestions: [
+        "Where is fear greatest right now?",
+        "Is this panic overdone?",
+        "What's the crowd missing?"
+      ]
+    });
   } catch (error: unknown) {
     console.error("Suggestions API Error:", error);
     
