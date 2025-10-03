@@ -25,6 +25,17 @@ export default function TradingViewWidget({
     // Clear previous content to avoid duplicate widgets on prop changes
     containerRef.current.innerHTML = "";
 
+    // Add global error handler for iframe contentWindow issues
+    const handleIframeError = (event: ErrorEvent) => {
+      if (event.message?.includes('contentWindow is not available')) {
+        event.preventDefault();
+        console.warn('TradingView iframe contentWindow access blocked - this is normal for security reasons');
+        return false;
+      }
+    };
+
+    window.addEventListener('error', handleIframeError);
+
     const script = document.createElement("script");
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = "text/javascript";
@@ -48,6 +59,11 @@ export default function TradingViewWidget({
 
     script.innerHTML = JSON.stringify(config);
 
+    // Add error handling for iframe contentWindow issues
+    script.onerror = (error) => {
+      console.warn('TradingView widget failed to load:', error);
+    };
+
     // Create container structure expected by TradingView
     const widgetContainer = document.createElement("div");
     widgetContainer.className = "tradingview-widget-container";
@@ -67,7 +83,10 @@ export default function TradingViewWidget({
     containerRef.current.appendChild(widgetContainer);
 
     return () => {
-      if (containerRef.current) containerRef.current.innerHTML = "";
+      window.removeEventListener('error', handleIframeError);
+      if (containerRef.current) {
+        containerRef.current.innerHTML = "";
+      }
     };
   }, [symbol, height, width, interval, theme]);
 

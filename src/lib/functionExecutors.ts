@@ -256,10 +256,7 @@ async function analyzeCompany(symbol: string): Promise<string> {
     };
     
     // Build Nordic-style response: short, direct, 2-4 bullets max
-    let response = `**${upper} - Quick Take**\n\n`;
-    
-    // Add pure ChatGPT-5 generated content
-    response += `${overview}\n\n`;
+    let response = `${overview}\n\n`;
     response += `**Money:** ${financials}\n\n`;
     response += `**Watch:** ${risks}\n\n`;
     
