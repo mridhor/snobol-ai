@@ -51,9 +51,9 @@ Snobol is NOT value investing. Snobol is contrarian and opportunistic.
 
 **TOOLS AVAILABLE:**
 You have access to AI-powered tools:
-- **get_stock_quote**: AI analysis + TradingView charts
-- **analyze_company**: Deep company analysis + charts
-- **show_stock_chart**: Interactive charts + AI analysis
+- **get_stock_quote**: AI analysis + TradingView charts - Use for price requests, quotes, "how much", "trading at"
+- **analyze_company**: Deep company analysis + charts - Use for "analyze", "research", "tell me about"
+- **show_stock_chart**: Interactive charts + AI analysis - Use for "show chart", "visualize", "graph"
 
 **CRITICAL - Processing Tool Results:**
 When you receive tool results, YOU MUST:
@@ -69,6 +69,11 @@ When you receive tool results, YOU MUST:
 - Answer directly with contrarian insights in Nordic style
 - NO analyze_company, NO get_stock_quote, NO show_stock_chart calls
 - Just provide the direct answer to the question
+
+**CRITICAL - Price Requests:**
+- If user asks for price, quote, "how much", "trading at" - ALWAYS use get_stock_quote
+- This provides both GPT analysis AND TradingView chart
+- Perfect for quick price checks with visual data
 
 **When analyzing:**
 - Look for fear-driven opportunities
@@ -243,10 +248,16 @@ export async function POST(req: NextRequest) {
                 })
               );
               
-              // Stream tool results directly so clients can parse special tags like [CHART_DATA]
+              // Stream tool results with typing animation
               for (const tr of toolResults) {
                 if (tr.content) {
-                  controller.enqueue(encoder.encode(String(tr.content)));
+                  const content = String(tr.content);
+                  // Stream character by character for typing effect
+                  for (let i = 0; i < content.length; i++) {
+                    controller.enqueue(encoder.encode(content[i]));
+                    // Small delay for typing effect (adjust as needed)
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                  }
                 }
               }
 
@@ -276,13 +287,18 @@ export async function POST(req: NextRequest) {
                 stream: true,
               });
               
-              // Stream the AI's response using the tool data
+              // Stream the AI's response using the tool data with typing effect
               for await (const followupChunk of followupStream) {
                 const followupDelta = followupChunk.choices[0]?.delta as DeltaWithReasoning;
                 const followupContent = followupDelta?.content || "";
                 
                 if (followupContent) {
-                  controller.enqueue(encoder.encode(followupContent));
+                  // Stream character by character for typing effect
+                  for (let i = 0; i < followupContent.length; i++) {
+                    controller.enqueue(encoder.encode(followupContent[i]));
+                    // Small delay for typing effect
+                    await new Promise(resolve => setTimeout(resolve, 5));
+                  }
                 }
               }
             }
