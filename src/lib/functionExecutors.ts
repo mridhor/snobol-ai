@@ -12,6 +12,78 @@ function generateChatGPTResponse(query: string, ticker?: string): string {
   const isMarketQuery = /market|opportunity|fear|panic|contrarian/i.test(query);
   const isRiskQuery = /risk|competition|challenge|threat/i.test(query);
   
+  // Check for suggestion questions that need direct answers
+  const isSuggestionQuestion = /what.*market.*ignoring|where.*fear.*stockpiled|is.*panic.*overreaction|everyone.*panicking|market.*overlooking|decline.*overdone|panic.*creating|fundamentals.*stable|market.*ignoring|greatest.*potential|biggest.*fear/i.test(query);
+  
+  if (isSuggestionQuestion && ticker) {
+    const upper = ticker.toUpperCase();
+    
+    if (/what.*market.*ignoring/i.test(query)) {
+      return `**What the market's missing about ${upper}:**
+
+The market often focuses on short-term noise. Here's what they're overlooking:
+
+**Hidden strengths:**
+- Strong fundamentals get ignored in panic
+- Long-term competitive advantages remain intact
+- Market cycles always turn eventually
+
+*When everyone's selling, that's when contrarians look closer.*`;
+    }
+    
+    if (/where.*fear.*stockpiled|biggest.*fear/i.test(query)) {
+      return `**Where the fear is concentrated:**
+
+Fear tends to cluster around specific concerns:
+
+**Main worry zones:**
+- Economic uncertainty driving selloffs
+- Sector-specific headwinds
+- Short-term volatility masking long-term value
+
+*Fear creates the best buying opportunities for patient investors.*`;
+    }
+    
+    if (/is.*panic.*overreaction|panic.*creating|overreaction/i.test(query)) {
+      return `**Is this panic overdone?**
+
+Contrarian view on the current situation:
+
+**Panic analysis:**
+- Market often overreacts to short-term news
+- Fear can create better entry points
+- Quality companies survive market cycles
+
+*When others panic, that's when opportunities emerge.*`;
+    }
+    
+    if (/decline.*overdone|overblown/i.test(query)) {
+      return `**Is this decline justified?**
+
+Looking at the bigger picture:
+
+**Decline assessment:**
+- Markets can overshoot in both directions
+- Quality fundamentals don't disappear overnight
+- Contrarian opportunities emerge in uncertainty
+
+*Smart money looks for value when others see only risk.*`;
+    }
+    
+    if (/fundamentals.*stable|market.*ignoring/i.test(query)) {
+      return `**Fundamentals vs. market noise:**
+
+The disconnect between reality and perception:
+
+**What matters:**
+- Strong fundamentals don't change with market sentiment
+- Quality companies have survived worse
+- Market cycles always correct eventually
+
+*Focus on what's real, not what's feared.*`;
+    }
+  }
+  
   if (ticker) {
     const upper = ticker.toUpperCase();
     
@@ -237,7 +309,7 @@ ${chartData}
  * ALWAYS includes TradingView chart data
  * MUST be Nordic style: short, direct, playful
  */
-async function analyzeCompany(symbol: string): Promise<string> {
+async function analyzeCompany(symbol: string, isSuggestionQuestion: boolean = false): Promise<string> {
   try {
     const upper = String(symbol || '').toUpperCase();
     
@@ -245,9 +317,6 @@ async function analyzeCompany(symbol: string): Promise<string> {
     const overview = generateChatGPTResponse(`${upper} company overview business description`, upper);
     const financials = generateChatGPTResponse(`${upper} financials revenue profit margin balance sheet basics`, upper);
     const risks = generateChatGPTResponse(`${upper} key risks competition market share simple terms`, upper);
-    
-    // Get TradingView chart data for visualization
-    const chartData = await getChartDataForSymbol(upper);
     
     const sourcesPayload = {
       sources: [
@@ -260,32 +329,49 @@ async function analyzeCompany(symbol: string): Promise<string> {
     response += `**Money:** ${financials}\n\n`;
     response += `**Watch:** ${risks}\n\n`;
     
-    return `${response.trim()}\n\n[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]\n${chartData}`.trim();
+    // Only include chart for initial analysis, not for suggestion questions
+    if (!isSuggestionQuestion) {
+      const chartData = await getChartDataForSymbol(upper);
+      return `${response.trim()}\n\n[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]\n${chartData}`.trim();
+    } else {
+      return `${response.trim()}\n\n[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]`.trim();
+    }
   } catch (error) {
     console.error('Analysis (ChatGPT-5) error:', error);
     const upper = String(symbol || '').toUpperCase();
-    
-    // Still try to include chart even on error
-    let chartData = '';
-    try {
-      chartData = await getChartDataForSymbol(upper);
-    } catch {
-      // Chart failed too, continue without it
-    }
     
     const sourcesPayload = {
       sources: [
         { name: 'ChatGPT-5 Analysis', url: `https://openai.com/chatgpt` }
       ]
     };
-    return `
+    
+    if (!isSuggestionQuestion) {
+      // Still try to include chart even on error for initial analysis
+      let chartData = '';
+      try {
+        chartData = await getChartDataForSymbol(upper);
+      } catch {
+        // Chart failed too, continue without it
+      }
+      
+      return `
 **${upper} - Quick Take**
 
 AI analysis temporarily unavailable. Check the chart below for visual data.
 
 [SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
 ${chartData}
-    `.trim();
+      `.trim();
+    } else {
+      return `
+**${upper} - Quick Take**
+
+AI analysis temporarily unavailable.
+
+[SOURCES]${JSON.stringify(sourcesPayload)}[/SOURCES]
+      `.trim();
+    }
   }
 }
 
@@ -596,7 +682,10 @@ export async function executeFunction(name: string, args: Record<string, string 
         return await getStockQuote(String(args.symbol));
       
       case 'analyze_company':
-        return await analyzeCompany(String(args.symbol));
+        // Check if this is a suggestion question by looking at the query context
+        const query = String(args.query || '');
+        const isSuggestionQuestion = /what.*market.*ignoring|where.*fear.*stockpiled|is.*panic.*overreaction|everyone.*panicking|market.*overlooking|decline.*overdone|panic.*creating|fundamentals.*stable|market.*ignoring|greatest.*potential|biggest.*fear/i.test(query);
+        return await analyzeCompany(String(args.symbol), isSuggestionQuestion);
       
       case 'show_stock_chart':
         return await getStockChartData(String(args.symbol), String(args.period));
