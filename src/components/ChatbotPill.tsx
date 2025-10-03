@@ -30,7 +30,7 @@ interface Message {
   thinkingTime?: number;
   suggestions?: string[];
   chartData?: ChartData;
-  suggestionsUpgraded?: boolean;
+  suggestionsLoading?: boolean;
 }
 
 export interface ChatbotPillRef {
@@ -60,6 +60,8 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   const [thinkingDuration, setThinkingDuration] = useState(0);
   const [loadingMessage, setLoadingMessage] = useState("Thinking...");
   const [inputContext, setInputContext] = useState<string>("");
+  const [inputHistory, setInputHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -284,9 +286,13 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     ]
   };
 
-  // AI-powered suggestion generation
+  // AI-powered suggestion generation with timeout
   const generateAISuggestions = async (userMessage: string, assistantMessage: string): Promise<string[]> => {
     try {
+      // Add timeout to fail fast if API is slow
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      
       const response = await fetch("/api/chat/suggestions", {
         method: "POST",
         headers: {
@@ -296,17 +302,20 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           userMessage,
           assistantMessage,
         }),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error("Failed to generate suggestions");
+        throw new Error(`HTTP ${response.status}: Failed to generate suggestions`);
       }
 
       const data = await response.json();
-      return data.suggestions || getFallbackSuggestions(userMessage, assistantMessage);
+      return data.suggestions || [];
     } catch (error) {
       console.error("Error generating AI suggestions:", error);
-      return getFallbackSuggestions(userMessage, assistantMessage);
+      throw error; // Re-throw to trigger fallback
     }
   };
 
@@ -411,16 +420,45 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     return -1;
   };
 
-  // Prevent body scroll when overlay is open
+  // Prevent body scroll when overlay is open (Safari-compatible)
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
+      // Store original styles and scroll position
+      const originalBodyClass = document.body.className;
+      const scrollY = window.scrollY;
+      
+      // Add no-scroll class and prevent scrolling
+      document.body.classList.add('no-scroll');
+      document.body.style.top = `-${scrollY}px`;
+      document.documentElement.style.overflow = "hidden";
+      
+      // Prevent touch scrolling on Safari
+      const preventTouch = (e: TouchEvent) => {
+        // Allow scrolling within the chat container
+        const chatContainer = document.querySelector('[data-chat-container]');
+        if (chatContainer && chatContainer.contains(e.target as Node)) {
+          return; // Allow scrolling within chat
+        }
+        e.preventDefault();
+      };
+      
+      // Add touch event listeners for Safari
+      document.addEventListener('touchmove', preventTouch, { passive: false });
+      document.addEventListener('touchstart', preventTouch, { passive: false });
+      
+      // Store for cleanup
+      const cleanup = () => {
+        document.body.className = originalBodyClass;
+        document.body.style.top = '';
+        document.documentElement.style.overflow = '';
+        document.removeEventListener('touchmove', preventTouch);
+        document.removeEventListener('touchstart', preventTouch);
+        // Restore scroll position
+        window.scrollTo(0, scrollY);
+      };
+      
+      return cleanup;
     }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
   }, [isOpen]);
 
   // Robust scroll function
@@ -581,6 +619,13 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     }
   }, [inputValue]);
 
+  // Reset history index when user types something new
+  useEffect(() => {
+    if (historyIndex !== -1 && inputValue !== inputHistory[historyIndex]) {
+      setHistoryIndex(-1);
+    }
+  }, [inputValue, historyIndex, inputHistory]);
+
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputValue.trim();
     
@@ -597,6 +642,20 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       setInputValue("");
       setError(null);
       setInputContext("");
+      
+      // Add to input history (avoid duplicates)
+      setInputHistory(prev => {
+        const newHistory = [...prev];
+        // Remove if already exists to avoid duplicates
+        const filteredHistory = newHistory.filter(msg => msg !== userMessage);
+        // Add to end
+        filteredHistory.push(userMessage);
+        // Keep only last 50 messages to prevent memory issues
+        return filteredHistory.slice(-50);
+      });
+      
+      // Reset history index
+      setHistoryIndex(-1);
       
       // Reset textarea height
       if (textareaRef.current) {
@@ -767,35 +826,46 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         setLoadingMessage("Thinking..."); // Reset to default
         abortControllerRef.current = null;
         
-        // Show fallback suggestions immediately, then replace with AI-generated ones
+        // Generate suggestions with AI priority
         if (accumulatedContent) {
-          // Show fallback suggestions immediately for instant UI update
-          const fallbackSuggestions = getFallbackSuggestions(userMessage, accumulatedContent);
+          // Show loading state for suggestions
           setMessages(prev => {
             const updated = [...prev];
             updated[updated.length - 1] = {
               ...updated[updated.length - 1],
-              suggestions: fallbackSuggestions
+              suggestions: ["Generating suggestions..."],
+              suggestionsLoading: true
             };
             return updated;
           });
 
-          // Then generate AI suggestions in the background and replace when ready
+          // Try AI suggestions first, fallback only if AI fails
           generateAISuggestions(userMessage, accumulatedContent)
-            .then((newSuggestions) => {
+            .then((aiSuggestions) => {
+              // AI suggestions succeeded - use them
               setMessages(prev => {
                 const updated = [...prev];
                 updated[updated.length - 1] = {
                   ...updated[updated.length - 1],
-                  suggestions: newSuggestions,
-                  suggestionsUpgraded: true // Flag to show they were upgraded
+                  suggestions: aiSuggestions,
+                  suggestionsLoading: false
                 };
                 return updated;
               });
             })
             .catch((error) => {
-              console.error("Error generating AI suggestions:", error);
-              // Keep the fallback suggestions that are already showing
+              console.error("AI suggestions failed, using fallback:", error);
+              // AI suggestions failed - use fallback
+              const fallbackSuggestions = getFallbackSuggestions(userMessage, accumulatedContent);
+              setMessages(prev => {
+                const updated = [...prev];
+                updated[updated.length - 1] = {
+                  ...updated[updated.length - 1],
+                  suggestions: fallbackSuggestions,
+                  suggestionsLoading: false
+                };
+                return updated;
+              });
             });
         }
       }
@@ -806,6 +876,46 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      navigateHistory("up");
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      navigateHistory("down");
+    }
+  };
+
+  const navigateHistory = (direction: "up" | "down") => {
+    if (inputHistory.length === 0) return;
+
+    let newIndex = historyIndex;
+
+    if (direction === "up") {
+      // Move up in history (older messages)
+      if (historyIndex === -1) {
+        // First time pressing up, go to the most recent message
+        newIndex = inputHistory.length - 1;
+      } else if (historyIndex > 0) {
+        // Move to previous message
+        newIndex = historyIndex - 1;
+      }
+    } else if (direction === "down") {
+      // Move down in history (newer messages)
+      if (historyIndex < inputHistory.length - 1) {
+        // Move to next message
+        newIndex = historyIndex + 1;
+      } else {
+        // At the end, clear input
+        newIndex = -1;
+        setInputValue("");
+        setHistoryIndex(-1);
+        return;
+      }
+    }
+
+    if (newIndex >= 0 && newIndex < inputHistory.length) {
+      setInputValue(inputHistory[newIndex]);
+      setHistoryIndex(newIndex);
     }
   };
 
@@ -1006,6 +1116,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           {/* Messages */}
           <div 
             ref={messagesContainerRef}
+            data-chat-container
             className={`h-full pt-12 sm:pt-14 pb-28 sm:pb-32 overflow-y-auto ${
             isClosing ? 'animate-out fade-out duration-200' : 'animate-in fade-in duration-600 delay-150 ease-out'
           }`}>
@@ -1150,9 +1261,12 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                               isLatestSuggestion
                                 ? 'bg-white hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm'
                                 : 'bg-gray-50 hover:bg-gray-900 text-gray-400 hover:text-white border border-gray-100 hover:border-gray-900 opacity-60 hover:opacity-100 hover:shadow-sm'
-                            }`}
+                            } ${message.suggestionsLoading ? 'opacity-75' : ''}`}
                           >
                             <span className="line-clamp-1">{suggestion}</span>
+                            {message.suggestionsLoading && suggestionIndex === 0 && (
+                              <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                            )}
                           </button>
                         ))}
                       </div>

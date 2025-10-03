@@ -40,3 +40,18 @@ body {
   outline: none !important;
   box-shadow: none !important;
 }
+
+/* Safari scroll prevention */
+.no-scroll {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure chat container can scroll on Safari */
+[data-chat-container] {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto !important;
+}
