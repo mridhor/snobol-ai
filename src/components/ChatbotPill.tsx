@@ -1339,7 +1339,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
 
           {/* Input Area */}
           <div 
-            className={`absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md pt-3 sm:pt-4 ${
+            className={`absolute bottom-0 left-0 right-0 bg-white ${
               isClosing ? 'exit-bottom' : 'animate-in slide-in-from-bottom-2 fade-in duration-600 delay-100 ease-out'
             }`}
             style={{ 
@@ -1470,12 +1470,13 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   )}
                 </button>
               </div>
-              <p className="text-[10px] sm:text-[11px] text-gray-400 text-center mt-1.5 sm:mt-2 px-2">
+              <p className="text-[10px] sm:text-[11px] text-gray-400 bg-white text-center mt-1.5 sm:mt-2 px-2 pt-2">
                 Snobol AI can make mistakes. Always double-check important info.
               </p>
             </div>
           </div>
         </div>
+
       )}
     </>
   );

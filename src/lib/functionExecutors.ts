@@ -26,7 +26,9 @@ async function generateWebSearchAnalysis(query: string, ticker?: string): Promis
     
     try {
       const openai = getOpenAIClient();
-      const completion = await openai.chat.completions.create({
+      
+      // Add timeout to prevent hanging
+      const completionPromise = openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           {
@@ -38,8 +40,14 @@ async function generateWebSearchAnalysis(query: string, ticker?: string): Promis
             content: `Question: ${query}\nTicker: ${upper}\n\nProvide a direct contrarian answer in Nordic style (short, playful, max 2-3 emojis).`
           }
         ],
-        max_completion_tokens: 600,
+        max_completion_tokens: 300,
       });
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Analysis timeout')), 5000)
+      );
+      
+      const completion = await Promise.race([completionPromise, timeoutPromise]) as OpenAI.Chat.Completions.ChatCompletion;
       
       return completion.choices[0]?.message?.content || `**${upper} - Contrarian Take**
 
@@ -819,20 +827,25 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
     note: 'Rendering via TradingView widget'
     })}[/CHART_DATA]`;
     
-  // ALSO include company analysis with ChatGPT-5
+  // Generate lightweight analysis without blocking the main response
   let overview = '';
   let financials = '';
   let risks = '';
   
   try {
-    overview = await generateWebSearchAnalysis(`${upper} company overview business description`, upper);
-    financials = await generateWebSearchAnalysis(`${upper} financials revenue profit margin balance sheet basics`, upper);
-    risks = await generateWebSearchAnalysis(`${upper} key risks competition market share simple terms`, upper);
+    // Single, fast analysis call instead of 3 separate calls
+    const quickAnalysis = await generateWebSearchAnalysis(`${upper} quick overview key points risks opportunities`, upper);
+    
+    // Split the response into sections (simple approach)
+    const lines = quickAnalysis.split('\n').filter(line => line.trim());
+    overview = lines.slice(0, Math.ceil(lines.length / 3)).join('\n') || `**${upper} Overview**\n\nCompany analysis available via chart below.`;
+    financials = lines.slice(Math.ceil(lines.length / 3), Math.ceil(lines.length * 2 / 3)).join('\n') || 'Financial details in chart analysis.';
+    risks = lines.slice(Math.ceil(lines.length * 2 / 3)).join('\n') || 'Risk assessment via interactive chart.';
   } catch (error) {
-    console.error('Error generating ChatGPT-5 analysis:', error);
-    overview = '- AI analysis temporarily unavailable.';
-    financials = '- AI analysis temporarily unavailable.';
-    risks = '- AI analysis temporarily unavailable.';
+    console.error('Error generating quick analysis:', error);
+    overview = `**${upper} Analysis**\n\nInteractive chart with real-time data below.`;
+    financials = 'Financial metrics available in chart.';
+    risks = 'Risk indicators shown in chart analysis.';
   }
   
   
