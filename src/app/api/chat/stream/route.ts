@@ -248,16 +248,10 @@ export async function POST(req: NextRequest) {
                 })
               );
               
-              // Stream tool results with typing animation
+              // Stream tool results directly so clients can parse special tags like [CHART_DATA]
               for (const tr of toolResults) {
                 if (tr.content) {
-                  const content = String(tr.content);
-                  // Stream character by character for typing effect
-                  for (let i = 0; i < content.length; i++) {
-                    controller.enqueue(encoder.encode(content[i]));
-                    // Small delay for typing effect (adjust as needed)
-                    await new Promise(resolve => setTimeout(resolve, 10));
-                  }
+                  controller.enqueue(encoder.encode(String(tr.content)));
                 }
               }
 
@@ -287,18 +281,13 @@ export async function POST(req: NextRequest) {
                 stream: true,
               });
               
-              // Stream the AI's response using the tool data with typing effect
+              // Stream the AI's response using the tool data
               for await (const followupChunk of followupStream) {
                 const followupDelta = followupChunk.choices[0]?.delta as DeltaWithReasoning;
                 const followupContent = followupDelta?.content || "";
                 
                 if (followupContent) {
-                  // Stream character by character for typing effect
-                  for (let i = 0; i < followupContent.length; i++) {
-                    controller.enqueue(encoder.encode(followupContent[i]));
-                    // Small delay for typing effect
-                    await new Promise(resolve => setTimeout(resolve, 5));
-                  }
+                  controller.enqueue(encoder.encode(followupContent));
                 }
               }
             }
