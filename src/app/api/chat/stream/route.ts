@@ -50,11 +50,10 @@ Snobol is NOT value investing. Snobol is contrarian and opportunistic.
 ❌ Bad: "This represents a compelling value proposition with strong fundamentals..."
 
 **TOOLS AVAILABLE:**
-You have access to real-time tools:
-- **search_web**: Current financial news
-- **get_stock_quote**: Live prices
-- **analyze_company**: Company analysis + chart
-- **show_stock_chart**: Interactive charts + analysis
+You have access to AI-powered tools:
+- **get_stock_quote**: AI analysis + TradingView charts
+- **analyze_company**: Deep company analysis + charts
+- **show_stock_chart**: Interactive charts + AI analysis
 
 **CRITICAL - Processing Tool Results:**
 When you receive tool results, YOU MUST:
@@ -121,10 +120,10 @@ export async function POST(req: NextRequest) {
     // Call OpenAI API with streaming and function calling
     const openai = getOpenAIClient();
     const stream = await openai.chat.completions.create({
-      model: "gpt-5-nano",
+      model: "gpt-5-mini",
       messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
       temperature: 1,
-      max_completion_tokens: 800,
+      max_completion_tokens: 1000,
       tools: AI_TOOLS,
       tool_choice: "auto",
       stream: true,
@@ -253,7 +252,7 @@ export async function POST(req: NextRequest) {
                 model: "gpt-5-nano",
                 messages: messagesWithTools,
                 temperature: 1,
-                max_completion_tokens: 800,
+                max_completion_tokens: 1000,
                 stream: true,
               });
               

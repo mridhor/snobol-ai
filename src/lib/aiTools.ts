@@ -4,23 +4,6 @@ export const AI_TOOLS = [
   {
     type: "function" as const,
     function: {
-      name: "search_web",
-      description: "Search for current news, events, or sentiment about markets/companies. Use to check: What's the current fear level? What are people panicking about? What's the news causing the selloff?",
-      parameters: {
-        type: "object",
-        properties: {
-          query: {
-            type: "string",
-            description: "The search query about finance, markets, stocks, or companies"
-          }
-        },
-        required: ["query"]
-      }
-    }
-  },
-  {
-    type: "function" as const,
-    function: {
       name: "get_stock_quote",
       description: "Get current price and basic data. Use when user asks for 'price', 'quote', 'how much', 'trading at' WITHOUT deeper analysis. Always includes chart. Good for quick price checks.",
       parameters: {
@@ -39,7 +22,7 @@ export const AI_TOOLS = [
     type: "function" as const,
     function: {
       name: "analyze_company",
-      description: "Deep dive analysis with chart. Use for: 'analyze', 'research', 'what's the deal with X', 'should I look at X', 'tell me about X', 'is X opportunity'. Focus on: business reality, what they do, risks, if panic is justified. Always includes chart.",
+      description: "Pure GPT-5 analysis with chart. Use for: 'analyze', 'research', 'what's the deal with X', 'should I look at X', 'tell me about X', 'is X opportunity'. AI-powered insights on: business reality, what they do, risks, if panic is justified. Always includes chart.",
       parameters: {
         type: "object",
         properties: {

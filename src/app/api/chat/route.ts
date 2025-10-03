@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
         model: "gpt-5-nano", // Full GPT-5 model (higher quality, more nuanced replies)
         messages: openaiMessages as OpenAI.ChatCompletionMessageParam[],
         temperature: 1, // must be 1 for reasoning to work
-        max_completion_tokens: 800, // generous output cap
+        max_completion_tokens: 1000, // generous output cap
         top_p: 1,
       });
 

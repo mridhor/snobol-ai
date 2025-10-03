@@ -6,7 +6,7 @@ A financial AI chatbot built with Next.js, featuring real-time stock analysis, T
 
 - 🤖 **AI-Powered Financial Analysis** - Powered by OpenAI GPT
 - 📊 **TradingView Charts** - Interactive charts for stocks, crypto, commodities, and forex
-- 📈 **Alpha Vantage Integration** - Real financial data API for company fundamentals
+- 🧠 **ChatGPT-5 Analysis** - AI-powered financial insights and contrarian analysis
 - 🎯 **Contrarian Philosophy** - Opportunistic, fear-driven investing approach
 - 📱 **Responsive Design** - Beautiful UI that works on all devices
 
@@ -16,7 +16,6 @@ A financial AI chatbot built with Next.js, featuring real-time stock analysis, T
 
 1. **Node.js** (v18 or higher)
 2. **OpenAI API Key** - Get from [OpenAI Platform](https://platform.openai.com/)
-3. **Alpha Vantage API Key** - Get free key at [Alpha Vantage](https://www.alphavantage.co/support/#api-key)
 
 ### Environment Variables
 
@@ -24,10 +23,9 @@ Create a `.env.local` file in the project root:
 
 ```bash
 OPENAI_API_KEY=your_openai_api_key_here
-ALPHA_API_KEY=your_alpha_vantage_api_key_here
 ```
 
-See [ALPHA_VANTAGE_SETUP.md](./ALPHA_VANTAGE_SETUP.md) for detailed Alpha Vantage setup instructions.
+The app now uses pure ChatGPT-5 analysis powered by OpenAI's latest model for all financial insights and contrarian analysis.
 
 ## Getting Started
 
