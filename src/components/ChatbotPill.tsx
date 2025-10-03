@@ -1205,7 +1205,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                     >
                       {message.role === "user" ? (
                         <div 
-                          className="bg-gray-100 text-black rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-base sm:text-sm max-w-[85%] sm:max-w-[75%] break-words message-appear"
+                          className="bg-gray-100 text-black rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[14px] sm:text-sm max-w-[85%] sm:max-w-[75%] break-words message-appear"
                           style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
                         >
                           {message.content}
