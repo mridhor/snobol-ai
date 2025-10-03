@@ -148,8 +148,8 @@ export default function Homepage() {
             </div>
           </div>
         </div>
-      <div className="box-border content-stretch flex flex-col items-center py-8 md:py-12 px-4 md:px-8 lg:px-24 w-full mt-auto" data-name="Footer" data-node-id="1:146">
-        <div className="box-border content-stretch flex flex-col md:flex-row gap-4 md:gap-0 items-center justify-between w-full max-w-7xl p-2" data-name="Container" data-node-id="1:147">
+      <div className="box-border content-stretch flex flex-col items-center pt-0 pb-8 md:py-20 px-6 md:px-8 lg:px-24 w-full mt-auto mb-10 md:mb-0" data-name="Footer" data-node-id="1:146">
+        <div className="box-border content-stretch flex flex-row md:flex-row gap-4 md:gap-0 items-center justify-between w-full max-w-7xl p-2 md-12" data-name="Container" data-node-id="1:147">
           <div className="flex-shrink-0" data-name="Text" data-node-id="1:152">
             <p className="font-['Inter:Regular',_sans-serif] font-normal leading-5 text-[#666666] text-sm text-center md:text-right" data-node-id="1:153">
                 © 2025 Snobol Inc.
@@ -157,7 +157,7 @@ export default function Homepage() {
           </div>
           <div className="flex-shrink-0" data-name="Link" data-node-id="1:148">
             <p className="font-['Inter:Regular',_sans-serif] font-normal leading-5 text-[#666666] text-sm" data-node-id="1:149">
-              hello@snobol.ai
+              hello@snobol.ai 
             </p>
           </div>
 
