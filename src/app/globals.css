@@ -55,3 +55,26 @@ body {
   -webkit-overflow-scrolling: touch;
   overflow-y: auto !important;
 }
+
+/* Prevent iOS zoom on input focus */
+input, textarea, select {
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Additional iOS zoom prevention */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* Prevent zoom on focus for iOS Safari */
+textarea:focus, input:focus {
+  font-size: 16px !important;
+  -webkit-text-size-adjust: 100%;
+  transform: scale(1);
+}

@@ -1510,7 +1510,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                      placeholder="Message Snobol AI..."
                      rows={1}
                      disabled={isLoading || isStreaming}
-                     className={`w-full py-2 sm:py-2 bg-transparent resize-none focus:outline-none text-[14px] sm:text-sm leading-relaxed disabled:opacity-50 overflow-y-auto relative z-10 touch-manipulation ${
+                     className={`w-full py-2 sm:py-2 bg-transparent resize-none focus:outline-none text-base sm:text-base leading-relaxed disabled:opacity-50 overflow-y-auto relative z-10 touch-manipulation ${
                        (() => {
                          const lowerValue = inputValue.toLowerCase();
                          return lowerValue.includes("do contrarian discovery for ") || lowerValue.includes("do contrarian discovery for") ||   
@@ -1524,7 +1524,10 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                        maxHeight: "120px",
                        WebkitTouchCallout: "none",
                        WebkitUserSelect: "text",
-                       userSelect: "text"
+                       userSelect: "text",
+                       fontSize: "16px",
+                       WebkitAppearance: "none",
+                       borderRadius: "0"
                      }}
                      autoComplete="off"
                      autoCorrect="off"
@@ -1534,7 +1537,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   
                    {/* Text highlighter overlay */}
                    {inputValue && (
-                     <div className="absolute inset-0 pointer-events-none z-20 px-2.5 py-2 sm:px-3 sm:py-2 text-[14px] sm:text-sm leading-relaxed whitespace-pre-wrap overflow-hidden" style={{ marginLeft: '-6px' }}>
+                     <div className="absolute inset-0 pointer-events-none z-20 px-2.5 py-2 sm:px-3 sm:py-2 text-base sm:text-base leading-relaxed whitespace-pre-wrap overflow-hidden" style={{ marginLeft: '-6px' }}>
                       {(() => {
                         const lowerValue = inputValue.toLowerCase();
                         
