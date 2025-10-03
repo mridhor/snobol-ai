@@ -1069,8 +1069,8 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                     )}
                   </div>
                   
-                  {/* Render TradingView chart BELOW the message bubble if present */}
-                  {message.role === "assistant" && message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol && (
+                  {/* Render TradingView chart BELOW the message bubble if present - only after streaming is done */}
+                  {message.role === "assistant" && message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol && (!isStreaming || index < messages.length - 1) && (
                     <div className="w-full mt-3 message-appear" style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}>
                       <TradingViewWidget symbol={message.chartData.symbol} height={420} />
                     </div>
