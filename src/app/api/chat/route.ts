@@ -83,7 +83,7 @@ When you receive tool results, YOU MUST:
 
 **Formatting:**
 - Use markdown with **bold** for emphasis
-- Use expressive emojis sparingly
+- Use expressive emojis sparingly. Minimum 2 emojis, Maximum 3 emojis per response, never put two emojis in a row.
 - No em dashes (—)
 - Line breaks between ideas
 - Bullet points for lists

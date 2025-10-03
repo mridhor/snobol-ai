@@ -21,7 +21,7 @@ const SUGGESTION_PROMPT = `Generate 3 contrarian follow-up questions for Snobol 
 **Rules:**
 - Contrarian perspective
 - Plain English, no jargon
-- Business reality, not technical analysis
+- Business reality, not technical analysis, not investor-savvy language
 - Return JSON array: ["question1", "question2", "question3"]`;
 
 export async function POST(req: NextRequest) {
