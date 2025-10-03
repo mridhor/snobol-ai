@@ -17,11 +17,6 @@ function getOpenAIClient() {
  * ALWAYS focus on contrarian perspective and fear-driven opportunities
  */
 async function generateWebSearchAnalysis(query: string, ticker?: string): Promise<string> {
-  const isStockQuery = /stock|price|ticker|symbol/i.test(query);
-  const isCompanyQuery = /company|overview|business|profile/i.test(query);
-  const isFinancialsQuery = /financial|revenue|profit|earnings|balance sheet/i.test(query);
-  const isMarketQuery = /market|opportunity|fear|panic|contrarian/i.test(query);
-  const isRiskQuery = /risk|competition|challenge|threat/i.test(query);
   
   // Check for suggestion questions that need direct answers
   const isSuggestionQuestion = /what.*market.*ignoring|where.*fear.*stockpiled|is.*panic.*overreaction|everyone.*panicking|market.*overlooking|decline.*overdone|panic.*creating|fundamentals.*stable|market.*ignoring|greatest.*potential|biggest.*fear/i.test(query);
@@ -102,7 +97,6 @@ Market's always moving. Here's the contrarian take:
  */
 async function performWebSearchAnalysis(searchQuery: string, ticker?: string): Promise<string> {
   try {
-    const upper = ticker?.toUpperCase() || '';
     
     // Perform web search using free alternatives
     // Bing Search API was retired in 2025, so we'll use free alternatives:
@@ -274,7 +268,7 @@ function analyzeMarketPosition(data: Record<string, unknown>): string {
  * Uses GPT to synthesize search results into contrarian analysis
  * ALWAYS focus on contrarian perspective, fear-driven opportunities, and what the market is missing
  */
-async function generateStructuredAnalysis(query: string, ticker?: string, searchData?: any): Promise<string> {
+async function generateStructuredAnalysis(query: string, ticker?: string, searchData?: unknown): Promise<string> {
   const upper = ticker?.toUpperCase() || '';
   
   try {
@@ -286,9 +280,9 @@ async function generateStructuredAnalysis(query: string, ticker?: string, search
       messages: [
         {
           role: "system",
-          content: `You are Snobol AI - a contrarian opportunistic investing guide with a playful Nordic personality. 
+          content: `You are Snobol AI - a contrarian investing guide with a playful Nordic personality. 
 
-**Your task:** Synthesize web search results into specific, contrarian financial analysis that ANYONE can understand - no finance jargon!
+**Your task:** Synthesize web search results into specific, contrarian financial analysis that ANYONE can understand - no finance jargon!, BUT REMEMBER TO not persuade or recommend to buy or sell.
 
 **Style:** Nordic - direct, playful, witty, MAXIMUM 2-3 emojis per response. Be specific with data and insights.
 

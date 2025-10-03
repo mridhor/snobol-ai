@@ -20,10 +20,11 @@ export default function TradingViewWidget({
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
     // Clear previous content to avoid duplicate widgets on prop changes
-    containerRef.current.innerHTML = "";
+    container.innerHTML = "";
 
     // Add global error handler for iframe contentWindow issues
     const handleIframeError = (event: ErrorEvent) => {
@@ -107,7 +108,7 @@ export default function TradingViewWidget({
     widgetContainer.appendChild(widget);
     widgetContainer.appendChild(copyright);
     widgetContainer.appendChild(script);
-    containerRef.current.appendChild(widgetContainer);
+    container.appendChild(widgetContainer);
 
     return () => {
       window.removeEventListener('error', handleIframeError);
@@ -116,8 +117,8 @@ export default function TradingViewWidget({
       if (originalConsoleError) {
         console.error = originalConsoleError;
       }
-      if (containerRef.current) {
-        containerRef.current.innerHTML = "";
+      if (container) {
+        container.innerHTML = "";
       }
     };
   }, [symbol, height, width, interval, theme]);

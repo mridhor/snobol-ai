@@ -513,7 +513,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         }, 50);
       }
     }
-  }, [isLoading]);
+  }, [isLoading, messages]);
 
   // Keep scrolling during streaming to follow the response
   // BUT handle stock analysis differently
@@ -839,6 +839,9 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     } else if (toolkitText === "Find fear opportunities of " || toolkitText === "Find fear opportunities of ") {
       setInputContext("Type a company, sector, or market to find fear-driven opportunities");
       setInputValue("Find fear opportunities of ");
+    } else if (toolkitText === "Analyze ") {
+      setInputContext("Type a company, stock ticker, asset, or any market commodity to analyze");
+      setInputValue("Analyze ");
     }
     
     setTimeout(() => {
@@ -1173,6 +1176,13 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                          >
                            <span className="line-clamp-1">⚡ Find fear opportunities</span>
                          </button>
+                         <button
+                           onClick={() => handleToolkitClick("Analyze ")}
+                           disabled={isLoading || isStreaming}
+                           className="px-2 py-1 rounded-full text-xs transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm"
+                         >
+                           <span className="line-clamp-1">📈 Analyze</span>
+                         </button>
                       </div>
                     </div>
                   )}
@@ -1250,12 +1260,19 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                        // Show context when user types the template text
                        if (currentValue.includes("Do contrarian discovery for ") || currentValue.includes("Do contrarian discovery for")) {
                          setInputContext("Type a company, stock ticker, asset, or any market commodity to discover hidden opportunities");
+
                        } else if (currentValue.includes("Find fear opportunities of ") || currentValue.includes("Find fear opportunities of")) {
                          setInputContext("Type a company, sector, or market to find fear-driven opportunities");
+
+                       } else if (currentValue.includes("Analyze ") || currentValue.includes("Analyze")) {
+                         setInputContext("Type a company, stock ticker, asset, or any market commodity to analyze");
+
                        } else if (currentValue.includes("Do contrarian discovery")) {
                          setInputContext("Type a company, stock ticker, asset, or any market commodity to discover hidden opportunities");
+
                        } else if (currentValue.includes("Find fear opportunities")) {
                          setInputContext("Type a company, sector, or market to find fear-driven opportunities");
+
                        } else if (!currentValue.includes("Do contrarian discovery") && !currentValue.includes("Find fear opportunities")) {
                          setInputContext("");
                        }
@@ -1284,7 +1301,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
-                               <span className="bg-gray-200 rounded px-1.5 py-1 text-gray-800">{highlight}</span>
+                               <span className="bg-gray-200 rounded pl-1.5 pr-2 py-1 text-gray-800">{highlight}</span>
                               <span className="text-transparent">{after}</span>
                             </>
                           );
@@ -1298,7 +1315,21 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
-                               <span className="bg-gray-200 rounded px-2 py-1 text-gray-800">{highlight}</span>
+                               <span className="bg-gray-200 rounded pl-1.5 pr-2 py-1 text-gray-800">{highlight}</span>
+                              <span className="text-transparent">{after}</span>
+                            </>
+                          );
+                        }
+
+                        // Highlight "Analyze " (with space)
+                        if (inputValue.includes("Analyze ")) {
+                          const before = inputValue.substring(0, inputValue.indexOf("Analyze "));
+                          const highlight = "Analyze";
+                          const after = inputValue.substring(inputValue.indexOf("Analyze ") + highlight.length);
+                          return (
+                            <>
+                              <span className="text-transparent">{before}</span>
+                              <span className="bg-gray-200 rounded pl-1.5 pr-1.95 py-1 text-gray-800">{highlight}</span>
                               <span className="text-transparent">{after}</span>
                             </>
                           );
