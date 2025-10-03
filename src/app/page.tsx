@@ -125,14 +125,15 @@ export default function Homepage() {
       
       {/* Main content centered */}
       <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-24 py-8 md:py-12">
-        <div className="relative w-full max-w-6xl">
-          <div className="content-stretch flex flex-col lg:flex-row gap-8 lg:gap-24 items-center relative w-full" data-name="Container" data-node-id="1:157">
-              <div className="flex-1 max-w-xl lg:max-w-md" data-name="Paragraph" data-node-id="1:158">
-                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full">
-                  <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159">
+        <div className="relative w-full max-w-7xl">
+          <div className="content-stretch flex flex-col lg:flex-row gap-8 lg:gap-20 items-center relative w-full" data-name="Container" data-node-id="1:157">
+              <div className="flex-1 px-2 max-w-full lg:max-w-xl" data-name="Paragraph" data-node-id="1:158">
+                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2
+                ">
+                  <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic text-3xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159">
                     Imagine a world where AI makes us money better than any human can.
                   </p>
-                  <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-8" data-node-id="1:161">
+                  <p className="font-['Inter:Light',_sans-serif] font-light leading-tight not-italic text-3xl md:text-3xl lg:text-5xl text-black mb-8 pr-4" data-node-id="1:161">
                     Snobol invests in various crisis.
                   </p>
                   
@@ -157,7 +158,7 @@ export default function Homepage() {
             </div>
           </div>
         </div>
-      <div className="border-t border-gray-200 box-border content-stretch flex flex-col items-center py-8 md:py-12 px-4 md:px-8 lg:px-24 w-full mt-auto" data-name="Footer" data-node-id="1:146">
+      <div className="box-border content-stretch flex flex-col items-center py-8 md:py-12 px-4 md:px-8 lg:px-24 w-full mt-auto" data-name="Footer" data-node-id="1:146">
         <div className="box-border content-stretch flex flex-col md:flex-row gap-4 md:gap-0 items-center justify-between w-full max-w-6xl" data-name="Container" data-node-id="1:147">
           <div className="flex-shrink-0" data-name="Text" data-node-id="1:152">
             <p className="font-['Inter:Regular',_sans-serif] font-normal leading-5 text-[#666666] text-sm text-center md:text-right" data-node-id="1:153">
