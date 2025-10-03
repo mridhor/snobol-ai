@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
-import { MessageCircle, X, Send, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { MessageCircle, X, ChevronDown, ChevronUp, ArrowUp, Square } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Image from "next/image";
@@ -489,6 +489,21 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [isOpen]);
+
+  // Auto-focus chat container when overlay opens for keyboard scrolling
+  useEffect(() => {
+    if (isOpen && messagesContainerRef.current) {
+      // Small delay to ensure the overlay is fully rendered
+      const timer = setTimeout(() => {
+        if (messagesContainerRef.current) {
+          messagesContainerRef.current.focus();
+        }
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
   // Auto scroll to bottom when new messages arrive or loading state changes
   // BUT disable auto-scroll for stock analysis cases
   useEffect(() => {
@@ -625,6 +640,16 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       setHistoryIndex(-1);
     }
   }, [inputValue, historyIndex, inputHistory]);
+
+  const handleStopStreaming = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsLoading(false);
+    setIsStreaming(false);
+    setLoadingMessage("Thinking...");
+  };
 
   const handleSendMessage = async (messageText?: string) => {
     const textToSend = messageText || inputValue.trim();
@@ -885,6 +910,40 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     }
   };
 
+  const handleChatContainerKeyDown = (e: React.KeyboardEvent) => {
+    // Only handle scrolling if the input is not focused
+    if (document.activeElement?.tagName !== 'TEXTAREA' && document.activeElement?.tagName !== 'INPUT') {
+      const chatContainer = e.currentTarget as HTMLElement;
+      
+      switch (e.key) {
+        case 'ArrowUp':
+          e.preventDefault();
+          chatContainer.scrollTop -= 50;
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          chatContainer.scrollTop += 50;
+          break;
+        case 'PageUp':
+          e.preventDefault();
+          chatContainer.scrollTop -= chatContainer.clientHeight * 0.8;
+          break;
+        case 'PageDown':
+          e.preventDefault();
+          chatContainer.scrollTop += chatContainer.clientHeight * 0.8;
+          break;
+        case 'Home':
+          e.preventDefault();
+          chatContainer.scrollTop = 0;
+          break;
+        case 'End':
+          e.preventDefault();
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+          break;
+      }
+    }
+  };
+
   const navigateHistory = (direction: "up" | "down") => {
     if (inputHistory.length === 0) return;
 
@@ -1117,7 +1176,9 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           <div 
             ref={messagesContainerRef}
             data-chat-container
-            className={`h-full pt-12 sm:pt-14 pb-28 sm:pb-32 overflow-y-auto ${
+            tabIndex={0}
+            onKeyDown={handleChatContainerKeyDown}
+            className={`h-full pt-12 sm:pt-14 pb-28 sm:pb-32 overflow-y-auto focus:outline-none ${
             isClosing ? 'animate-out fade-out duration-200' : 'animate-in fade-in duration-600 delay-150 ease-out'
           }`}>
             <div className="max-w-3xl mx-auto px-3 sm:px-4 space-y-4 sm:space-y-6 py-4 sm:py-6">
@@ -1141,7 +1202,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                     >
                       {message.role === "user" ? (
                         <div 
-                          className="bg-gray-900 text-white rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm max-w-[85%] sm:max-w-[75%] break-words message-appear"
+                          className="bg-gray-200 text-black rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5 text-[13px] sm:text-sm max-w-[85%] sm:max-w-[75%] break-words message-appear"
                           style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}
                         >
                           {message.content}
@@ -1259,8 +1320,8 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                             disabled={isLoading || isStreaming}
                             className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-full text-xs sm:text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${
                               isLatestSuggestion
-                                ? 'bg-white hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm'
-                                : 'bg-gray-50 hover:bg-gray-900 text-gray-400 hover:text-white border border-gray-100 hover:border-gray-900 opacity-60 hover:opacity-100 hover:shadow-sm'
+                                ? 'bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-700 border border-gray-200 hover:border-gray-300 hover:shadow-sm cursor-pointer'
+                                : 'bg-gray-white hover:bg-gray-50 text-gray-400 hover:text-gray-700 border border-gray-200 hover:border-gray-300 opacity-60 hover:opacity-100 hover:shadow-sm cursor-pointer'
                             } ${message.suggestionsLoading ? 'opacity-75' : ''}`}
                           >
                             <span className="line-clamp-1">{suggestion}</span>
@@ -1280,21 +1341,21 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                          <button
                            onClick={() => handleToolkitClick("Do contrarian discovery for ")}
                            disabled={isLoading || isStreaming}
-                           className="px-2 py-1 rounded-full text-xs transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm"
+                           className="px-2 py-1 rounded-full text-xs transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-700 border border-gray-200 hover:border-gray-400 hover:shadow-sm cursor-pointer"
                          >
                            <span className="line-clamp-1">🔍 Do contrarian discovery</span>
                          </button>
                          <button
                            onClick={() => handleToolkitClick("Find fear opportunities of ")}
                            disabled={isLoading || isStreaming}
-                           className="px-2 py-1 rounded-full text-xs transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm"
+                           className="px-2 py-1 rounded-full text-xs transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-700 border border-gray-200 hover:border-gray-400 hover:shadow-sm cursor-pointer"
                          >
                            <span className="line-clamp-1">⚡ Find fear opportunities</span>
                          </button>
                          <button
                            onClick={() => handleToolkitClick("Analyze ")}
                            disabled={isLoading || isStreaming}
-                           className="px-2 py-1 rounded-full text-xs transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-900 text-gray-700 hover:text-white border border-gray-200 hover:border-gray-900 hover:shadow-sm"
+                           className="px-2 py-1 rounded-full text-xs transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 hover:bg-gray-100 text-gray-700 hover:text-gray-700 border border-gray-200 hover:border-gray-400 hover:shadow-sm cursor-pointer"
                          >
                            <span className="line-clamp-1">📈 Analyze</span>
                          </button>
@@ -1458,15 +1519,19 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   )}
                 </div>
                 <button
-                  onClick={() => handleSendMessage()}
-                  disabled={!inputValue.trim() || isLoading || isStreaming}
-                  className="flex-shrink-0 bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed p-2 sm:p-2.5 rounded-full transition-colors self-end"
-                  aria-label="Send message"
+                  onClick={() => (isLoading || isStreaming) ? handleStopStreaming() : handleSendMessage()}
+                  disabled={!isLoading && !isStreaming && !inputValue.trim()}
+                  className={`flex-shrink-0 p-2 sm:p-2.5 rounded-full transition-colors self-end ${
+                    isLoading || isStreaming 
+                      ? "bg-black text-white hover:bg-gray-900" 
+                      : "bg-gray-900 text-white hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed"
+                  }`}
+                  aria-label={isLoading || isStreaming ? "Stop streaming" : "Send message"}
                 >
                   {isLoading || isStreaming ? (
-                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                    <Square className="w-4 h-4 sm:w-5 sm:h-5" />
                   ) : (
-                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <ArrowUp className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
                 </button>
               </div>
