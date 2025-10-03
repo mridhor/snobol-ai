@@ -62,6 +62,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   const [inputContext, setInputContext] = useState<string>("");
   const [inputHistory, setInputHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [streamingComplete, setStreamingComplete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -653,6 +654,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       ];
       setMessages(newMessages);
       setIsLoading(true);
+      setStreamingComplete(false);
       // Don't set isStreaming yet - wait for stream to actually start
       lastRequestTime.current = now;
       
@@ -806,6 +808,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       } finally {
         setIsLoading(false);
         setIsStreaming(false);
+        setStreamingComplete(true);
         setLoadingMessage("Thinking..."); // Reset to default
         abortControllerRef.current = null;
         
@@ -1088,6 +1091,43 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         .thinking-text {
           animation: thinkingPulse 1.5s ease-in-out infinite, thinkingFadeIn 0.4s ease-out forwards;
         }
+        
+        /* Smooth typing effect for streaming text */
+        @keyframes typewriter {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes blink {
+          0%, 50% {
+            border-color: transparent;
+          }
+          51%, 100% {
+            border-color: #666;
+          }
+        }
+        
+        .streaming-text {
+          position: relative;
+          animation: typewriter 0.3s ease-out forwards;
+        }
+        
+        .streaming-text::after {
+          content: '|';
+          color: #666;
+          animation: blink 1s infinite;
+          font-weight: normal;
+        }
+        
+        .streaming-text.typing-complete::after {
+          display: none;
+        }
       `}</style>
       
       {/* Chatbot Pill Button */}
@@ -1218,46 +1258,91 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           </div>
                         )}
                         
-                        <ReactMarkdown
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            p: ({ children }) => (
-                              <p className="mb-3 sm:mb-4 last:mb-0 leading-relaxed">{children}</p>
-                            ),
-                            ul: ({ children }) => (
-                              <ul className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1">{children}</ul>
-                            ),
-                            ol: ({ children }) => (
-                              <ol className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1 list-decimal list-inside">{children}</ol>
-                            ),
-                            li: ({ children }) => (
-                              <li className="flex items-start gap-2 leading-relaxed">
-                                <span className="text-gray-500 mt-1 select-none text-sm">•</span>
-                                <span className="flex-1 break-words">{children}</span>
-                              </li>
-                            ),
-                            strong: ({ children }) => (
-                              <strong className="font-semibold text-gray-900">{children}</strong>
-                            ),
-                            em: ({ children }) => (
-                              <em className="italic">{children}</em>
-                            ),
-                            h3: ({ children }) => (
-                              <h3 className="font-bold text-gray-900 mb-2 sm:mb-3 mt-4 sm:mt-5 first:mt-0 text-base sm:text-lg">{children}</h3>
-                            ),
-                            h4: ({ children }) => (
-                              <h4 className="font-semibold text-gray-900 mb-2 sm:mb-2.5 mt-3 sm:mt-4 first:mt-0 text-sm sm:text-base">{children}</h4>
-                            ),
-                            code: ({ children }) => (
-                              <code className="bg-gray-200 px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono break-all">{children}</code>
-                            ),
-                            blockquote: ({ children }) => (
-                              <blockquote className="border-l-2 border-gray-300 pl-3 italic my-2 sm:my-3 text-sm sm:text-base opacity-90">{children}</blockquote>
-                            ),
-                          }}
-                        >
-                          {message.content}
-                        </ReactMarkdown>
+                        {isStreaming && index === messages.length - 1 ? (
+                          <div className={`streaming-text ${streamingComplete ? 'typing-complete' : ''}`}>
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                p: ({ children }) => (
+                                  <p className="mb-3 sm:mb-4 last:mb-0 leading-relaxed">{children}</p>
+                                ),
+                                ul: ({ children }) => (
+                                  <ul className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1">{children}</ul>
+                                ),
+                                ol: ({ children }) => (
+                                  <ol className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1 list-decimal list-inside">{children}</ol>
+                                ),
+                                li: ({ children }) => (
+                                  <li className="flex items-start gap-2 leading-relaxed">
+                                    <span className="text-gray-500 mt-1 select-none text-sm">•</span>
+                                    <span className="flex-1 break-words">{children}</span>
+                                  </li>
+                                ),
+                                strong: ({ children }) => (
+                                  <strong className="font-semibold text-gray-900">{children}</strong>
+                                ),
+                                em: ({ children }) => (
+                                  <em className="italic">{children}</em>
+                                ),
+                                h3: ({ children }) => (
+                                  <h3 className="font-bold text-gray-900 mb-2 sm:mb-3 mt-4 sm:mt-5 first:mt-0 text-base sm:text-lg">{children}</h3>
+                                ),
+                                h4: ({ children }) => (
+                                  <h4 className="font-semibold text-gray-900 mb-2 sm:mb-2.5 mt-3 sm:mt-4 first:mt-0 text-sm sm:text-base">{children}</h4>
+                                ),
+                                code: ({ children }) => (
+                                  <code className="bg-gray-200 px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono break-all">{children}</code>
+                                ),
+                                blockquote: ({ children }) => (
+                                  <blockquote className="border-l-2 border-gray-300 pl-3 italic my-2 sm:my-3 text-sm sm:text-base opacity-90">{children}</blockquote>
+                                ),
+                              }}
+                            >
+                              {message.content}
+                            </ReactMarkdown>
+                          </div>
+                        ) : (
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              p: ({ children }) => (
+                                <p className="mb-3 sm:mb-4 last:mb-0 leading-relaxed">{children}</p>
+                              ),
+                              ul: ({ children }) => (
+                                <ul className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1">{children}</ul>
+                              ),
+                              ol: ({ children }) => (
+                                <ol className="space-y-2 sm:space-y-2.5 mb-3 sm:mb-4 last:mb-0 ml-1 list-decimal list-inside">{children}</ol>
+                              ),
+                              li: ({ children }) => (
+                                <li className="flex items-start gap-2 leading-relaxed">
+                                  <span className="text-gray-500 mt-1 select-none text-sm">•</span>
+                                  <span className="flex-1 break-words">{children}</span>
+                                </li>
+                              ),
+                              strong: ({ children }) => (
+                                <strong className="font-semibold text-gray-900">{children}</strong>
+                              ),
+                              em: ({ children }) => (
+                                <em className="italic">{children}</em>
+                              ),
+                              h3: ({ children }) => (
+                                <h3 className="font-bold text-gray-900 mb-2 sm:mb-3 mt-4 sm:mt-5 first:mt-0 text-base sm:text-lg">{children}</h3>
+                              ),
+                              h4: ({ children }) => (
+                                <h4 className="font-semibold text-gray-900 mb-2 sm:mb-2.5 mt-3 sm:mt-4 first:mt-0 text-sm sm:text-base">{children}</h4>
+                              ),
+                              code: ({ children }) => (
+                                <code className="bg-gray-200 px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono break-all">{children}</code>
+                              ),
+                              blockquote: ({ children }) => (
+                                <blockquote className="border-l-2 border-gray-300 pl-3 italic my-2 sm:my-3 text-sm sm:text-base opacity-90">{children}</blockquote>
+                              ),
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        )}
                         
                         {/* Render TradingView chart RIGHT AFTER the main analysis text for stock analysis */}
                         {message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol && (
