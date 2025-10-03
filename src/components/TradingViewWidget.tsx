@@ -27,7 +27,19 @@ export default function TradingViewWidget({
 
     // Add global error handler for iframe contentWindow issues
     const handleIframeError = (event: ErrorEvent) => {
-      if (event.message?.includes('contentWindow is not available')) {
+      if (event.message?.includes('contentWindow is not available') || 
+          event.message?.includes('Cannot listen to the event from the provided iframe')) {
+        event.preventDefault();
+        event.stopPropagation();
+        console.warn('TradingView iframe contentWindow access blocked - this is normal for security reasons');
+        return false;
+      }
+    };
+
+    // Also handle unhandled promise rejections
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      if (event.reason?.message?.includes('contentWindow is not available') ||
+          event.reason?.message?.includes('Cannot listen to the event from the provided iframe')) {
         event.preventDefault();
         console.warn('TradingView iframe contentWindow access blocked - this is normal for security reasons');
         return false;
@@ -35,6 +47,19 @@ export default function TradingViewWidget({
     };
 
     window.addEventListener('error', handleIframeError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    // Temporarily override console.error to suppress TradingView iframe errors
+    const originalConsoleError = console.error;
+    console.error = (...args: unknown[]) => {
+      const message = args.join(' ');
+      if (message.includes('contentWindow is not available') || 
+          message.includes('Cannot listen to the event from the provided iframe')) {
+        console.warn('TradingView iframe contentWindow access blocked - this is normal for security reasons');
+        return;
+      }
+      originalConsoleError.apply(console, args);
+    };
 
     const script = document.createElement("script");
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
@@ -84,6 +109,9 @@ export default function TradingViewWidget({
 
     return () => {
       window.removeEventListener('error', handleIframeError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      // Restore original console.error
+      console.error = originalConsoleError;
       if (containerRef.current) {
         containerRef.current.innerHTML = "";
       }
