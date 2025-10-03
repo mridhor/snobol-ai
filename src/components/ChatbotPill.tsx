@@ -1282,8 +1282,10 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                      rows={1}
                      disabled={isLoading || isStreaming}
                      className={`w-full py-2 sm:py-2 bg-transparent resize-none focus:outline-none text-[14px] sm:text-sm leading-relaxed disabled:opacity-50 overflow-y-auto relative z-10 ${
-                       (inputValue.includes("Do contrarian discovery for ") || inputValue.includes("Do contrarian discovery for ") ||
-                        inputValue.includes("Find fear opportunities of ") || inputValue.includes("Find fear opportunities of "))
+                       (inputValue.includes("Do contrarian discovery for ") || inputValue.includes("Do contrarian discovery for ") ||   
+                        inputValue.includes("Find fear opportunities of ") || inputValue.includes("Find fear opportunities of ") || 
+                        inputValue.includes("Analyze ") || inputValue.includes("Analyze ")
+                        )
                        ? 'pl-2 pr-2.5 sm:pl-5 sm:pr-3' : 'px-2.5 sm:px-3'
                      }`}
                      style={{ minHeight: "40px", maxHeight: "120px" }}
