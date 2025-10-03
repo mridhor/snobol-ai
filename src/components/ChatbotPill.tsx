@@ -385,6 +385,18 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     return { cleanContent: content, chartData: null };
   };
 
+  // Helper function to filter out JSON data during streaming
+  const filterJsonData = (content: string) => {
+    // Remove JSON objects that might be typed out during streaming
+    return content
+      .replace(/\{[^}]*\}/g, '') // Remove simple JSON objects
+      .replace(/\[[^\]]*\]/g, '') // Remove array-like structures
+      .replace(/"[^"]*":\s*"[^"]*"/g, '') // Remove key-value pairs
+      .replace(/\b\w+\s*:\s*\{[^}]*\}/g, '') // Remove nested objects
+      .replace(/\s+/g, ' ') // Clean up extra spaces
+      .trim();
+  };
+
   // Helper to extract sources from content
   const extractSources = (content: string): { cleanContent: string; sources: Array<{ name: string; url: string }> } => {
     const srcMatch = content.match(/\[SOURCES\]([\s\S]*?)\[\/SOURCES\]/);
@@ -660,8 +672,10 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
             // Update the last message with accumulated content, chart data, sources, and reasoning
             setMessages(prev => {
               const updated = [...prev];
+              // Filter out JSON data during streaming
+              const filteredContent = filterJsonData(accumulatedContent);
               // Extract sources first
-              const src = extractSources(accumulatedContent);
+              const src = extractSources(filteredContent);
               // Then extract chart data from the remaining content
               const chart = extractChartData(src.cleanContent);
               updated[updated.length - 1] = {
@@ -1071,7 +1085,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   
                   {/* Render TradingView chart BELOW the message bubble if present - only after streaming is done */}
                   {message.role === "assistant" && message.chartData && message.chartData.type === 'stock_chart' && message.chartData.symbol && (!isStreaming || index < messages.length - 1) && (
-                    <div className="w-full mt-3 message-appear" style={{ animationDelay: `${Math.min(index * 40, 200)}ms` }}>
+                    <div className="w-full mt-3 message-appear" style={{ animationDelay: `${Math.min(index * 20, 100)}ms` }}>
                       <TradingViewWidget symbol={message.chartData.symbol} height={420} />
                     </div>
                   )}
