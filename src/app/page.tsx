@@ -79,18 +79,18 @@ const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => 
             type="monotone"
             dataKey="sp500"
             stroke="#E5E5E5"
-            strokeWidth={1.5}
+            strokeWidth={2}
             dot={false}
-            activeDot={{ r: 3, fill: "#E5E5E5" }}
+            activeDot={{ r: 3, fill: "transparent", stroke: "transparent" }}
           />
           {/* Snobol line - black */}
           <Line
             type="monotone"
             dataKey="totalSnobol"
             stroke="#000000"
-            strokeWidth={1.5}
+            strokeWidth={2}
             dot={false}
-            activeDot={{ r: 3, fill: "#000000" }}
+            activeDot={{ r: 4.5, fill: "white", stroke: "black", strokeWidth: 3.1 }}
           />
         </LineChart>
       </ResponsiveContainer>
