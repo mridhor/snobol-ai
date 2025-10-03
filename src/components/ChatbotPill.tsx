@@ -1166,7 +1166,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           isClosing ? 'exit-overlay' : 'animate-in fade-in zoom-in-98 duration-600 ease-out'
         }`}>
           {/* Header */}
-          <div className={`absolute top-0 left-0 right-0 z-10 bg-0 ${
+          <div className={`absolute top-0 py-1 left-2 right-2 z-10 bg-white md:bg-0 ${
             isClosing ? 'exit-top' : 'animate-in slide-in-from-top-2 fade-in duration-500 ease-out'
           }`}>
             <div className="max-w-full mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
@@ -1499,7 +1499,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                         inputValue.includes("Find fear opportunities of ") || inputValue.includes("Find fear opportunities of ") || 
                         inputValue.includes("Analyze ") || inputValue.includes("Analyze ")
                         )
-                       ? 'pl-2 pr-2.5 md:pl-5 md:pr-3' : 'px-2.5 sm:px-3'
+                       ? 'pl-4 pr-2.5 md:pl-2 md:pr-3' : 'px-2.5 sm:px-3'
                      }`}
                      style={{ 
                        minHeight: "40px", 
@@ -1526,7 +1526,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
-                               <span className="bg-gray-200 rounded pl-1.5 pr-2 py-1 text-gray-800">{highlight}</span>
+                               <span className="bg-gray-200 rounded pl-1.5 pr-1.5 md:pr-2 py-1 text-gray-800">{highlight}</span>
                               <span className="text-transparent">{after}</span>
                             </>
                           );
@@ -1540,7 +1540,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
-                               <span className="bg-gray-200 rounded pl-1.5 pr-2 py-1 text-gray-800">{highlight}</span>
+                               <span className="bg-gray-200 rounded pl-1.5 pr-1.5 md:pr-2 py-1 text-gray-800">{highlight}</span>
                               <span className="text-transparent">{after}</span>
                             </>
                           );
@@ -1554,7 +1554,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                           return (
                             <>
                               <span className="text-transparent">{before}</span>
-                              <span className="bg-gray-200 rounded pl-1.5 pr-2 py-1 text-gray-800">{highlight}</span>
+                              <span className="bg-gray-200 rounded pl-1.5 pr-1.5 md:pr-2 py-1 text-gray-800">{highlight}</span>
                               <span className="text-transparent">{after}</span>
                             </>
                           );
