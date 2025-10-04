@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface Subscriber {
@@ -16,11 +16,7 @@ export default function AdminDashboard() {
   const [total, setTotal] = useState(0);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchSubscribers();
-  }, []);
-
-  const fetchSubscribers = async () => {
+  const fetchSubscribers = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/subscribers');
       
@@ -37,12 +33,16 @@ export default function AdminDashboard() {
       } else {
         setError(data.error || 'Failed to fetch subscribers');
       }
-    } catch (error) {
+    } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    fetchSubscribers();
+  }, [fetchSubscribers]);
 
   const handleLogout = async () => {
     try {

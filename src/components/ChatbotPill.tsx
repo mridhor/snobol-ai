@@ -550,7 +550,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         }
       }, 50);
     }
-  }, [messages.length, isLoading, isStreaming]);
+  }, [messages, isLoading, isStreaming]);
 
   // Ensure scroll to bottom when loading state changes (Thinking... message appears)
   useEffect(() => {

@@ -429,7 +429,7 @@ export default function Homepage() {
             
             <div className="manifesto-item">
               <span className="manifesto-prefix">#4</span>
-              <span className="manifesto-text">Snobol's mission is to build an AI Fund Manager that consistently outperforms the markets by investing through crises, not avoiding them.</span>
+              <span className="manifesto-text">Snobol&apos;s mission is to build an AI Fund Manager that consistently outperforms the markets by investing through crises, not avoiding them.</span>
             </div>
             
             <div className="manifesto-item">
