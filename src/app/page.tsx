@@ -371,7 +371,7 @@ export default function Homepage() {
                           } finally {
                             setIsEmailLoading(false);
                             
-                            // Remove loading class and restore normal behavior if not sent
+                            // Remove class and restore normal behavior if not sent
                             const wrapper = input.closest('.email-wrapper') as HTMLElement;
                             if (wrapper) {
                               wrapper.classList.remove('loading');
@@ -454,8 +454,11 @@ export default function Homepage() {
                     section.style.display = 'block';
                     footer.style.display = 'none';
                     link.style.display = 'none';
-                    // Remove smooth scrolling to reduce lag
-                    window.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' });
+                    // Scroll to position the manifesto section's top edge at the screen top
+                    const sectionRect = section.getBoundingClientRect();
+                    const currentScrollY = window.scrollY;
+                    const targetScrollY = currentScrollY + sectionRect.top;
+                    window.scrollTo({ top: targetScrollY, behavior: 'smooth' });
                   });
                 } else {
                   // Use requestAnimationFrame for smoother transitions

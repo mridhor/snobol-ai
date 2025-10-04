@@ -107,7 +107,7 @@ textarea:focus, input:focus {
 }
 
 .manifesto-content {
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 }
 
 .manifesto-item {
@@ -127,7 +127,7 @@ textarea:focus, input:focus {
 
 .manifesto-text {
   font-family: 'Avenir Light', 'Avenir', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 300;
   line-height: 1.6;
   color: #333;
