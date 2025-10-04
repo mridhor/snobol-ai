@@ -161,6 +161,7 @@ textarea:focus, input:focus {
 }
 
 .manifesto-link {
+  letter-spacing: 0.15em;
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
@@ -349,6 +350,43 @@ textarea:focus, input:focus {
 
 .email-input:focus {
   outline: none;
+}
+
+/* Submit button styles */
+.email-submit-btn {
+  margin-right: -0.75em;
+  background: #222222;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  padding: 6px;
+  width: auto;
+  height: 1.8em;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease, opacity 0.2s ease, visibility 0.2s ease;
+  margin-left: 8px;
+}
+
+.email-submit-btn:hover:not(:disabled) {
+  background: #333;
+}
+
+.email-submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.email-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.email-submit-btn.loading {
+  opacity: 0.8;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

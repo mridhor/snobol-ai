@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { ArrowRight, Loader2, X } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -21,22 +22,19 @@ const DonutPeriod = () => (
   ></span>
 );
 
-// Ultra-simple 2-line chart component
+// Ultra-simple 2-line chart component - moved outside Homepage to prevent re-renders
 const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => {
   const [chartData, setChartData] = useState<ChartData[]>([]);
 
   useEffect(() => {
     const formattedData = formatAreaChartData();
     
-    // Add current data point
-    const currentDate = new Date().toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+    // Create static date values to prevent continuous re-renders
+    const currentDate = 'Oct 4, 2025'; // Static date to prevent re-renders
+    const currentYear = '2025'; // Static year to prevent re-renders
     
     formattedData.push({
-      date: new Date().getFullYear().toString(),
+      date: currentYear,
       fullDate: currentDate,
       sp500: currentSP500Price,
       snobol: currentPrice - currentSP500Price,
@@ -111,6 +109,8 @@ export default function Homepage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [isEmailValid, setIsEmailValid] = useState(false);
+  const [emailValue, setEmailValue] = useState('');
 
   const handleOpenChat = () => {
     chatbotRef.current?.open();
@@ -121,10 +121,13 @@ export default function Homepage() {
     setErrorMessage('');
     setEmailError(false);
     setIsSuccess(false);
+    setEmailValue('');
+    setIsEmailValid(false);
     
     // Restore dynamic width behavior
     const input = document.querySelector('.email-input') as HTMLInputElement;
     if (input) {
+      input.value = '';
       const wrapper = input.closest('.email-wrapper') as HTMLElement;
       if (wrapper) {
         wrapper.style.width = '';
@@ -133,10 +136,160 @@ export default function Homepage() {
     }
   };
 
-  // Email validation regex
+  // Email validation regex - comprehensive domain validation excluding standalone .co domains
   const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    // More comprehensive email regex that validates:
+    // - Local part: alphanumeric, dots, hyphens, underscores, plus signs
+    // - Domain: alphanumeric, hyphens, dots
+    // - TLD: 2-63 characters, letters only
+    // - Excludes standalone .co domains but allows .co.uk, .co.jp, etc.
+    const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,63}$/;
+    
+    // Check if email matches the basic regex pattern
+    if (!emailRegex.test(email)) {
+      return false;
+    }
+    
+    // Extract domain from email
+    const domain = email.split('@')[1];
+    
+    // Exclude standalone .co domains but allow .co.uk, .co.jp, etc.
+    if (domain.endsWith('.co') && !domain.includes('.co.')) {
+      return false;
+    }
+    
+    // Additional validation for domain structure
+    const domainParts = domain.split('.');
+    
+    // Must have at least 2 parts (domain.tld)
+    if (domainParts.length < 2) {
+      return false;
+    }
+    
+    // TLD must be at least 2 characters and contain only letters
+    const tld = domainParts[domainParts.length - 1];
+    if (tld.length < 2 || !/^[a-zA-Z]+$/.test(tld)) {
+      return false;
+    }
+    
+    // Domain name must be valid (no consecutive dots, no starting/ending with hyphen)
+    for (let i = 0; i < domainParts.length - 1; i++) {
+      const part = domainParts[i];
+      if (part.length === 0 || part.startsWith('-') || part.endsWith('-') || part.includes('..')) {
+        return false;
+      }
+    }
+    
+    return true;
+  };
+
+  // Handle email submission
+  const handleEmailSubmit = async (email: string) => {
+    if (!email || !validateEmail(email)) {
+      setEmailError(true);
+      setErrorMessage(' ');
+      
+      // Preserve current width when error occurs
+      const input = document.querySelector('.email-input') as HTMLInputElement;
+      if (input) {
+        const wrapper = input.closest('.email-wrapper') as HTMLElement;
+        if (wrapper) {
+          const currentWidth = wrapper.offsetWidth;
+          wrapper.style.width = `${currentWidth}px`;
+          wrapper.style.minWidth = `${currentWidth}px`;
+        }
+      }
+      
+      return;
+    }
+
+    // Clear error state for valid email
+    setEmailError(false);
+    setErrorMessage('');
+    setIsEmailLoading(true);
+    
+    // Preserve width during loading
+    const input = document.querySelector('.email-input') as HTMLInputElement;
+    if (input) {
+      const wrapper = input.closest('.email-wrapper') as HTMLElement;
+      if (wrapper) {
+        const currentWidth = wrapper.offsetWidth;
+        wrapper.style.width = `${currentWidth}px`;
+        wrapper.style.minWidth = `${currentWidth}px`;
+        wrapper.classList.add('loading');
+      }
+    }
+    
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        setEmailValue('');
+        setIsEmailValid(false);
+        setEmailError(false);
+        setErrorMessage('');
+        setIsSuccess(false);
+        setIsSent(true);
+        
+        // Keep the current width for sent state - don't reset to minimum
+        const wrapper = input?.closest('.email-wrapper') as HTMLElement;
+        if (wrapper) {
+          // Preserve the current width instead of resetting
+          const currentWidth = wrapper.offsetWidth;
+          wrapper.style.width = `${currentWidth}px`;
+          wrapper.style.minWidth = `${currentWidth}px`;
+        }
+      } else {
+        setEmailError(true);
+        setErrorMessage(result.error || 'Something went wrong. Please try again.');
+        
+        // Preserve current width when API error occurs
+        if (input) {
+          const wrapper = input.closest('.email-wrapper') as HTMLElement;
+          if (wrapper) {
+            const currentWidth = wrapper.offsetWidth;
+            wrapper.style.width = `${currentWidth}px`;
+            wrapper.style.minWidth = `${currentWidth}px`;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Subscription error:', error);
+      setEmailError(true);
+      setErrorMessage('Something went wrong. Please try again.');
+      
+      // Preserve current width when catch error occurs
+      const input = document.querySelector('.email-input') as HTMLInputElement;
+      if (input) {
+        const wrapper = input.closest('.email-wrapper') as HTMLElement;
+        if (wrapper) {
+          const currentWidth = wrapper.offsetWidth;
+          wrapper.style.width = `${currentWidth}px`;
+          wrapper.style.minWidth = `${currentWidth}px`;
+        }
+      }
+    } finally {
+      setIsEmailLoading(false);
+      
+      // Remove class and restore normal behavior if not sent
+      const wrapper = input?.closest('.email-wrapper') as HTMLElement;
+      if (wrapper) {
+        wrapper.classList.remove('loading');
+        // Only restore dynamic width if not in sent state
+        if (!isSent) {
+          wrapper.style.width = '';
+          wrapper.style.minWidth = '';
+        }
+      }
+    }
   };
 
   return (
@@ -164,10 +317,10 @@ export default function Homepage() {
           <div className="content-stretch flex flex-col lg:flex-col gap-0 md:gap-10 items-center relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 px-2 max-w-full" data-name="Paragraph" data-node-id="1:158">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2 ">
-                  <p className="leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
+                  <p className="leading-tight not-italic text-2xl sm:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                   Building a world where Al invests money better than any human can<DonutPeriod />
                   </p>
-                  <p className="leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-0 sm:mb-6 md:mb-8 pr-4" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
+                  <p className="leading-tight not-italic text-2xl sm:text-3xl lg:text-5xl text-black mb-0 sm:mb-6 md:mb-8 pr-4" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                     Snobol invests in global crises<DonutPeriod />
                   </p>
                 </div>
@@ -182,7 +335,7 @@ export default function Homepage() {
               </div>
               
               {/* Email Signup */}
-              <div className="flex flex-col items-center gap-6">
+              <div className="flex flex-col items-center mt-6 md:mt-2 gap-6">
               <div className="text-center flex flex-col sm:flex-row items-center gap-4">
                 <p className="text-lg" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>Get Snobol AI investment tips:</p>
                 <div className="flex justify-center items-center">
@@ -198,7 +351,7 @@ export default function Homepage() {
                             onClick={handleCloseSent}
                             aria-label="Close"
                           >
-                            ×
+                            <X className="h-4 w-4" />
                           </button>
                         </div>
                       ) : (
@@ -241,11 +394,23 @@ export default function Homepage() {
                         onInput={(e) => {
                           const input = e.target as HTMLInputElement;
                           const placeholderWidth = (input as HTMLInputElement & { _placeholderWidth?: number })._placeholderWidth;
+                          const email = input.value;
+                          
+                          // Update email value and validation state
+                          setEmailValue(email);
+                          setIsEmailValid(validateEmail(email));
                           
                           // Clear error state when user starts typing
                           if (emailError) {
                             setEmailError(false);
                             setErrorMessage('');
+                            
+                            // Restore dynamic width behavior when error is cleared
+                            const wrapper = input.closest('.email-wrapper') as HTMLElement;
+                            if (wrapper) {
+                              wrapper.style.width = '';
+                              wrapper.style.minWidth = '';
+                            }
                           }
                           if (isSuccess) {
                             setIsSuccess(false);
@@ -300,117 +465,32 @@ export default function Homepage() {
                             }
                           }, 0);
                         }}
-                        onKeyDown={async (e) => {
+                        onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                          const input = e.target as HTMLInputElement;
-                          const email = input.value.trim();
-                          
-                          if (!email) {
-                            // Show error for empty email
-                            setEmailError(true);
-                            setErrorMessage(' ');
-                            return;
+                            const input = e.target as HTMLInputElement;
+                            const email = input.value.trim();
+                            handleEmailSubmit(email);
                           }
-                          
-                          // Validate email format
-                          if (!validateEmail(email)) {
-                            setEmailError(true);
-                            setErrorMessage(' ');
-                            return;
-                          }
-                          
-                          // Clear error state for valid email
-                          setEmailError(false);
-                          setErrorMessage('');
-                          setIsEmailLoading(true);
-                          
-                          // Preserve width during loading
-                          const wrapper = input.closest('.email-wrapper') as HTMLElement;
-                          if (wrapper) {
-                            const currentWidth = wrapper.offsetWidth;
-                            wrapper.style.width = `${currentWidth}px`;
-                            wrapper.style.minWidth = `${currentWidth}px`;
-                            wrapper.classList.add('loading');
-                          }
-                          
-                          try {
-                            const response = await fetch('/api/subscribe', {
-                              method: 'POST',
-                              headers: {
-                                'Content-Type': 'application/json',
-                              },
-                              body: JSON.stringify({ email }),
-                            });
-
-                            const result = await response.json();
-                            
-                            if (response.ok) {
-                              input.value = '';
-                              setEmailError(false);
-                              setErrorMessage('');
-                              setIsSuccess(false);
-                              setIsSent(true);
-                              
-                              // Keep the current width for sent state - don't reset to minimum
-                              const wrapper = input.closest('.email-wrapper') as HTMLElement;
-                              if (wrapper) {
-                                // Preserve the current width instead of resetting
-                                const currentWidth = wrapper.offsetWidth;
-                                wrapper.style.width = `${currentWidth}px`;
-                                wrapper.style.minWidth = `${currentWidth}px`;
-                              }
-                            } else {
-                              setEmailError(true);
-                              setErrorMessage(result.error || 'Something went wrong. Please try again.');
-                            }
-                          } catch (error) {
-                            console.error('Subscription error:', error);
-                            setEmailError(true);
-                            setErrorMessage('Something went wrong. Please try again.');
-                          } finally {
-                            setIsEmailLoading(false);
-                            
-                            // Remove class and restore normal behavior if not sent
-                            const wrapper = input.closest('.email-wrapper') as HTMLElement;
-                            if (wrapper) {
-                              wrapper.classList.remove('loading');
-                              // Only restore dynamic width if not in sent state
-                              if (!isSent) {
-                                wrapper.style.width = '';
-                                wrapper.style.minWidth = '';
-                              }
-                            }
-                          }
-                        }
-                      }}
+                        }}
                         />
                       )}
                     </div>
-                  </div>
-                  {isEmailLoading && (
-                    <div className="loading-spinner">
-                      <svg 
-                        className="animate-spin h-4 w-4 text-gray-400" 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        fill="none" 
-                        viewBox="0 0 24 24"
+                    {/* Submit button that appears when email is valid */}
+                    {!isSent && isEmailValid && (
+                      <button
+                        type="button"
+                        className={`email-submit-btn ${isEmailLoading ? 'loading' : ''}`}
+                        onClick={() => !isEmailLoading && handleEmailSubmit(emailValue)}
+                        disabled={isEmailLoading}
                       >
-                        <circle 
-                          className="opacity-25" 
-                          cx="12" 
-                          cy="12" 
-                          r="10" 
-                          stroke="currentColor" 
-                          strokeWidth="4"
-                        ></circle>
-                        <path 
-                          className="opacity-75" 
-                          fill="currentColor" 
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                    </div>
-                  )}
+                        {isEmailLoading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <ArrowRight className="h-4 w-4" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                   {/* Error/Success message */}
                 
                 </div>
@@ -473,7 +553,7 @@ export default function Homepage() {
               }
             }}
           >
-            M a n i f e s t o
+            Manifesto
           </a>
         </div>
 
