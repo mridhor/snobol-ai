@@ -51,7 +51,7 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
   // Data is now static - no state or effects needed
 
   return (
-    <div className="w-full h-90 md:h-[50vh] md:mt-[-1em] md:mt-[-4em] lg:mt-[-4em] xl:mt-[-4em]">
+    <div className="w-full h-60 md:h-[40vh] md:mt-[-1em] md:mt-[-4em] lg:mt-[-4em] xl:mt-[-4em]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={chartData}
@@ -350,7 +350,7 @@ export default function Homepage() {
               </div>
               
               <div className="flex-1 w-full max-w-4xl lg:max-w-none mb-2 md:mb-8 lg:mb-[-2em] xl:mb-[-4em]">
-                <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-100 md:h-[50vh] pb-2 mt-[-2em] items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
+                <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-74 md:h-[40vh] pb-2 mt-[-1em] items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
                   <div className="h-full w-full max-w-7xl relative outline-none focus:outline-none focus-visible:outline-none select-none">
                     <SimpleLineChart currentPrice={18.49} currentSP500Price={3.30} />
                   </div>
