@@ -325,7 +325,6 @@ export default function Homepage() {
               height={48}
               className="h-8 md:h-10 w-auto"
               priority
-              onClick={handleOpenChat}
             />
           </div>
         </div>
@@ -336,7 +335,7 @@ export default function Homepage() {
         <div className="relative w-full p-2">
           <div className="content-stretch flex flex-col lg:flex-col gap-0 md:gap-10 items-center relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 px-2 max-w-full" data-name="Paragraph" data-node-id="1:158">
-                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2 md:pr-50 lg:pr-100 xl:pr-100">
+                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-0 md:pr-50 lg:pr-100 xl:pr-100">
                   <p className="leading-tight not-italic text-xl sm:text-xl md:text-2xl lg:text-3xl text-black mb-4 pr-0 xs:pr-20" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                   <span className="inline-block md:hidden">Building a world where Al invests </span>
                   <span className="inline-block md:hidden">money better than any human can<DonutPeriod /></span>
