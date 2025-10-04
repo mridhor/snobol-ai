@@ -159,7 +159,7 @@ export default function Homepage() {
       </div>
       
       {/* Main content centered */}
-      <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-30 pt-16 md:pt-20 pb-12">
+      <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-30 pt:8 sm:pt-16 md:pt-20 pb-12">
         <div className="relative w-full p-2">
           <div className="content-stretch flex flex-col lg:flex-col gap-8 lg:gap-10 items-center relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 px-2 max-w-full" data-name="Paragraph" data-node-id="1:158">
