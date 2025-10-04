@@ -161,13 +161,13 @@ export default function Homepage() {
       {/* Main content centered */}
       <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-30 pt:8 sm:pt-16 md:pt-20 pb-6">
         <div className="relative w-full p-2">
-          <div className="content-stretch flex flex-col lg:flex-col gap-4 md:gap-8 items-center relative w-full" data-name="Container" data-node-id="1:157">
+          <div className="content-stretch flex flex-col lg:flex-col gap-8 md:gap-10 items-center relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 px-2 max-w-full" data-name="Paragraph" data-node-id="1:158">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2 ">
                   <p className="leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                   Building a world where Al invests money better than any human can<DonutPeriod />
                   </p>
-                  <p className="leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-2 sm:mb-6 md:mb-8 pr-4" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
+                  <p className="leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-0 sm:mb-6 md:mb-8 pr-4" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                     Snobol invests in global crises<DonutPeriod />
                   </p>
                 </div>

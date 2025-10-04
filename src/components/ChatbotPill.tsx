@@ -476,6 +476,18 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         window.scrollTo(0, scrollY);
       };
       
+      // Also restore scroll when analysis completes (not just when closing)
+      const restoreScrollOnCompletion = () => {
+        if (!isLoading && !isStreaming) {
+          // Small delay to ensure everything is rendered
+          setTimeout(() => {
+            document.body.classList.remove('no-scroll');
+            document.body.style.top = '';
+            document.documentElement.style.overflow = '';
+          }, 100);
+        }
+      };
+      
       return cleanup;
     }
   }, [isOpen]);
@@ -646,18 +658,20 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       console.log("useEffect triggered - lastMessage chartData:", lastMessage?.chartData);
       
       if (lastMessage?.chartData && lastMessage.chartData.type === 'stock_chart') {
-        console.log("Setting chart completion timeout (250ms)");
-        // Set up a shorter timeout for chart completion
+        console.log("Setting chart completion timeout (450ms)");
+        // Set up a timeout for chart completion
         const chartTimeout = setTimeout(() => {
           console.log("Chart completion timeout fired - setting isLoading to false");
           setIsLoading(false);
-        }, 250); // Slightly increased for better reliability
+        }, 450); // Increased to keep loading elements visible longer
         
         return () => clearTimeout(chartTimeout);
       } else if (!lastMessage?.chartData) {
-        // No chart data but still loading - complete immediately
-        console.log("No chart data in useEffect - completing loading immediately");
-        setIsLoading(false);
+        // No chart data but still loading - complete with small delay
+        console.log("No chart data in useEffect - completing loading with delay");
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 100); // Small delay to keep loading elements visible
       }
     }
   }, [messages, isLoading, isStreaming]);
