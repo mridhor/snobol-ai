@@ -359,25 +359,25 @@ textarea:focus, input:focus {
   .manifesto-title {
     font-size: 22px;
     margin-bottom: 40px;
-    letter-spacing: 0.35em;
+    letter-spacing: 0.3em;
   }
   
   .manifesto-prefix {
     margin-top: 1px;
     
-    font-size: 20px;
+    font-size: 18px;
     min-width: 28px;
   }
   
   .manifesto-text {
-    font-size: 20px;
+    font-size: 18px;
   }
   
   .signature-name {
-    font-size: 20px;
+    font-size: 18px;
   }
   
   .signature-date {
-    font-size: 20px;
+    font-size: 18px;
   }
 }
