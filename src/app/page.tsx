@@ -434,7 +434,7 @@ export default function Homepage() {
 
       {/* Footer with Manifesto Link */}
       <div className="text-center py-8" id="manifesto-footer">
-            <p className="text-lg mb-2" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>SNOBOL - HUMANITARIAN AI FUND MANAGER</p>
+            <p className="text-base sm:text-lg mb-2" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>SNOBOL - HUMANITARIAN AI FUND MANAGER</p>
           <a 
             href="#" 
             className="manifesto-link underline text-xl cursor-pointer"

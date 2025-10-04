@@ -793,6 +793,8 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
             const { done, value } = await reader.read();
             
             if (done) {
+              // Streaming is complete, but we need to handle chart rendering
+              console.log("Streaming completed, content:", accumulatedContent.substring(0, 100));
               break;
             }
 
