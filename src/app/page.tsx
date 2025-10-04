@@ -17,7 +17,7 @@ import ChatbotPill, { ChatbotPillRef } from "@/components/ChatbotPill";
 // Reusable donut period component
 const DonutPeriod = () => (
   <span 
-    className="inline-block rounded-[80%] border-[2px] border-current bg-transparent ml-[0.1em] w-[0.21em] h-[0.21em] md:w-[0.26em] md:h-[0.26em] lg:w-[0.16em] lg:h-[0.16em]"
+    className="inline-block rounded-[80%] border-[1.8px] sm:border-[2px] border-current bg-transparent ml-[0.1em] w-[0.22em] h-[0.22em] md:w-[0.26em] md:h-[0.26em] lg:w-[0.16em] lg:h-[0.16em]"
   ></span>
 );
 
