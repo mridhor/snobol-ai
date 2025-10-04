@@ -51,7 +51,7 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
   // Data is now static - no state or effects needed
 
   return (
-    <div className="w-full h-100 md:h-120 md:mt-[-2em] md:mt-[-6em]  lg:mt-[-10em] xl:mt-[-12em]">
+    <div className="w-full h-90 md:h-[50vh] md:mt-[-1em] md:mt-[-4em] lg:mt-[-4em] xl:mt-[-4em]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={chartData}
@@ -323,7 +323,7 @@ export default function Homepage() {
               alt="Snobol"
               width={120}
               height={48}
-              className="h-8 md:h-[10] w-auto"
+              className="h-8 md:h-10 w-auto"
               priority
               onClick={handleOpenChat}
             />
@@ -337,20 +337,20 @@ export default function Homepage() {
           <div className="content-stretch flex flex-col lg:flex-col gap-0 md:gap-10 items-center relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 px-2 max-w-full" data-name="Paragraph" data-node-id="1:158">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2 md:pr-50 lg:pr-100 xl:pr-100">
-                  <p className="leading-tight not-italic text-xl sm:text-xl md:text-2xl lg:text-3xl text-black mb-4 pr-0 xs:pr-20 sm:pr-50 md:pr-50 lg:pr-100 xl:pr-60" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
+                  <p className="leading-tight not-italic text-xl sm:text-xl md:text-2xl lg:text-3xl text-black mb-4 pr-0 xs:pr-20" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                   <span className="inline-block md:hidden">Building a world where Al invests </span>
                   <span className="inline-block md:hidden">money better than any human can<DonutPeriod /></span>
                   <span className="hidden md:inline-block">Building a world where Al invests money better than any human can<DonutPeriod /></span></p>
                   
                   
-                  <p className="leading-tight not-italic text-xl sm:text-xl md:text-2xl lg:text-3xl text-black mb-4 sm:mb-6 md:mb-8 pr-0 xs:pr-20 sm:pr-50 md:pr-60 lg:pr-100" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
+                  <p className="leading-tight not-italic text-xl sm:text-xl md:text-2xl lg:text-3xl text-black mb-4 sm:mb-6 md:mb-8 pr-0 xs:pr-20 " data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                     <span className="inline-block ">Snobol invests in global crises<DonutPeriod /></span>
                   </p>
                 </div>
               </div>
               
               <div className="flex-1 w-full max-w-4xl lg:max-w-none mb-2 md:mb-8 lg:mb-[-2em] xl:mb-[-4em]">
-                <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-100 md:h-90 mt-[-3em] items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
+                <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-100 md:h-[50vh] pb-2 mt-[-2em] items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
                   <div className="h-full w-full relative outline-none focus:outline-none focus-visible:outline-none select-none">
                     <SimpleLineChart currentPrice={18.49} currentSP500Price={3.30} />
                   </div>
@@ -358,7 +358,7 @@ export default function Homepage() {
               </div>
               
               {/* Email Signup */}
-              <div className="flex flex-col items-center mt-10 md:mt-0 lg:mt-0 xl:mt-0 gap-2">
+              <div className="flex flex-col items-center mt-0 md:mt-0 lg:mt-0 xl:mt-0 pb-2 gap-2">
               <div className="text-center flex flex-col sm:flex-row items-center gap-1.5">
                 <p className="text-lg" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>Get Snobol AI investment tips:</p>
                 <div className="flex justify-center items-center">
