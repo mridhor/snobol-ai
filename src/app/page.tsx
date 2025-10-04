@@ -148,7 +148,7 @@ export default function Homepage() {
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2
                 ">
                   <p className="leading-tight not-italic text-3xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
-                  Building a world where Al invests money better than any human can.
+                  Building a world where Al invests money better than any human can
                   </p>
                   <p className="leading-tight not-italic text-3xl md:text-3xl lg:text-5xl text-black mb-8 pr-4" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                     Snobol invests in global crises.
@@ -424,7 +424,7 @@ export default function Homepage() {
             
             <div className="manifesto-item">
               <span className="manifesto-prefix">#3</span>
-              <span className="manifesto-text">Since 2013, Snobol Research Lead Kristian Kuttok has been developing contrarian investment algorithms that outperform traditional investing.</span>
+              <span className="manifesto-text">Since 2013, Snobol Research Lead Kristian Kuutok has been developing contrarian investment algorithms that outperform traditional investing.</span>
             </div>
             
             <div className="manifesto-item">
@@ -450,7 +450,7 @@ export default function Homepage() {
           
           {/* Signature Block */}
           <div className="signature-section">
-            <p className="signature-name">Kristian J. Kuttok</p>
+            <p className="signature-name">Kristian J. Kuutok</p>
             <p className="signature-date">October 2025, Alaska Way — Seattle, WA</p>
           </div>
           
