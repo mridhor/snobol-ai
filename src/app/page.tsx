@@ -14,6 +14,13 @@ import Image from "next/image";
 import snobolLogo from "./snobol-ai-logo.png";
 import ChatbotPill, { ChatbotPillRef } from "@/components/ChatbotPill";
 
+// Reusable donut period component
+const DonutPeriod = () => (
+  <span 
+    className="inline-block rounded-[80%] border-[2px] border-current bg-transparent ml-[0.1em] w-[0.24em] h-[0.24em] md:w-[0.15em] md:h-[0.15em]"
+  ></span>
+);
+
 // Ultra-simple 2-line chart component
 const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => {
   const [chartData, setChartData] = useState<ChartData[]>([]);
@@ -148,10 +155,10 @@ export default function Homepage() {
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2
                 ">
                   <p className="leading-tight not-italic text-3xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
-                  Building a world where Al invests money better than any human can
+                  Building a world where Al invests money better than any human can<DonutPeriod />
                   </p>
                   <p className="leading-tight not-italic text-3xl md:text-3xl lg:text-5xl text-black mb-8 pr-4" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
-                    Snobol invests in global crises.
+                    Snobol invests in global crises<DonutPeriod />
                   </p>
                 </div>
               </div>
