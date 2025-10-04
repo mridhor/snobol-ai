@@ -161,7 +161,7 @@ export default function Homepage() {
       {/* Main content centered */}
       <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-30 pt:8 sm:pt-16 md:pt-20 pb-4">
         <div className="relative w-full p-2">
-          <div className="content-stretch flex flex-col lg:flex-col gap-8 md:gap-10 items-center relative w-full" data-name="Container" data-node-id="1:157">
+          <div className="content-stretch flex flex-col lg:flex-col gap-0 md:gap-10 items-center relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 px-2 max-w-full" data-name="Paragraph" data-node-id="1:158">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2 ">
                   <p className="leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
@@ -173,7 +173,7 @@ export default function Homepage() {
                 </div>
               </div>
               
-              <div className="flex-1 w-full max-w-4xl lg:max-w-none">
+              <div className="flex-1 w-full max-w-4xl lg:max-w-none mb-6 md:mb-8">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-56 md:h-80 items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
                   <div className="h-full w-full relative outline-none focus:outline-none focus-visible:outline-none select-none">
                     <SimpleLineChart currentPrice={18.49} currentSP500Price={3.30} />

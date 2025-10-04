@@ -667,11 +667,11 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         
         return () => clearTimeout(chartTimeout);
       } else if (!lastMessage?.chartData) {
-        // No chart data but still loading - complete with small delay
+        // No chart data but still loading - complete with delay to show "Thinking..."
         console.log("No chart data in useEffect - completing loading with delay");
         setTimeout(() => {
           setIsLoading(false);
-        }, 100); // Small delay to keep loading elements visible
+        }, 500); // Increased delay to show "Thinking..." text
       }
     }
   }, [messages, isLoading, isStreaming]);
@@ -947,9 +947,11 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         console.log("Streaming completed - hasChartData:", hasChartData, "isLoading:", true);
         
         if (!hasChartData) {
-          // No chart data, complete loading immediately
-          console.log("No chart data - completing loading immediately");
-          setIsLoading(false);
+          // No chart data, complete loading with delay to show "Thinking..." text
+          console.log("No chart data - completing loading with delay");
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 500); // Show "Thinking..." text for 500ms
         } else {
           console.log("Chart data detected - letting useEffect handle completion");
         }
