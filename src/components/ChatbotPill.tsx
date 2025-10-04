@@ -560,7 +560,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         scrollToBottom("smooth");
       }, 50);
     }
-  }, [isLoading, isStreaming]);
+  }, [isLoading, isStreaming, messages]);
 
   // Keep scrolling during streaming to follow the response
   useEffect(() => {
@@ -1527,7 +1527,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
               
               <div 
                 className="flex items-end gap-2 sm:gap-2.5 bg-white border border-gray-300 rounded-[1.625em] p-2 sm:p-2.5"
-                onTouchStart={(e) => {
+                onTouchStart={() => {
                   // Ensure textarea gets focus when touching the input container
                   if (textareaRef.current) {
                     textareaRef.current.focus();
@@ -1570,7 +1570,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                        // Force focus on touch for iOS Safari
                        e.currentTarget.focus();
                      }}
-                     onTouchEnd={(e) => {
+                     onTouchEnd={() => {
                        // Only prevent default for specific cases that might interfere with typing
                        // Don't prevent all touch events as it can interfere with other elements
                      }}

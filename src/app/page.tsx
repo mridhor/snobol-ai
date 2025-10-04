@@ -124,9 +124,9 @@ export default function Homepage() {
   return (
     <div className="bg-white min-h-screen flex flex-col" data-name="Homepage" data-node-id="1:2">
       {/* Snobol logo at the top */}
-      <div className="w-full flex justify-center px-4 md:px-12 lg:px-24 py-8" data-name="Header" data-node-id="1:154">
+      <div className="w-full flex justify-center px-4 md:px-12 lg:px-24 py-8 " data-name="Header" data-node-id="1:154">
         <div className="w-full max-w-6xl">
-          <div className="flex gap-2 items-center justify-center">
+          <div className="flex gap-2 items-center justify-center opacity-85">
             <Image
               src={snobolLogo}
               alt="Snobol"
@@ -206,14 +206,14 @@ export default function Homepage() {
                             input.style.minWidth = `${placeholderWidth}px`;
                             
                             // Store placeholder width for later use
-                            (input as any)._placeholderWidth = placeholderWidth;
+                            (input as HTMLInputElement & { _placeholderWidth?: number })._placeholderWidth = placeholderWidth;
                             
                             // Also set minimum width on the wrapper
                             const wrapper = input.closest('.email-wrapper') as HTMLElement;
                             if (wrapper) {
                               const wrapperMinWidth = placeholderWidth + 24; // 12px padding on each side
                               wrapper.style.minWidth = `${wrapperMinWidth}px`;
-                              (wrapper as any)._minWidth = wrapperMinWidth;
+                              (wrapper as HTMLElement & { _minWidth?: number })._minWidth = wrapperMinWidth;
                             }
                             
                             // Clean up
@@ -222,7 +222,7 @@ export default function Homepage() {
                         }}
                         onInput={(e) => {
                           const input = e.target as HTMLInputElement;
-                          const placeholderWidth = (input as any)._placeholderWidth;
+                          const placeholderWidth = (input as HTMLInputElement & { _placeholderWidth?: number })._placeholderWidth;
                           
                           // Clear error state when user starts typing
                           if (emailError) {
@@ -239,7 +239,7 @@ export default function Homepage() {
                           // Use setTimeout to ensure the input value is updated before measurement
                           setTimeout(() => {
                             const wrapper = input.closest('.email-wrapper') as HTMLElement;
-                            const wrapperMinWidth = (wrapper as any)?._minWidth;
+                            const wrapperMinWidth = (wrapper as HTMLElement & { _minWidth?: number })?._minWidth;
                             
                             if (input.value.length > 0) {
                               // Measure current text width with more precise styling
@@ -258,10 +258,10 @@ export default function Homepage() {
                               document.body.appendChild(span);
                               
                               const textWidth = span.offsetWidth;
-                              const finalWidth = Math.max(textWidth + 30, placeholderWidth); // Add 2px buffer
+                              const finalWidth = Math.max(textWidth + 30, placeholderWidth || 100); // Add 2px buffer, fallback to 100px
                               
                               input.style.width = `${finalWidth}px`;
-                              input.style.minWidth = `${placeholderWidth}px`;
+                              input.style.minWidth = `${placeholderWidth || 100}px`;
                               
                               // Update wrapper width
                               if (wrapper && wrapperMinWidth) {
@@ -272,8 +272,8 @@ export default function Homepage() {
                               document.body.removeChild(span);
                             } else {
                               // Reset to placeholder size when empty
-                              input.style.width = `${placeholderWidth}px`;
-                              input.style.minWidth = `${placeholderWidth}px`;
+                              input.style.width = `${placeholderWidth || 100}px`;
+                              input.style.minWidth = `${placeholderWidth || 100}px`;
                               
                               // Reset wrapper to minimum size
                               if (wrapper && wrapperMinWidth) {
@@ -325,10 +325,10 @@ export default function Homepage() {
                               
                               // Reset wrapper width to minimum for sent state
                               const wrapper = input.closest('.email-wrapper') as HTMLElement;
-                              const placeholderWidth = (input as any)._placeholderWidth;
+                              const placeholderWidth = (input as HTMLInputElement & { _placeholderWidth?: number })._placeholderWidth;
                               if (wrapper && placeholderWidth) {
                                 wrapper.style.width = 'fit-content';
-                                wrapper.style.minWidth = `${placeholderWidth + 24}px`;
+                                wrapper.style.minWidth = `${(placeholderWidth || 100) + 24}px`;
                               }
                             } else {
                               setEmailError(true);
@@ -419,22 +419,22 @@ export default function Homepage() {
             
             <div className="manifesto-item">
               <span className="manifesto-prefix">#2</span>
-              <span className="manifesto-text">Yet more than ever, ordinary people can reach financial freedom – by starting the right habits early, even at 10 or 12, and becoming free in their 20s or 30s.</span>
+              <span className="manifesto-text">Yet more than ever, ordinary people can reach financial freedom — by starting the right habits early, even at 10 or 12, and becoming free in their 20s or 30s.</span>
             </div>
             
             <div className="manifesto-item">
               <span className="manifesto-prefix">#3</span>
-              <span className="manifesto-text">Since 2013, Snöbol Research Lead Kristian Kuttok has been developing contrarian investment algorithms that outperform traditional investing.</span>
+              <span className="manifesto-text">Since 2013, Snobol Research Lead Kristian Kuttok has been developing contrarian investment algorithms that outperform traditional investing.</span>
             </div>
             
             <div className="manifesto-item">
               <span className="manifesto-prefix">#4</span>
-              <span className="manifesto-text">Snöbol's mission is to build an AI Fund Manager that consistently outperforms the markets by investing through crises, not avoiding them.</span>
+              <span className="manifesto-text">Snobol's mission is to build an AI Fund Manager that consistently outperforms the markets by investing through crises, not avoiding them.</span>
             </div>
             
             <div className="manifesto-item">
               <span className="manifesto-prefix">#5</span>
-              <span className="manifesto-text">The next contrarian star investor will not be human – it will be AI.</span>
+              <span className="manifesto-text">The next contrarian star investor will not be human — it will be AI.</span>
             </div>
             
             <div className="manifesto-item">
@@ -444,7 +444,7 @@ export default function Homepage() {
             
             <div className="manifesto-item">
               <span className="manifesto-prefix">#7</span>
-              <span className="manifesto-text">Our initiative is guided by Nordic values. The word "snöbol" means snowball in Old Swedish – a symbol of quiet, steady growth.</span>
+              <span className="manifesto-text">Our initiative is guided by Nordic values. The word &quot;snøbol&quot; means snowball in Old Swedish u2013 a symbol of quiet, steady growth.</span>
             </div>
           </div>
           
@@ -456,7 +456,7 @@ export default function Homepage() {
           
           {/* Copyright */}
           <div className="copyright">
-            <p>© Snöbol Inc. 2025</p>
+            <p>© Snobol Inc. 2025</p>
           </div>
           
           {/* Footer with Social Media and Contact */}
