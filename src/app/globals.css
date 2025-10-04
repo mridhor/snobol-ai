@@ -140,14 +140,14 @@ textarea:focus, input:focus {
 
 .signature-name {
   font-family: 'Avenir Light', 'Avenir', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 300;
   margin-bottom: 5px;
 }
 
 .signature-date {
   font-family: 'Avenir Light', 'Avenir', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 300;
   color: #666;
 }
