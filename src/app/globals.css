@@ -99,7 +99,7 @@ textarea:focus, input:focus {
 
 .manifesto-title {
   font-family: 'Avenir Regular', 'Avenir', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 300;
   text-align: center;
   margin-bottom: 60px;
@@ -395,27 +395,26 @@ textarea:focus, input:focus {
   }
   
   .manifesto-title {
-    font-size: 22px;
+    font-size: 20px;
     margin-bottom: 40px;
     letter-spacing: 0.3em;
   }
   
   .manifesto-prefix {
-    margin-top: 1px;
-    
-    font-size: 18px;
+    margin-top: 0px;
+    font-size: 14px;
     min-width: 28px;
   }
   
   .manifesto-text {
-    font-size: 18px;
+    font-size: 16px;
   }
   
   .signature-name {
-    font-size: 18px;
+    font-size: 16px;
   }
   
   .signature-date {
-    font-size: 18px;
+    font-size: 16px;
   }
 }

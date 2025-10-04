@@ -18,7 +18,7 @@ import ChatbotPill, { ChatbotPillRef } from "@/components/ChatbotPill";
 // Reusable donut period component
 const DonutPeriod = () => (
   <span 
-    className="inline-block rounded-[80%] border-[1.8px] sm:border-[2px] border-current bg-transparent ml-[0.1em] w-[0.22em] h-[0.22em] md:w-[0.26em] md:h-[0.26em] lg:w-[0.16em] lg:h-[0.16em]"
+    className="inline-block rounded-[80%] border-[1.5px] sm:border-[1.5px] md:border-[1.8px] border-current bg-transparent ml-[0.1em] w-[0.3em] h-[0.3em] md:w-[0.26em] md:h-[0.26em] lg:w-[0.26em] lg:h-[0.26em]"
   ></span>
 );
 
@@ -51,11 +51,11 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
   // Data is now static - no state or effects needed
 
   return (
-    <div className="w-full h-64 md:h-80">
+    <div className="w-full h-80 md:h-120 md:mt-[-2em] md:mt-[-6em]  lg:mt-[-10em] xl:mt-[-12em]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={chartData}
-          margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
         >
           <XAxis 
             dataKey="date"
@@ -315,7 +315,7 @@ export default function Homepage() {
   return (
     <div className="bg-white min-h-screen flex flex-col" data-name="Homepage" data-node-id="1:2">
       {/* Snobol logo at the top */}
-      <div className="w-full flex justify-center px-4 md:px-12 lg:px-24 pt-8 md:pb-8 sm:pb-2 pb-8" data-name="Header" data-node-id="1:154">
+      <div className="w-full flex justify-center px-4 md:px-12 lg:px-24 py-8 md:py-8 sm:py-2 py-0" data-name="Header" data-node-id="1:154">
         <div className="w-full max-w-6xl">
           <div className="flex gap-2 items-center justify-center opacity-85">
             <Image
@@ -323,7 +323,7 @@ export default function Homepage() {
               alt="Snobol"
               width={120}
               height={48}
-              className="h-8 md:h-12 w-auto"
+              className="h-8 md:h-[10] w-auto"
               priority
               onClick={handleOpenChat}
             />
@@ -332,22 +332,25 @@ export default function Homepage() {
       </div>
       
       {/* Main content centered */}
-      <div className="flex-1 flex items-center justify-center px-4 sm:px-12 lg:px-30 pt:8 sm:pt-0 md:pt-18 pb-4">
+      <div className="flex-1 flex items-start justify-center px-4 sm:px-12 lg:px-30 mt-0 pt:8 sm:pt-0 md:pt-12 pb-4">
         <div className="relative w-full p-2">
           <div className="content-stretch flex flex-col lg:flex-col gap-0 md:gap-10 items-center relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 px-2 max-w-full" data-name="Paragraph" data-node-id="1:158">
-                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2 ">
-                  <p className="leading-tight not-italic text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-black mb-4" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
-                  Building a world where Al invests money better than any human can<DonutPeriod />
-                  </p>
-                  <p className="leading-tight not-italic text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-black mb-0 sm:mb-6 md:mb-8 pr-4" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
-                    Snobol invests in global crises<DonutPeriod />
+                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2 md:pr-50 lg:pr-100 xl:pr-100">
+                  <p className="leading-tight not-italic text-xl sm:text-xl md:text-2xl lg:text-3xl text-black mb-4 pr-0 xs:pr-20 sm:pr-50 md:pr-50 lg:pr-100 xl:pr-60" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
+                  <span className="inline-block md:hidden">Building a world where Al invests </span>
+                  <span className="inline-block md:hidden">money better than any human can<DonutPeriod /></span>
+                  <span className="hidden md:inline-block">Building a world where Al invests money better than any human can<DonutPeriod /></span></p>
+                  
+                  
+                  <p className="leading-tight not-italic text-xl sm:text-xl md:text-2xl lg:text-3xl text-black mb-4 sm:mb-6 md:mb-8 pr-0 xs:pr-20 sm:pr-50 md:pr-60 lg:pr-100" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
+                    <span className="inline-block ">Snobol invests in global crises<DonutPeriod /></span>
                   </p>
                 </div>
               </div>
               
-              <div className="flex-1 w-full max-w-4xl lg:max-w-none mb-6 md:mb-8">
-                <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-64 md:h-80 items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
+              <div className="flex-1 w-full max-w-4xl lg:max-w-none mb-2 md:mb-8 lg:mb-[-2em] xl:mb-[-4em]">
+                <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-80 md:h-90 mt-[-3em] items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
                   <div className="h-full w-full relative outline-none focus:outline-none focus-visible:outline-none select-none">
                     <SimpleLineChart currentPrice={18.49} currentSP500Price={3.30} />
                   </div>
@@ -355,8 +358,8 @@ export default function Homepage() {
               </div>
               
               {/* Email Signup */}
-              <div className="flex flex-col items-center mt-16 md:mt-2 gap-6">
-              <div className="text-center flex flex-col sm:flex-row items-center gap-4">
+              <div className="flex flex-col items-center mt-10 md:mt-0 lg:mt-0 xl:mt-0 gap-2">
+              <div className="text-center flex flex-col sm:flex-row items-center gap-1.5">
                 <p className="text-lg" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>Get Snobol AI investment tips:</p>
                 <div className="flex justify-center items-center">
                   <div className="flex items-center gap-2">
@@ -517,7 +520,7 @@ export default function Homepage() {
               </div>
               </div>
               <div className="relative">
-                <p className="text-sm" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>Disclaimer: This is not an investment advice.</p>
+                <p className="text-sm" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>Disclaimer: This is not investment advice.</p>
                 {errorMessage && (
                   <div className="absolute-y-4"><div className={`email-error-message ${errorMessage ? 'show' : ''}`}>
                     {errorMessage}
@@ -532,7 +535,7 @@ export default function Homepage() {
       </div>
 
       {/* Footer with Manifesto Link */}
-      <div className="text-center py-8" id="manifesto-footer">
+      <div className="text-center pb-8" id="manifesto-footer">
             <p className="text-base sm:text-lg mb-2" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>SNOBOL - HUMANITARIAN AI FUND MANAGER</p>
           <a 
             href="#" 
