@@ -17,7 +17,7 @@ import ChatbotPill, { ChatbotPillRef } from "@/components/ChatbotPill";
 // Reusable donut period component
 const DonutPeriod = () => (
   <span 
-    className="inline-block rounded-[80%] border-[2px] border-current bg-transparent ml-[0.1em] w-[0.24em] h-[0.24em] md:w-[0.26em] md:h-[0.26em] lg:w-[0.16em] lg:h-[0.16em]"
+    className="inline-block rounded-[80%] border-[2px] border-current bg-transparent ml-[0.1em] w-[0.21em] h-[0.21em] md:w-[0.26em] md:h-[0.26em] lg:w-[0.16em] lg:h-[0.16em]"
   ></span>
 );
 
@@ -165,10 +165,10 @@ export default function Homepage() {
               <div className="flex-1 px-2 max-w-full" data-name="Paragraph" data-node-id="1:158">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2
                 ">
-                  <p className="leading-tight not-italic text-3xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
+                  <p className="leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                   Building a world where Al invests money better than any human can<DonutPeriod />
                   </p>
-                  <p className="leading-tight not-italic text-3xl md:text-3xl lg:text-5xl text-black mb-8 pr-4" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
+                  <p className="leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-2 sm:mb-6 md:mb-8 pr-4" data-node-id="1:161" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                     Snobol invests in global crises<DonutPeriod />
                   </p>
                 </div>

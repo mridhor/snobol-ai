@@ -538,17 +538,30 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                                 lastMessage.content.includes('table') ||
                                 lastMessage.content.includes('analysis') ||
                                 lastMessage.content.includes('📊') ||
-                                lastMessage.content.includes('📈');
+                                lastMessage.content.includes('📈') ||
+                                lastMessage.chartData; // Also check for actual chart data
       
       setTimeout(() => {
         if (hasAnalysisContent) {
-          // Scroll to top for analysis results to show the beginning of the analysis
-          scrollToTop("smooth");
+          // For analysis results, scroll to show the user's question at the top
+          // Find the user's message that triggered this response
+          const userMessageIndex = messages.length - 2;
+          if (userMessageIndex >= 0 && messages[userMessageIndex].role === 'user') {
+            // Scroll to the user's message to keep it visible
+            const userMessageElement = document.querySelector(`[data-message-index="${userMessageIndex}"]`);
+            if (userMessageElement) {
+              userMessageElement.scrollIntoView({ behavior: "smooth", block: "start" });
+            } else {
+              scrollToTop("smooth");
+            }
+          } else {
+            scrollToTop("smooth");
+          }
         } else {
           // Scroll to bottom for regular messages
           scrollToBottom("smooth");
         }
-      }, 50);
+      }, 100); // Increased delay to allow TradingView widgets to render
     }
   }, [messages, isLoading, isStreaming]);
 
@@ -565,26 +578,62 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   // Keep scrolling during streaming to follow the response
   useEffect(() => {
     if (isStreaming) {
-      // Scroll immediately
+      // Scroll immediately to show the start of the response
       scrollToBottom("instant");
       
       // Use a more efficient scroll approach during streaming
       let lastScrollHeight = 0;
+      let scrollTimeout: NodeJS.Timeout;
+      
       const scrollInterval = setInterval(() => {
         if (messagesContainerRef.current) {
           const currentScrollHeight = messagesContainerRef.current.scrollHeight;
           // Only scroll if content height has actually changed
           if (currentScrollHeight !== lastScrollHeight) {
-            messagesContainerRef.current.scrollTop = currentScrollHeight;
+            // Clear any pending scroll timeout
+            if (scrollTimeout) clearTimeout(scrollTimeout);
+            
+            // Debounce scroll updates to prevent excessive scrolling
+            scrollTimeout = setTimeout(() => {
+              if (messagesContainerRef.current) {
+                messagesContainerRef.current.scrollTop = currentScrollHeight;
+              }
+            }, 50);
+            
             lastScrollHeight = currentScrollHeight;
           }
         }
       }, 150); // Reduced frequency to 150ms for smoother performance
       
-      return () => clearInterval(scrollInterval);
+      return () => {
+        clearInterval(scrollInterval);
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+      };
     }
   }, [isStreaming]);
 
+  // Handle scroll positioning when TradingView widgets are rendered
+  useEffect(() => {
+    // Check if any message has chart data and we're not streaming
+    const hasChartData = messages.some(msg => msg.chartData && msg.chartData.type === 'stock_chart');
+    
+    if (hasChartData && !isStreaming && !isLoading) {
+      // Wait for TradingView widgets to render, then position scroll
+      setTimeout(() => {
+        const lastMessage = messages[messages.length - 1];
+        if (lastMessage.chartData && lastMessage.chartData.type === 'stock_chart') {
+          // Find the user's message that triggered this response
+          const userMessageIndex = messages.length - 2;
+          if (userMessageIndex >= 0 && messages[userMessageIndex]?.role === 'user') {
+            const userMessageElement = document.querySelector(`[data-message-index="${userMessageIndex}"]`);
+            if (userMessageElement) {
+              userMessageElement.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+          }
+        }
+      }, 500); // Wait for TradingView widget to fully load
+    }
+  }, [messages, isStreaming, isLoading]);
 
   // Thinking duration counter
   useEffect(() => {
