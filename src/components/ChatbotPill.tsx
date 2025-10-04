@@ -638,6 +638,22 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     }
   }, [messages, isStreaming, isLoading]);
 
+  // Monitor TradingView widget completion to end loading state
+  useEffect(() => {
+    if (isLoading && !isStreaming) {
+      // Check if we're waiting for chart rendering
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage?.chartData && lastMessage.chartData.type === 'stock_chart') {
+        // Set up a shorter timeout for chart completion
+        const chartTimeout = setTimeout(() => {
+          setIsLoading(false);
+        }, 200); // Reduced from 300ms to 200ms
+        
+        return () => clearTimeout(chartTimeout);
+      }
+    }
+  }, [messages, isLoading, isStreaming]);
+
   // Thinking duration counter
   useEffect(() => {
     if (isLoading) {
@@ -898,10 +914,23 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           });
         }
       } finally {
-        setIsLoading(false);
+        // Always complete streaming immediately when text is done
         setIsStreaming(false);
         setLoadingMessage("Thinking..."); // Reset to default
         abortControllerRef.current = null;
+        
+        // Check if we have chart data for additional loading state management
+        const hasChartData = accumulatedContent && extractChartData(accumulatedContent).chartData;
+        
+        if (hasChartData) {
+          // Keep loading state briefly for chart rendering, then complete
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 150); // Reduced timeout since we have dedicated monitoring
+        } else {
+          // No chart data, complete loading immediately
+          setIsLoading(false);
+        }
         
         // Generate suggestions with AI priority
         if (accumulatedContent) {
