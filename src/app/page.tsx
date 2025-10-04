@@ -17,7 +17,7 @@ import ChatbotPill, { ChatbotPillRef } from "@/components/ChatbotPill";
 // Reusable donut period component
 const DonutPeriod = () => (
   <span 
-    className="inline-block rounded-[80%] border-[2px] border-current bg-transparent ml-[0.1em] w-[0.24em] h-[0.24em] md:w-[0.15em] md:h-[0.15em]"
+    className="inline-block rounded-[80%] border-[2px] border-current bg-transparent ml-[0.1em] w-[0.24em] h-[0.24em] md:w-[0.26em] md:h-[0.26em] lg:w-[0.16em] lg:h-[0.16em]"
   ></span>
 );
 
@@ -110,6 +110,7 @@ export default function Homepage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
 
   const handleOpenChat = () => {
     chatbotRef.current?.open();
@@ -120,6 +121,16 @@ export default function Homepage() {
     setErrorMessage('');
     setEmailError(false);
     setIsSuccess(false);
+    
+    // Restore dynamic width behavior
+    const input = document.querySelector('.email-input') as HTMLInputElement;
+    if (input) {
+      const wrapper = input.closest('.email-wrapper') as HTMLElement;
+      if (wrapper) {
+        wrapper.style.width = '';
+        wrapper.style.minWidth = '';
+      }
+    }
   };
 
   // Email validation regex
@@ -176,8 +187,9 @@ export default function Homepage() {
               <div className="text-center flex flex-col sm:flex-row items-center gap-4">
                 <p className="text-lg" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>Get Snobol AI investment tips:</p>
                 <div className="flex justify-center items-center">
-                  <div className={`email-wrapper ${emailError ? 'error' : ''} ${isSuccess ? 'success' : ''} ${isSent ? 'sent' : ''}`}>
-                    <div className="email-pill">
+                  <div className="flex items-center gap-2">
+                    <div className={`email-wrapper ${emailError ? 'error' : ''} ${isSuccess ? 'success' : ''} ${isSent ? 'sent' : ''}`}>
+                      <div className="email-pill">
                       {isSent ? (
                         <div className="email-sent-content gap-1">
                           <span className="email-sent-text">Submitted! Thank You</span>
@@ -311,6 +323,16 @@ export default function Homepage() {
                           // Clear error state for valid email
                           setEmailError(false);
                           setErrorMessage('');
+                          setIsEmailLoading(true);
+                          
+                          // Preserve width during loading
+                          const wrapper = input.closest('.email-wrapper') as HTMLElement;
+                          if (wrapper) {
+                            const currentWidth = wrapper.offsetWidth;
+                            wrapper.style.width = `${currentWidth}px`;
+                            wrapper.style.minWidth = `${currentWidth}px`;
+                            wrapper.classList.add('loading');
+                          }
                           
                           try {
                             const response = await fetch('/api/subscribe', {
@@ -330,12 +352,13 @@ export default function Homepage() {
                               setIsSuccess(false);
                               setIsSent(true);
                               
-                              // Reset wrapper width to minimum for sent state
+                              // Keep the current width for sent state - don't reset to minimum
                               const wrapper = input.closest('.email-wrapper') as HTMLElement;
-                              const placeholderWidth = (input as HTMLInputElement & { _placeholderWidth?: number })._placeholderWidth;
-                              if (wrapper && placeholderWidth) {
-                                wrapper.style.width = 'fit-content';
-                                wrapper.style.minWidth = `${(placeholderWidth || 100) + 24}px`;
+                              if (wrapper) {
+                                // Preserve the current width instead of resetting
+                                const currentWidth = wrapper.offsetWidth;
+                                wrapper.style.width = `${currentWidth}px`;
+                                wrapper.style.minWidth = `${currentWidth}px`;
                               }
                             } else {
                               setEmailError(true);
@@ -345,15 +368,54 @@ export default function Homepage() {
                             console.error('Subscription error:', error);
                             setEmailError(true);
                             setErrorMessage('Something went wrong. Please try again.');
+                          } finally {
+                            setIsEmailLoading(false);
+                            
+                            // Remove loading class and restore normal behavior if not sent
+                            const wrapper = input.closest('.email-wrapper') as HTMLElement;
+                            if (wrapper) {
+                              wrapper.classList.remove('loading');
+                              // Only restore dynamic width if not in sent state
+                              if (!isSent) {
+                                wrapper.style.width = '';
+                                wrapper.style.minWidth = '';
+                              }
+                            }
                           }
                         }
                       }}
                         />
                       )}
                     </div>
-                  </div>{/* Error/Success message */}
+                  </div>
+                  {isEmailLoading && (
+                    <div className="loading-spinner">
+                      <svg 
+                        className="animate-spin h-4 w-4 text-gray-400" 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        fill="none" 
+                        viewBox="0 0 24 24"
+                      >
+                        <circle 
+                          className="opacity-25" 
+                          cx="12" 
+                          cy="12" 
+                          r="10" 
+                          stroke="currentColor" 
+                          strokeWidth="4"
+                        ></circle>
+                        <path 
+                          className="opacity-75" 
+                          fill="currentColor" 
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                    </div>
+                  )}
+                  {/* Error/Success message */}
                 
                 </div>
+              </div>
               </div>
               <div className="relative">
                 <p className="text-sm" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>Disclaimer: This is not an investment advice.</p>
@@ -367,10 +429,11 @@ export default function Homepage() {
               </div>
             </div>
           </div>
-        </div>
+        
+      </div>
 
-        {/* Footer with Manifesto Link */}
-        <div className="text-center py-8" id="manifesto-footer">
+      {/* Footer with Manifesto Link */}
+      <div className="text-center py-8" id="manifesto-footer">
             <p className="text-lg mb-2" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>SNOBOL - HUMANITARIAN AI FUND MANAGER</p>
           <a 
             href="#" 
@@ -415,7 +478,7 @@ export default function Homepage() {
         {/* Manifesto Section */}
         <div id="manifesto">
           <h2 className="manifesto-title">
-            M A N I F E S T O
+            MANIFESTO
           </h2>
           
           <div className="manifesto-content">
@@ -501,7 +564,6 @@ export default function Homepage() {
 
         {/* Sticky Chatbot Pill */}
         <ChatbotPill ref={chatbotRef} />
-
       </div>
     );
-  }
+}
