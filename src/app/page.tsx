@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { ArrowRight, Loader2, X } from "lucide-react";
 import {
   LineChart,
@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Tooltip
 } from "recharts";
-import { formatAreaChartData, ChartData } from "@/utils/chartData";
+import { formatAreaChartData, type ChartData } from "@/utils/chartData";
 import Image from "next/image";
 import snobolLogo from "./snobol-ai-logo.png";
 import ChatbotPill, { ChatbotPillRef } from "@/components/ChatbotPill";
@@ -28,8 +28,8 @@ interface SimpleLineChartProps {
   currentSP500Price?: number;
 }
 
-const SimpleLineChart = React.memo(({ currentPrice = 18.49, currentSP500Price = 3.30 }: SimpleLineChartProps) => {
-  const [chartData, setChartData] = useState<ChartData[]>(() => {
+const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.49, currentSP500Price = 3.30 }: SimpleLineChartProps) {
+  const chartData = (() => {
     // Initialize chart data only once during component creation
     const formattedData = formatAreaChartData();
     
@@ -46,9 +46,9 @@ const SimpleLineChart = React.memo(({ currentPrice = 18.49, currentSP500Price = 
     });
     
     return formattedData;
-  });
+  })();
 
-  // Remove useEffect to prevent re-renders - data is now static
+  // Data is now static - no state or effects needed
 
   return (
     <div className="w-full h-64 md:h-80">
