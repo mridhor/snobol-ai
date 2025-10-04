@@ -300,17 +300,7 @@ async function performWebSearchAnalysis(searchQuery: string, ticker?: string): P
     console.error('Web search error:', error);
     return `**${ticker ? `${ticker.toUpperCase()} ` : ''}Analysis**
 
-Market's always moving. Here's the contrarian take:
-
-**Current situation:**
-- Market sentiment driving price action
-- Fear creating opportunities for patient investors
-- Quality fundamentals don't disappear overnight
-
-**Contrarian angle:**
-- Where others see risk, we see potential
-- Market overreactions create entry points
-- Hidden catalysts everyone's ignoring
+Market analysis temporarily unavailable. Check current data for specific insights.
 
 *When everyone's selling, that's when we look closer.*`;
   }
@@ -1098,34 +1088,28 @@ async function getStockChartData(symbol: string, period: string = '6mo'): Promis
   }
   
   
-  // Build Nordic-style response but more descriptive for stock analysis
-  let response = `**${upper} – Market Deep Dive** 📊\n\n`;
+  // Build simple, direct response without templates
+  let response = `**${upper} Analysis** 📊\n\n`;
   
-  response += `**What they do:**\n${overview}\n\n`;
+  // Use the AI-generated analysis directly
+  if (overview && overview.trim() && !overview.includes('Company analysis available via chart below')) {
+    response += overview + '\n\n';
+  }
   
-  response += `**Money talk:**\n${financials}\n\n`;
+  if (financials && financials.trim() && !financials.includes('Financial details in chart analysis')) {
+    response += financials + '\n\n';
+  }
   
-  response += `**Risk check:**\n${risks}\n\n`;
+  if (risks && risks.trim() && !risks.includes('Risk assessment via interactive chart')) {
+    response += risks + '\n\n';
+  }
   
-  response += `**Contrarian perspective:**\n`;
-  response += `- What's the market missing about this company?\n`;
-  response += `- Where is fear creating opportunity?\n`;
-  response += `- What hidden strengths are being ignored?\n`;
-  response += `- What's everyone getting wrong?\n\n`;
+  // Add simple contrarian note if we have actual analysis
+  if (overview && overview.trim() && !overview.includes('Company analysis available via chart below')) {
+    response += `*When everyone's selling, that's when we look closer.*\n\n`;
+  }
   
-  response += `**Fear-driven opportunities:**\n`;
-  response += `- Market overreactions to short-term news?\n`;
-  response += `- Hidden catalysts everyone's ignoring?\n`;
-  response += `- Quality fundamentals being overlooked?\n`;
-  response += `- Contrarian timing vs. perfect timing?\n\n`;
-  
-  response += `**Business reality check:**\n`;
-  response += `- What's the real competitive advantage?\n`;
-  response += `- How strong is the business model?\n`;
-  response += `- What's the long-term growth story?\n`;
-  response += `- Where are the hidden risks?\n`;
-  
-  return `${response.trim()}\n\n\n${chartPayload}`.trim();
+  return `${response.trim()}\n\n${chartPayload}`.trim();
 }
 
 /**

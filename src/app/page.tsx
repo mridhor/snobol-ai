@@ -108,7 +108,7 @@ export default function Homepage() {
   return (
     <div className="bg-white min-h-screen flex flex-col" data-name="Homepage" data-node-id="1:2">
       {/* Snobol logo at the top */}
-      <div className="w-full flex justify-center px-4 md:px-12 lg:px-24 py-8" data-name="Header" data-node-id="1:154">
+      <div className="w-full flex justify-center px-4 md:px-12 lg:px-24 py-8 mb-16" data-name="Header" data-node-id="1:154">
         <div className="w-full max-w-6xl">
           <div className="flex gap-2 items-center justify-center">
             <Image
@@ -120,12 +120,12 @@ export default function Homepage() {
               priority
             />
           </div>
-            </div>
-                  </div>
+        </div>
+      </div>
       
       {/* Main content centered */}
-      <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-24 py-8 md:py-12">
-        <div className="relative w-full max-w-7xl">
+      <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-30 py-16 md:py-32">
+        <div className="relative w-full max-w-7xl p-2">
           <div className="content-stretch flex flex-col lg:flex-row gap-8 lg:gap-20 items-center relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 px-2 max-w-full lg:max-w-xl" data-name="Paragraph" data-node-id="1:158">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2
@@ -148,6 +148,28 @@ export default function Homepage() {
             </div>
           </div>
         </div>
+
+
+      {/* Manifesto Section */}
+      <div className="flex-1 flex items-center justify-center px-6 md:px-12 lg:px-30 py-12 md:py-32">
+        <div className="relative w-full max-w-7xl p-2">
+          <h3 className="font-['Inter:Regular',_sans-serif] font-normal text-2xl md:text-4xl lg:text-4xl text-black mb-8 text-left">
+            MANIFESTO
+          </h3>
+          <div className="prose prose-lg max-w-none">
+            <p className="font-['Inter:Regular',_sans-serif] font-normal leading-relaxed text-lg md:text-xl text-black space-y-4">
+              <span className="block">#1 Economic inequality is greater than ever.</span>
+              <span className="block">#2 Yet more than ever, ordinary people can reach financial freedom — by starting the right habits early, even at 10 or 12, and becoming free in their 20s or 30s.</span>
+              <span className="block">#3 Since 2013, Snobol Research Lead Kristian Kuutok has been developing contrarian investment algorithms that outperform traditional investing.</span>
+              <span className="block">#4 Snobol's mission is to build an AI Fund Manager that consistently outperforms the markets by investing through crises, not avoiding them.</span>
+              <span className="block">#5 The next contrarian star investor will not be human — it will be AI.</span>
+              <span className="block">#6 Financial freedom is one of the deepest sources of happiness and optimism.</span>
+              <span className="block">#7 Our initiative is guided by Nordic values. The word "snøbol" means snowball in Old Swedish — a symbol of quiet, steady growth.</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="box-border content-stretch flex flex-col items-center pt-0 pb-8 md:py-20 px-6 md:px-8 lg:px-24 w-full mt-auto mb-10 md:mb-0" data-name="Footer" data-node-id="1:146">
         <div className="box-border content-stretch flex flex-row md:flex-row gap-4 md:gap-0 items-center justify-between w-full max-w-7xl p-2 md-12" data-name="Container" data-node-id="1:147">
           <div className="flex-shrink-0" data-name="Text" data-node-id="1:152">

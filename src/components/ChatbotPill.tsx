@@ -54,6 +54,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [hasContentStarted, setHasContentStarted] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedThinking, setExpandedThinking] = useState<Set<number>>(new Set());
@@ -73,6 +74,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     open: () => setIsOpen(true),
     close: handleClose
   }));
+
 
   // Suggestion templates organized by topic (fallback only)
   const suggestionTemplates = {
@@ -350,9 +352,9 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       return getRandomSuggestions(suggestionTemplates.personalfinance);
     }
     
-    // Detect company/stock analysis (expanded keywords)
+    // Detect company/stock analysis (expanded keywords) - redirect to market suggestions
     if (combined.match(/\b(apple|tesla|amazon|google|microsoft|meta|netflix|nvidia|stock|company|share|equity|corporation|business|ticker|earnings|revenue|profit|balance sheet|income statement|cash flow|dividend|p\/e|price-to-earnings)\b/i)) {
-      return getRandomSuggestions(suggestionTemplates.company);
+      return getRandomSuggestions(suggestionTemplates.market);
     }
     
     // Detect market conditions (expanded)
@@ -550,6 +552,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     }
   }, [isStreaming, messages]);
 
+
   // Thinking duration counter
   useEffect(() => {
     if (isLoading) {
@@ -599,6 +602,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     }
   }, [isOpen]);
 
+
   const handleStopStreaming = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -606,6 +610,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     }
     setIsLoading(false);
     setIsStreaming(false);
+    setHasContentStarted(false);
     setLoadingMessage("Thinking...");
   };
 
@@ -653,6 +658,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       ];
       setMessages(newMessages);
       setIsLoading(true);
+      setHasContentStarted(false); // Reset content started flag for new message
       // Don't set isStreaming yet - wait for stream to actually start
       lastRequestTime.current = now;
       
@@ -747,6 +753,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
             if (accumulatedContent && isLoading) {
               setIsLoading(false);
               setIsStreaming(true);
+              setHasContentStarted(true); // Mark that content has started
               setLoadingMessage("Thinking..."); // Reset to default
             }
 
@@ -987,19 +994,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   return (
     <>
       <style jsx>{`
-        @keyframes smoothReveal {
-          from {
-            opacity: 0;
-            transform: translateY(4px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .streaming-text {
-          animation: smoothReveal 0.6s ease-out forwards;
-        }
+        /* Removed smoothReveal animation to prevent conflicts with typing effect */
         
         @keyframes elegantSlideIn {
           0% {
@@ -1089,22 +1084,70 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           animation: thinkingPulse 1.5s ease-in-out infinite, thinkingFadeIn 0.4s ease-out forwards;
         }
         
-        /* Smooth typing effect for streaming text */
-        @keyframes typewriter {
+        /* Smooth line-by-line reveal effect for streaming text */
+        @keyframes lineReveal {
           from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(12px) scale(0.98);
+            filter: blur(2px);
           }
           to {
             opacity: 1;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
+            filter: blur(0px);
           }
         }
         
-        
         .streaming-text {
           position: relative;
-          animation: typewriter 0.3s ease-out forwards;
+        }
+        
+        .streaming-text p {
+          animation: lineReveal 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+          opacity: 0;
+        }
+        
+        .streaming-text p:nth-child(1) {
+          animation: none;
+          opacity: 1;
+          transform: none;
+          filter: none;
+        }
+        
+        .streaming-text p:nth-child(2) {
+          animation-delay: 0.15s;
+        }
+        
+        .streaming-text p:nth-child(3) {
+          animation-delay: 0.25s;
+        }
+        
+        .streaming-text p:nth-child(4) {
+          animation-delay: 0.35s;
+        }
+        
+        .streaming-text p:nth-child(5) {
+          animation-delay: 0.45s;
+        }
+        
+        .streaming-text p:nth-child(6) {
+          animation-delay: 0.55s;
+        }
+        
+        .streaming-text p:nth-child(7) {
+          animation-delay: 0.65s;
+        }
+        
+        .streaming-text p:nth-child(8) {
+          animation-delay: 0.75s;
+        }
+        
+        .streaming-text p:nth-child(9) {
+          animation-delay: 0.85s;
+        }
+        
+        .streaming-text p:nth-child(10) {
+          animation-delay: 0.95s;
         }
       `}</style>
       
@@ -1128,9 +1171,11 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           isClosing ? 'exit-overlay' : 'animate-in fade-in zoom-in-98 duration-600 ease-out'
         }`}>
           {/* Header */}
-          <div className={`absolute top-0 py-1 left-2 right-2 z-10 bg-white md:bg-0 ${
+          <div className={`absolute top-0 py-1 left-2 right-2 z-10 bg-white md:h-20 ${
             isClosing ? 'exit-top' : 'animate-in slide-in-from-top-2 fade-in duration-500 ease-out'
-          }`}>
+          }`} style={{
+            background: 'linear-gradient(to bottom, white 0%, rgba(255,255,255,0.8) 30%, transparent 100%)'
+          }}>
             <div className="max-w-full mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Image 
@@ -1162,9 +1207,10 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
           }`}>
             <div className="max-w-3xl mx-auto px-3 sm:px-4 space-y-4 sm:space-y-6 py-4 sm:py-6">
               {messages.map((message, index) => {
-                // Hide the empty assistant message during loading or if it's still empty during streaming
+                // Hide the empty assistant message only during initial loading (before any content starts)
                 const isEmptyAssistantMessage = message.role === "assistant" && message.content === "" && index === messages.length - 1;
-                if (isEmptyAssistantMessage && (isLoading || isStreaming)) {
+                // Only hide if it's truly empty AND we're in initial loading state AND content hasn't started yet
+                if (isEmptyAssistantMessage && isLoading && !isStreaming && !hasContentStarted) {
                   return null;
                 }
                 
@@ -1192,8 +1238,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                             isStreaming && index === messages.length - 1 && message.content !== "" ? '' : 'message-appear'
                           }`}
                           style={{ 
-                            animationDelay: isStreaming && index === messages.length - 1 ? '0ms' : `${Math.min(index * 40, 200)}ms`,
-                            transition: 'opacity 0.15s ease-out'
+                            animationDelay: isStreaming && index === messages.length - 1 ? '0ms' : `${Math.min(index * 40, 200)}ms`
                           }}
                         >
                         {/* Thinking Process Section */}
@@ -1336,7 +1381,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   {/* Suggestion Pills Below Message */}
                   {message.role === "assistant" && message.suggestions && message.suggestions.length > 0 && (
                     <div className="flex justify-start mt-3">
-                      <div className="max-w-[85%] sm:max-w-[75%] flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-1 duration-300 delay-100">
+                      <div className="max-w-[85%] sm:max-w-full flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-1 duration-300 delay-100">
                         {message.suggestions.map((suggestion, suggestionIndex) => (
                           <button
                             key={suggestionIndex}
@@ -1361,7 +1406,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
                   {/* Toolkit Pills Below Every 3 Suggestions - Only show on latest message */}
                   {message.role === "assistant" && message.suggestions && message.suggestions.length > 0 && index === messages.length - 1 && (
                     <div className="flex justify-start mt-4">
-                      <div className="max-w-[85%] sm:max-w-[75%] flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-1 duration-300 delay-200">
+                      <div className="max-w-[85%] sm:max-w-full flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-1 duration-300 delay-200">
                          <button
                            onClick={() => handleToolkitClick("Do contrarian discovery for ")}
                            disabled={isLoading || isStreaming}
