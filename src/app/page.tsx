@@ -13,7 +13,7 @@ import {
 import { formatAreaChartData, type ChartData } from "@/utils/chartData";
 import Image from "next/image";
 import snobolLogo from "./snobol-ai-logo.png";
-import ChatbotPill, { ChatbotPillRef } from "@/components/ChatbotPill";
+// import ChatbotPill, { ChatbotPillRef } from "@/components/ChatbotPill";
 
 // Reusable donut period component
 const DonutPeriod = () => (
@@ -667,7 +667,7 @@ export default function Homepage() {
         </div>
 
         {/* Sticky Chatbot Pill */}
-        <ChatbotPill ref={chatbotRef} />
+        {/* <ChatbotPill ref={chatbotRef} /> */}
       </div>
     );
 }
