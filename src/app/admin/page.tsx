@@ -1,107 +1,156 @@
 "use client";
 
-import { useState } from "react";
-import SharedPageContent from "../../components/SharedPageContent";
-import { useContent } from "../../hooks/useContent";
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function AdminPage() {
-  const [editMode, setEditMode] = useState(true); // Always in edit mode for admin
-  const [isAuthenticated, setIsAuthenticated] = useState(false); // TODO: Add auth
-  const { saveContent } = useContent();
+interface Subscriber {
+  id: string;
+  email: string;
+  subscribed_at: string;
+}
 
-  const handleSave = async (html: string, elementId?: string) => {
-    if (!elementId) return;
-    
+export default function AdminDashboard() {
+  const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [total, setTotal] = useState(0);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetchSubscribers();
+  }, []);
+
+  const fetchSubscribers = async () => {
     try {
-      await saveContent(html, elementId);
-      console.log("Content saved and refreshed:", elementId);
+      const response = await fetch('/api/admin/subscribers');
+      
+      if (response.status === 401) {
+        router.push('/admin/login');
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setSubscribers(data.subscribers || []);
+        setTotal(data.total || 0);
+      } else {
+        setError(data.error || 'Failed to fetch subscribers');
+      }
     } catch (error) {
-      console.error("Error saving content:", error);
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Simple auth check - replace with proper authentication
-  if (!isAuthenticated) {
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+      router.push('/admin/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      router.push('/admin/login');
+    }
+  };
+
+  const exportCSV = () => {
+    const headers = ['Email', 'Subscribed At'];
+    const csvContent = [
+      headers.join(','),
+      ...subscribers.map(sub => [
+        sub.email,
+        new Date(sub.subscribed_at).toLocaleString()
+      ].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `snobol-subscribers-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Snobol Admin
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Sign in to edit the site content
-            </p>
-          </div>
-          <form className="mt-8 space-y-6">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-              />
-            </div>
-            <div>
-              <button
-                type="button"
-                onClick={() => setIsAuthenticated(true)}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Sign in
-              </button>
-            </div>
-          </form>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading subscribers...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <>
-      {/* Admin Header */}
-      <div className="fixed top-4 right-4 z-50 flex gap-2">
-        <button
-          onClick={() => setEditMode(!editMode)}
-          className={`px-4 py-2 rounded text-sm font-medium transition ${
-            editMode
-              ? "bg-blue-500 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-          }`}
-        >
-          {editMode ? "Preview Mode" : "Edit Mode"}
-        </button>
-        <button
-          onClick={() => setIsAuthenticated(false)}
-          className="px-4 py-2 rounded text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition"
-        >
-          Logout
-        </button>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Email Subscribers</h1>
+            <p className="mt-2 text-gray-600">Total: {total} subscribers</p>
+          </div>
+          <div className="flex gap-4">
+            <button
+              onClick={exportCSV}
+              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            >
+              Export CSV
+            </button>
+            <button
+              onClick={handleLogout}
+              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
 
-      <SharedPageContent 
-        isAdmin={true} 
-        editMode={editMode} 
-        onSave={handleSave} 
-      />
-    </>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+            {error}
+          </div>
+        )}
+
+        {/* Subscribers Table */}
+        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+          {subscribers.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">No subscribers found</p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-gray-200">
+              {subscribers.map((subscriber) => (
+                <li key={subscriber.id} className="px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        {subscriber.email}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Subscribed: {new Date(subscriber.subscribed_at).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Refresh Button */}
+        <div className="mt-6 text-center">
+          <button
+            onClick={fetchSubscribers}
+            className="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-md text-sm font-medium"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

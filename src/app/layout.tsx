@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Snobol - AI Crisis Investing",
+  title: "Snobol - Humanitarian Al Fund Manager",
   description: "Snobol invests in various crisis",
   viewport: {
     width: "device-width",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     viewportFit: "cover",
   },
   openGraph: {
-    title: "Snobol - AI Crisis Investing",
+    title: "Snobol - Humanitarian Al Fund Manager",
     description: "Snobol invests in various crisis",
     url: "https://snobol.ai",
     siteName: "Snobol AI",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
         url: "/snobol-og-image.png",
         width: 1200,
         height: 630,
-        alt: "Snobol AI - Crisis Investing",
+        alt: "Snobol - Humanitarian Al Fund Manager",
       },
     ],
     locale: "en_US",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Snobol - AI Crisis Investing",
+    title: "Snobol - Humanitarian Al Fund Manager",
     description: "Snobol invests in various crisis",
     images: ["/snobol-og-image.png"],
   },

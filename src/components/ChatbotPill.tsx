@@ -490,6 +490,13 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     }
   };
 
+  // Scroll to top function for analysis results
+  const scrollToTop = (behavior: ScrollBehavior = "smooth") => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({ top: 0, behavior });
+    }
+  };
+
 
   // Handle Escape key to close chatbot
   useEffect(() => {
@@ -520,24 +527,40 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
     }
   }, [isOpen]);
 
-  // Auto scroll to bottom when new messages arrive or loading state changes
-  // Disabled auto-scroll to top for stock analysis - let users stay where they are
+  // Auto scroll when new messages arrive or loading state changes
   useEffect(() => {
-    // Always scroll to bottom for all message types
-    setTimeout(() => {
-      scrollToBottom("smooth");
-    }, 50);
-  }, [messages, isLoading]);
+    // Only scroll if not currently streaming to avoid conflicts
+    if (!isStreaming && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      
+      // Check if the last message contains analysis results (charts, tables, etc.)
+      const hasAnalysisContent = lastMessage.content.includes('chart') || 
+                                lastMessage.content.includes('table') ||
+                                lastMessage.content.includes('analysis') ||
+                                lastMessage.content.includes('📊') ||
+                                lastMessage.content.includes('📈');
+      
+      setTimeout(() => {
+        if (hasAnalysisContent) {
+          // Scroll to top for analysis results to show the beginning of the analysis
+          scrollToTop("smooth");
+        } else {
+          // Scroll to bottom for regular messages
+          scrollToBottom("smooth");
+        }
+      }, 50);
+    }
+  }, [messages.length, isLoading, isStreaming]);
 
   // Ensure scroll to bottom when loading state changes (Thinking... message appears)
   useEffect(() => {
-    if (isLoading) {
+    if (isLoading && !isStreaming) {
       // Small delay to ensure the loading message is rendered
       setTimeout(() => {
         scrollToBottom("smooth");
       }, 50);
     }
-  }, [isLoading, messages]);
+  }, [isLoading, isStreaming]);
 
   // Keep scrolling during streaming to follow the response
   useEffect(() => {
@@ -545,12 +568,22 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       // Scroll immediately
       scrollToBottom("instant");
       
-      // Continue scrolling at intervals during streaming
-      const scrollInterval = setInterval(() => scrollToBottom("instant"), 100);
+      // Use a more efficient scroll approach during streaming
+      let lastScrollHeight = 0;
+      const scrollInterval = setInterval(() => {
+        if (messagesContainerRef.current) {
+          const currentScrollHeight = messagesContainerRef.current.scrollHeight;
+          // Only scroll if content height has actually changed
+          if (currentScrollHeight !== lastScrollHeight) {
+            messagesContainerRef.current.scrollTop = currentScrollHeight;
+            lastScrollHeight = currentScrollHeight;
+          }
+        }
+      }, 150); // Reduced frequency to 150ms for smoother performance
       
       return () => clearInterval(scrollInterval);
     }
-  }, [isStreaming, messages]);
+  }, [isStreaming]);
 
 
   // Thinking duration counter
@@ -1153,7 +1186,7 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       
       {/* Chatbot Pill Button */}
       {!isOpen && (
-        <div className="fixed md:block bottom-4 right-4 sm:bottom-5 sm:right-5 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="hidden fixed bottom-4 right-4 sm:bottom-5 sm:right-5 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
           <button
             onClick={() => setIsOpen(true)}
             className="group flex items-center gap-2 sm:gap-2.5 bg-white hover:bg-gray-900 text-white pl-3 pr-4 sm:pl-4 sm:pr-5 py-2.5 sm:py-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl border border-gray-200 cursor-pointer"
