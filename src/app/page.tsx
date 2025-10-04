@@ -451,7 +451,7 @@ export default function Homepage() {
             
             <div className="manifesto-item">
               <span className="manifesto-prefix">#7</span>
-              <span className="manifesto-text">Our initiative is guided by Nordic values. The word &quot;snøbol&quot; means snowball in Old Swedish u2013 a symbol of quiet, steady growth.</span>
+              <span className="manifesto-text">Our initiative is guided by Nordic values. The word &quot;snøbol&quot; means snowball in Old Swedish — a symbol of quiet, steady growth.</span>
             </div>
           </div>
           
