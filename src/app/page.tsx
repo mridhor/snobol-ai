@@ -22,11 +22,15 @@ const DonutPeriod = () => (
   ></span>
 );
 
-// Ultra-simple 2-line chart component - moved outside Homepage to prevent re-renders
-const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => {
-  const [chartData, setChartData] = useState<ChartData[]>([]);
+// Ultra-simple 2-line chart component - optimized to prevent re-renders
+interface SimpleLineChartProps {
+  currentPrice?: number;
+  currentSP500Price?: number;
+}
 
-  useEffect(() => {
+const SimpleLineChart = React.memo(({ currentPrice = 18.49, currentSP500Price = 3.30 }: SimpleLineChartProps) => {
+  const [chartData, setChartData] = useState<ChartData[]>(() => {
+    // Initialize chart data only once during component creation
     const formattedData = formatAreaChartData();
     
     // Create static date values to prevent continuous re-renders
@@ -41,8 +45,10 @@ const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => 
       totalSnobol: currentPrice
     });
     
-    setChartData(formattedData);
-  }, [currentPrice, currentSP500Price]);
+    return formattedData;
+  });
+
+  // Remove useEffect to prevent re-renders - data is now static
 
   return (
     <div className="w-full h-64 md:h-80">
@@ -100,7 +106,7 @@ const SimpleLineChart = ({ currentPrice = 18.49, currentSP500Price = 3.30 }) => 
       </ResponsiveContainer>
     </div>
   );
-};
+});
 
 export default function Homepage() {
   const chatbotRef = useRef<ChatbotPillRef>(null);
@@ -136,13 +142,13 @@ export default function Homepage() {
     }
   };
 
-  // Email validation regex - comprehensive domain validation excluding standalone .co domains
+  // Email validation regex - comprehensive domain validation for global .co domains
   const validateEmail = (email: string): boolean => {
-    // More comprehensive email regex that validates:
+    // Enhanced email regex that validates:
     // - Local part: alphanumeric, dots, hyphens, underscores, plus signs
     // - Domain: alphanumeric, hyphens, dots
     // - TLD: 2-63 characters, letters only
-    // - Excludes standalone .co domains but allows .co.uk, .co.jp, etc.
+    // - Properly handles .co.## domains from all countries worldwide
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,63}$/;
     
     // Check if email matches the basic regex pattern
@@ -150,16 +156,30 @@ export default function Homepage() {
       return false;
     }
     
-    // Extract domain from email
+    // Extract domain from email and split into parts
     const domain = email.split('@')[1];
+    const domainParts = domain.split('.');
     
-    // Exclude standalone .co domains but allow .co.uk, .co.jp, etc.
-    if (domain.endsWith('.co') && !domain.includes('.co.')) {
-      return false;
+    // Special validation for .co domains
+    // Allow .co.## where ## is any valid country code (2+ letters)
+    // Examples: .co.uk, .co.jp, .co.in, .co.za, .co.nz, .co.il, .co.kr, etc.
+    if (domain.endsWith('.co')) {
+      // Check if it's a standalone .co domain (no country code)
+      if (domainParts.length === 2 && domainParts[1] === 'co') {
+        return false; // Reject standalone .co domains
+      }
+      
+      // If it's .co.##, validate the country code part
+      if (domainParts.length >= 3 && domainParts[domainParts.length - 2] === 'co') {
+        const countryCode = domainParts[domainParts.length - 1];
+        // Country codes should be 2-10 characters, letters only
+        if (!/^[a-zA-Z]{2,10}$/.test(countryCode)) {
+          return false;
+        }
+      }
     }
     
     // Additional validation for domain structure
-    const domainParts = domain.split('.');
     
     // Must have at least 2 parts (domain.tld)
     if (domainParts.length < 2) {
