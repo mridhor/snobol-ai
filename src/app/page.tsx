@@ -51,7 +51,7 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
   // Data is now static - no state or effects needed
 
   return (
-    <div className="w-full h-80 md:h-120 md:mt-[-2em] md:mt-[-6em]  lg:mt-[-10em] xl:mt-[-12em]">
+    <div className="w-full h-100 md:h-120 md:mt-[-2em] md:mt-[-6em]  lg:mt-[-10em] xl:mt-[-12em]">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={chartData}
@@ -350,7 +350,7 @@ export default function Homepage() {
               </div>
               
               <div className="flex-1 w-full max-w-4xl lg:max-w-none mb-2 md:mb-8 lg:mb-[-2em] xl:mb-[-4em]">
-                <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-80 md:h-90 mt-[-3em] items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
+                <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-100 md:h-90 mt-[-3em] items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
                   <div className="h-full w-full relative outline-none focus:outline-none focus-visible:outline-none select-none">
                     <SimpleLineChart currentPrice={18.49} currentSP500Price={3.30} />
                   </div>
@@ -536,10 +536,10 @@ export default function Homepage() {
 
       {/* Footer with Manifesto Link */}
       <div className="text-center pb-8" id="manifesto-footer">
-            <p className="text-base sm:text-lg mb-2" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>SNOBOL - HUMANITARIAN AI FUND MANAGER</p>
+            <p className="text-sm sm:text-lg mb-2" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>SNOBOL - HUMANITARIAN AI FUND MANAGER</p>
           <a 
             href="#" 
-            className="manifesto-link underline text-xl cursor-pointer"
+            className="manifesto-link underline text-base cursor-pointer"
             style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}
             onClick={(e) => {
               e.preventDefault();
