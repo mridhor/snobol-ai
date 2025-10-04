@@ -9,19 +9,29 @@ function getOpenAIClient() {
 }
 
 // Optimized system prompt for speed
-const SUGGESTION_PROMPT = `Generate 3 contrarian follow-up questions for Snobol AI (contrarian investing chatbot).
+const SUGGESTION_PROMPT = `Generate 3 contrarian follow-up questions for Snobol AI (contrarian investing chatbot built on manifesto principles).
 
-**Style:** Short, contrarian, max 10 words each. Focus on fear/opportunity.
+**Snobol's Manifesto Context:**
+- Economic inequality is greater than ever, but ordinary people can achieve financial freedom
+- Start early (even 10-12 years old), become free in 20s-30s
+- Invest through crises, not avoid them
+- AI-powered contrarian investing for everyone
+- Nordic values: quiet, steady growth like a snowball
+
+**Style:** Short, contrarian, max 10 words each. Focus on fear/opportunity, accessibility, early investing, crisis opportunities.
 
 **Good examples:**
 - "Is this panic overdone?"
 - "What's the crowd missing?"
 - "Where's the fear greatest?"
+- "How do I start at 12?"
+- "Is this my crisis opportunity?"
 
 **Rules:**
 - Contrarian perspective
 - Plain English, no jargon
-- Business reality, not technical analysis, not investor-savvy language
+- Emphasize accessibility for ordinary people
+- Include early investing and crisis opportunity themes
 - Return JSON array: ["question1", "question2", "question3"]`;
 
 export async function POST(req: NextRequest) {
@@ -71,8 +81,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({
         suggestions: [
           "Where is fear greatest right now?",
-          "Is this panic overdone?",
-          "What's the crowd missing?"
+          "How do I start investing at 12?",
+          "Is this panic overdone?"
         ]
       });
     }
@@ -96,8 +106,8 @@ export async function POST(req: NextRequest) {
         // Pad with defaults if needed
         const defaults = [
           "Where is fear greatest right now?",
-          "Is this panic overdone?", 
-          "What's the crowd missing?"
+          "How do I start investing at 12?",
+          "Is this panic overdone?"
         ];
         
         while (validSuggestions.length < 3) {
@@ -114,8 +124,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       suggestions: [
         "Where is fear greatest right now?",
-        "Is this panic overdone?",
-        "What's the crowd missing?"
+        "How do I start investing at 12?",
+        "Is this panic overdone?"
       ]
     });
   } catch (error: unknown) {
@@ -125,8 +135,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       suggestions: [
         "Where is fear greatest right now?",
-        "Is this panic overdone?",
-        "What's the crowd missing?"
+        "How do I start investing at 12?",
+        "Is this panic overdone?"
       ]
     });
   }

@@ -43,11 +43,11 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "I'm Snobol AI. Ask me about finance, investing, or our crisis investing approach.",
+      content: "I'm Snobol AI. Ask me about finance, investing, or our crisis investing approach. I believe financial freedom is achievable for everyone, even starting at 10-12 years old.",
       suggestions: [
-        "What is Snobol AI's crisis investing approach?",
-        "How do you manage risk during market volatility?",
-        "What makes a quality investment during uncertain times?"
+        "How do I start investing at 12?",
+        "What is Snobol's crisis investing approach?",
+        "Where is fear greatest right now?"
       ]
     }
   ]);
@@ -79,7 +79,9 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
   // Suggestion templates organized by topic (fallback only)
   const suggestionTemplates = {
     general: [
+      "How do I start investing at 12?",
       "What is Snobol AI's crisis investing approach?",
+      "Where is fear greatest right now?",
       "How do you manage risk during market volatility?",
       "What makes a quality investment during uncertain times?",
       "How should beginners start investing?",
@@ -94,7 +96,8 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
       "How do I stay calm when everyone else is panicking?",
       "What should I focus on during market uncertainty?",
       "How do I prepare for the next crisis?",
-      "What's a safe investing strategy for beginners?"
+      "What's a safe investing strategy for beginners?",
+      "Is this my crisis opportunity?"
     ],
     company: [
       "What financial metrics should I look at?",
