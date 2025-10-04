@@ -347,7 +347,7 @@ export default function Homepage() {
               </div>
               
               <div className="flex-1 w-full max-w-4xl lg:max-w-none mb-6 md:mb-8">
-                <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-56 md:h-80 items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
+                <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-64 md:h-80 items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
                   <div className="h-full w-full relative outline-none focus:outline-none focus-visible:outline-none select-none">
                     <SimpleLineChart currentPrice={18.49} currentSP500Price={3.30} />
                   </div>
