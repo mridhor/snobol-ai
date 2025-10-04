@@ -640,16 +640,24 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
 
   // Monitor TradingView widget completion to end loading state
   useEffect(() => {
-    if (isLoading && !isStreaming) {
+    if (isLoading && !isStreaming && messages.length > 0) {
       // Check if we're waiting for chart rendering
       const lastMessage = messages[messages.length - 1];
+      console.log("useEffect triggered - lastMessage chartData:", lastMessage?.chartData);
+      
       if (lastMessage?.chartData && lastMessage.chartData.type === 'stock_chart') {
+        console.log("Setting chart completion timeout (250ms)");
         // Set up a shorter timeout for chart completion
         const chartTimeout = setTimeout(() => {
+          console.log("Chart completion timeout fired - setting isLoading to false");
           setIsLoading(false);
-        }, 200); // Reduced from 300ms to 200ms
+        }, 250); // Slightly increased for better reliability
         
         return () => clearTimeout(chartTimeout);
+      } else if (!lastMessage?.chartData) {
+        // No chart data but still loading - complete immediately
+        console.log("No chart data in useEffect - completing loading immediately");
+        setIsLoading(false);
       }
     }
   }, [messages, isLoading, isStreaming]);
@@ -922,15 +930,16 @@ const ChatbotPill = forwardRef<ChatbotPillRef>((props, ref) => {
         // Check if we have chart data for additional loading state management
         const hasChartData = accumulatedContent && extractChartData(accumulatedContent).chartData;
         
-        if (hasChartData) {
-          // Keep loading state briefly for chart rendering, then complete
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 150); // Reduced timeout since we have dedicated monitoring
-        } else {
+        console.log("Streaming completed - hasChartData:", hasChartData, "isLoading:", true);
+        
+        if (!hasChartData) {
           // No chart data, complete loading immediately
+          console.log("No chart data - completing loading immediately");
           setIsLoading(false);
+        } else {
+          console.log("Chart data detected - letting useEffect handle completion");
         }
+        // If we have chart data, let the dedicated useEffect handle completion
         
         // Generate suggestions with AI priority
         if (accumulatedContent) {
