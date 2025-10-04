@@ -142,7 +142,7 @@ export default function Homepage() {
   return (
     <div className="bg-white min-h-screen flex flex-col" data-name="Homepage" data-node-id="1:2">
       {/* Snobol logo at the top */}
-      <div className="w-full flex justify-center px-4 md:px-12 lg:px-24 py-8 " data-name="Header" data-node-id="1:154">
+      <div className="w-full flex justify-center px-4 md:px-12 lg:px-24 md:py-8 py-4" data-name="Header" data-node-id="1:154">
         <div className="w-full max-w-6xl">
           <div className="flex gap-2 items-center justify-center opacity-85">
             <Image
@@ -161,10 +161,9 @@ export default function Homepage() {
       {/* Main content centered */}
       <div className="flex-1 flex items-center justify-center px-4 md:px-12 lg:px-30 pt:8 sm:pt-16 md:pt-20 pb-6">
         <div className="relative w-full p-2">
-          <div className="content-stretch flex flex-col lg:flex-col gap-8 lg:gap-10 items-center relative w-full" data-name="Container" data-node-id="1:157">
+          <div className="content-stretch flex flex-col lg:flex-col gap-4 md:gap-8 items-center relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 px-2 max-w-full" data-name="Paragraph" data-node-id="1:158">
-                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2
-                ">
+                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-2 ">
                   <p className="leading-tight not-italic text-2xl md:text-3xl lg:text-5xl text-black mb-4" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                   Building a world where Al invests money better than any human can<DonutPeriod />
                   </p>
@@ -175,7 +174,7 @@ export default function Homepage() {
               </div>
               
               <div className="flex-1 w-full max-w-4xl lg:max-w-none">
-                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-64 md:h-80 items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
+                <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-56 md:h-80 items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
                   <div className="h-full w-full relative outline-none focus:outline-none focus-visible:outline-none select-none">
                     <SimpleLineChart currentPrice={18.49} currentSP500Price={3.30} />
                   </div>
