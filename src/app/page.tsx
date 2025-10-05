@@ -598,7 +598,7 @@ export default function Homepage() {
             
             <div className="manifesto-item">
               <span className="manifesto-prefix">#3</span>
-              <span className="manifesto-text">Since 2013, Snobol Research Lead Kristian Kuutok has built contrarian investment algorithms outperforming traditional markets — first in a partnership, later through an investment fund from 2021. The full track record is shown in the graph.</span>
+              <span className="manifesto-text">Since 2013, Snobol Research Lead Kristian Kuutok has built contrarian investment algorithm outperforming traditional investing — first in a partnership, later through an investment fund from 2021. The full track record is shown in the graph.</span>
             </div>
             
             <div className="manifesto-item">
