@@ -109,7 +109,7 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
 });
 
 export default function Homepage() {
-  const chatbotRef = useRef<ChatbotPillRef>(null);
+ // const chatbotRef = useRef<ChatbotPillRef>(null);
   const [emailError, setEmailError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -118,9 +118,9 @@ export default function Homepage() {
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [emailValue, setEmailValue] = useState('');
 
-  const handleOpenChat = () => {
-    chatbotRef.current?.open();
-  };
+//  const handleOpenChat = () => {
+//    chatbotRef.current?.open();
+//  };
 
   const handleCloseSent = () => {
     setIsSent(false);
@@ -331,12 +331,12 @@ export default function Homepage() {
       </div>
       
       {/* Main content centered */}
-      <div className="flex-1 flex items-start justify-center px-4 sm:px-12 lg:px-30 mt-0 pt:8 sm:pt-0 md:pt-12 pb-4">
+      <div className="flex-1 flex items-start justify-center px-4 sm:px-12 lg:px-30 mt-8 md:mt-0 pt:8 sm:pt-0 md:pt-12 pb-4">
         <div className="relative w-full p-2">
-          <div className="content-stretch flex flex-col lg:flex-col gap-0 md:gap-10 items-center relative w-full" data-name="Container" data-node-id="1:157">
+          <div className="content-stretch flex flex-col lg:flex-col gap-0 md:gap-10 items-left relative w-full" data-name="Container" data-node-id="1:157">
               <div className="flex-1 px-2 max-w-full" data-name="Paragraph" data-node-id="1:158">
                 <div className="bg-clip-padding border-0 border-[transparent] border-solid box-border relative w-full pr-0 md:pr-50 lg:pr-100 xl:pr-100">
-                  <p className="leading-tight not-italic text-xl sm:text-xl md:text-2xl lg:text-3xl text-black mb-4 pr-0 xs:pr-20" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
+                  <p className="flex flex-col leading-tight not-italic text-xl sm:text-xl md:text-2xl lg:text-3xl text-black mb-4 pr-0 xs:pr-20" data-node-id="1:159" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>
                   <span className="inline-block md:hidden">Building a world where Al invests </span>
                   <span className="inline-block md:hidden">money better than any human can<DonutPeriod /></span>
                   <span className="hidden md:inline-block">Building a world where Al invests money better than any human can<DonutPeriod /></span></p>
@@ -587,37 +587,37 @@ export default function Homepage() {
           
           <div className="manifesto-content">
             <div className="manifesto-item">
-              <span className="manifesto-prefix">#1</span>
+              <span className="manifesto-text">#1</span>
               <span className="manifesto-text">Economic inequality is greater than ever.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-prefix">#2</span>
+              <span className="manifesto-text">#2</span>
               <span className="manifesto-text">Yet more than ever, ordinary people can reach financial freedom — by starting the right habits early, even at 10 or 12, and becoming free in their 20s or 30s.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-prefix">#3</span>
-              <span className="manifesto-text">Since 2013, Snobol Research Lead Kristian Kuutok has been developing contrarian investment algorithms that outperform traditional investing.</span>
+              <span className="manifesto-text">#3</span>
+              <span className="manifesto-text">Since 2013, Snobol Research Lead Kristian Kuutok has built contrarian investment algorithms outperforming traditional markets — first in a partnership, later through an investment fund from 2021. The full track record is shown in the graph.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-prefix">#4</span>
+              <span className="manifesto-text">#4</span>
               <span className="manifesto-text">Snobol&apos;s mission is to build an AI Fund Manager that consistently outperforms the markets by investing through crises, not avoiding them.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-prefix">#5</span>
+              <span className="manifesto-text">#5</span>
               <span className="manifesto-text">The next contrarian star investor will not be human — it will be AI.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-prefix">#6</span>
+              <span className="manifesto-text">#6</span>
               <span className="manifesto-text">Financial freedom is one of the deepest sources of happiness and optimism.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-prefix">#7</span>
+              <span className="manifesto-text">#7</span>
               <span className="manifesto-text">Our initiative is guided by Nordic values. The word &quot;snøbol&quot; means snowball in Old Swedish — a symbol of quiet, steady growth.</span>
             </div>
           </div>

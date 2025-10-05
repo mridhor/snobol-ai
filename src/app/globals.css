@@ -120,9 +120,10 @@ textarea:focus, input:focus {
 .manifesto-prefix {
   font-weight: normal;
   font-size: 20px;
+  align-content: first baseline;
   min-width: 30px;
   flex-shrink: 0;
-  margin-top: 4px;
+  margin-top: 0px;
 }
 
 .manifesto-text {
@@ -401,6 +402,7 @@ textarea:focus, input:focus {
   }
   
   .manifesto-prefix {
+    align-content: first baseline;
     margin-top: 0px;
     font-size: 14px;
     min-width: 28px;
