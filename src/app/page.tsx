@@ -587,37 +587,37 @@ export default function Homepage() {
           
           <div className="manifesto-content">
             <div className="manifesto-item">
-              <span className="manifesto-text">#1</span>
+              <span className="manifesto-prefix">#1</span>
               <span className="manifesto-text">Economic inequality is greater than ever.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-text">#2</span>
+              <span className="manifesto-prefix">#2</span>
               <span className="manifesto-text">Yet more than ever, ordinary people can reach financial freedom — by starting the right habits early, even at 10 or 12, and becoming free in their 20s or 30s.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-text">#3</span>
+              <span className="manifesto-prefix">#3</span>
               <span className="manifesto-text">Since 2013, Snobol Research Lead Kristian Kuutok has built contrarian investment algorithms outperforming traditional markets — first in a partnership, later through an investment fund from 2021. The full track record is shown in the graph.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-text">#4</span>
+              <span className="manifesto-prefix">#4</span>
               <span className="manifesto-text">Snobol&apos;s mission is to build an AI Fund Manager that consistently outperforms the markets by investing through crises, not avoiding them.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-text">#5</span>
+              <span className="manifesto-prefix">#5</span>
               <span className="manifesto-text">The next contrarian star investor will not be human — it will be AI.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-text">#6</span>
+              <span className="manifesto-prefix">#6</span>
               <span className="manifesto-text">Financial freedom is one of the deepest sources of happiness and optimism.</span>
             </div>
             
             <div className="manifesto-item">
-              <span className="manifesto-text">#7</span>
+              <span className="manifesto-prefix">#7</span>
               <span className="manifesto-text">Our initiative is guided by Nordic values. The word &quot;snøbol&quot; means snowball in Old Swedish — a symbol of quiet, steady growth.</span>
             </div>
           </div>
