@@ -625,7 +625,7 @@ export default function Homepage() {
           {/* Signature Block */}
           <div className="signature-section">
             <p className="signature-name">Kristian J. Kuutok</p>
-            <p className="signature-date">October 2025, Alaska Way — Seattle, WA</p>
+            <p className="signature-date">October 2025, Alaskan Way — Seattle, WA</p>
           </div>
           
           {/* Copyright */}
