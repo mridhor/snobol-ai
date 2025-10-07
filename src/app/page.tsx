@@ -58,18 +58,18 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
           const year = item.date.split(", ")[1];
           const isLatestPoint = index === sp500Data.updatedData.length - 1;
           
-          // For the latest point, use real-time actual price from API
+          // For the latest point, use real-time actual prices from APIs
           const actualSp500 = isLatestPoint ? sp500Data.actualPrice : (item.sp500 * sp500Baseline);
-          const actualSnobol = item.snobol * snobolBaseline;
+          const actualSnobol = isLatestPoint ? priceData.currentPrice : (item.snobol * snobolBaseline);
           
           return {
             date: year,
             fullDate: item.date,
-            sp500: actualSp500 / sp500Baseline,  // Normalized S&P 500 for chart line
-            snobol: item.snobol,                  // Normalized Snobol growth  
-            totalSnobol: item.snobol,             // Same as snobol for chart display
-            actualSp500: actualSp500,             // Actual S&P 500 price for tooltip
-            actualSnobol: actualSnobol            // Actual Snobol price for tooltip
+            sp500: actualSp500 / sp500Baseline,      // Normalized S&P 500 for chart line
+            snobol: actualSnobol / snobolBaseline,   // Normalized Snobol for chart line
+            totalSnobol: actualSnobol / snobolBaseline, // Same as snobol for chart display
+            actualSp500: actualSp500,                 // Actual S&P 500 price for tooltip
+            actualSnobol: actualSnobol                // Actual Snobol price for tooltip
           };
         });
         
