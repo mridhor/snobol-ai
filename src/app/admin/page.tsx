@@ -251,25 +251,6 @@ export default function AdminDashboard() {
                 />
                 <p className="text-xs text-muted-foreground font-medium">Type the price value (min: 0.01, max: 9999.99)</p>
               </div>
-
-              {/* SP500 Price */}
-              <div className="space-y-2 border-gray-200 border-sm rounded">
-                <Label htmlFor="currentSP500Price" className="font-semibold">S&P 500 Current Price</Label>
-                <Input
-                  id="currentSP500Price"
-                  className="bg-white border-gray-200 border-sm rounded font-semibold"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max="9999.99"
-                  value={typeof priceData.currentSP500Price === 'string' ? priceData.currentSP500Price : (priceData.currentSP500Price === 0 ? '' : priceData.currentSP500Price.toFixed(2))}
-                  onChange={(e) => handlePriceChange('currentSP500Price', e.target.value)}
-                  onBlur={() => handlePriceBlur('currentSP500Price')}
-                  disabled={priceLoading}
-                  placeholder="3.30"
-                />
-                <p className="text-xs text-muted-foreground font-medium">Type the price value (min: 0.01, max: 9999.99)</p>
-              </div>
             </div>
             
             {/* Save Changes Button */}

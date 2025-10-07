@@ -30,22 +30,28 @@ interface SimpleLineChartProps {
 
 const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.49 }: SimpleLineChartProps) {
   const [sp500Price, setSp500Price] = useState<number>(3.30);
+  const [snobolPrice, setSnobolPrice] = useState<number>(currentPrice);
 
   const [chartData, setChartData] = useState<ChartData[]>(() => {
     // Initialize with default data from chartData.ts
     return formatAreaChartData();
   });
 
-  // Fetch real-time S&P 500 price and update chart data
+  // Fetch real-time S&P 500 price and Snobol price, then update chart data
   useEffect(() => {
-    const fetchSP500Price = async () => {
+    const fetchPrices = async () => {
       try {
-        const response = await fetch('/api/sp500-price');
-        const data = await response.json();
+        // Fetch S&P 500 price
+        const sp500Response = await fetch('/api/sp500-price');
+        const sp500Data = await sp500Response.json();
+        
+        // Fetch current Snobol price from admin panel
+        const priceResponse = await fetch('/api/price');
+        const priceData = await priceResponse.json();
         
         // Use the updated data from the API (which includes today's data)
         // The API has already updated chartData.ts via addTodayData()
-        const updatedFormattedData = data.updatedData.map((item: { date: string; sp500: number; snobol: number }) => {
+        const updatedFormattedData = sp500Data.updatedData.map((item: { date: string; sp500: number; snobol: number }) => {
           const year = item.date.split(", ")[1];
           return {
             date: year,
@@ -59,13 +65,14 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
         });
         
         setChartData(updatedFormattedData);
+        setSnobolPrice(priceData.currentPrice);
       } catch (error) {
-        console.error('Failed to fetch S&P 500 price:', error);
+        console.error('Failed to fetch prices:', error);
         // Keep the default data if fetch fails
       }
     };
 
-    fetchSP500Price();
+    fetchPrices();
   }, []);
 
   // Data is now static - no state or effects needed

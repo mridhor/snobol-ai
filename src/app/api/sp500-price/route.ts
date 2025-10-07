@@ -23,12 +23,21 @@ export async function GET(request: NextRequest) {
       const meta = result.meta;
       const actualPrice = meta.regularMarketPrice;
       
-      // Calculate normalized price based on 8/8/2013 baseline of $1697.48
+      // Calculate normalized price of S&P 500 based on 8/8/2013 baseline of $1697.48
       const baselinePrice = 1697.48;
       const normalizedPrice = actualPrice / baselinePrice;
       
-      // Get current Snobol price (you can make this dynamic later)
-      const currentSnobolPrice = 18.49; // This should match your current Snobol price
+      // Get current Snobol price from admin panel
+      let currentSnobolPrice = 18.49; // Default fallback
+      try {
+        const priceResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/price`);
+        const priceData = await priceResponse.json();
+        if (priceData.currentPrice) {
+          currentSnobolPrice = priceData.currentPrice;
+        }
+      } catch (error) {
+        console.log('Using default Snobol price:', currentSnobolPrice);
+      }
       
       // Update the financial data with today's data
       const updatedData = addTodayData(currentSnobolPrice, normalizedPrice);
@@ -47,11 +56,22 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    // If Alpha Vantage fails, return a fallback price (last known good value)
+    // If Yahoo Finance fails, return a fallback price (last known good value)
     const fallbackPrice = 6713.71;
     const baselinePrice = 1697.48;
     const normalizedPrice = fallbackPrice / baselinePrice;
-    const currentSnobolPrice = 18.49;
+    
+    // Get current Snobol price from admin panel
+    let currentSnobolPrice = 18.49; // Default fallback
+    try {
+      const priceResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/price`);
+      const priceData = await priceResponse.json();
+      if (priceData.currentPrice) {
+        currentSnobolPrice = priceData.currentPrice;
+      }
+    } catch (error) {
+      console.log('Using default Snobol price:', currentSnobolPrice);
+    }
     
     // Still update the financial data with fallback values
     const updatedData = addTodayData(currentSnobolPrice, normalizedPrice);
@@ -74,7 +94,18 @@ export async function GET(request: NextRequest) {
     const fallbackPrice = 6713.71;
     const baselinePrice = 1697.48;
     const normalizedPrice = fallbackPrice / baselinePrice;
-    const currentSnobolPrice = 18.49;
+    
+    // Get current Snobol price from admin panel
+    let currentSnobolPrice = 18.49; // Default fallback
+    try {
+      const priceResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/price`);
+      const priceData = await priceResponse.json();
+      if (priceData.currentPrice) {
+        currentSnobolPrice = priceData.currentPrice;
+      }
+    } catch (error) {
+      console.log('Using default Snobol price:', currentSnobolPrice);
+    }
     
     // Update financial data even on error
     const updatedData = addTodayData(currentSnobolPrice, normalizedPrice);

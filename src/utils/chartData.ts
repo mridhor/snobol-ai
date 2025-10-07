@@ -46,10 +46,14 @@ export const addTodayData = (latestPrice: number, sp500: number) => {
     year: "numeric"
   });
 
+  // Normalize Snobol price based on baseline of $1 (Aug 8, 2013)
+  const snobolBaseline = 1;
+  const normalizedSnobol = latestPrice / snobolBaseline;
+
   const withoutToday = financialData.filter(d => d.date !== formattedToday);
   const updatedData: FinancialData[] = [
     ...withoutToday,
-    { date: formattedToday, snobol: latestPrice, sp500: sp500 }
+    { date: formattedToday, snobol: normalizedSnobol, sp500: sp500 }
   ];
 
   if (typeof window !== 'undefined') {
@@ -66,9 +70,13 @@ export const checkAndRecordYearlyData = (latestPrice: number, sp500: number) => 
   const alreadyRecorded = financialData.some(d => d.date === expectedDate);
 
   if (today.getMonth() === 0 && today.getDate() === 1 && !alreadyRecorded) {
+    // Normalize Snobol price based on baseline of $1 (Aug 8, 2013)
+    const snobolBaseline = 1;
+    const normalizedSnobol = latestPrice / snobolBaseline;
+    
     const yearEndEntry = {
       date: expectedDate,
-      snobol: latestPrice,
+      snobol: normalizedSnobol,
       sp500: sp500
     };
     const updatedData = [...financialData, yearEndEntry];
@@ -83,14 +91,19 @@ export const checkAndRecordYearlyData = (latestPrice: number, sp500: number) => 
 export const formatAreaChartData = (): ChartData[] => {
   return financialData.map(item => {
     const year = item.date.split(", ")[1];
+    // Snobol baseline is $1 (Aug 8, 2013)
+    const snobolBaseline = 1;
+    // S&P 500 baseline is $1697.48 (Aug 8, 2013)
+    const sp500Baseline = 1697.48;
+    
     return {
       date: year,
       fullDate: item.date,
       sp500: item.sp500,        // Normalized S&P 500 growth
       snobol: item.snobol,      // Normalized Snobol growth
       totalSnobol: item.snobol, // Same as snobol for chart display
-      actualSp500: item.sp500 * 1697.48,  // Actual S&P 500 price
-      actualSnobol: item.snobol           // Actual Snobol price (already in actual format)
+      actualSp500: item.sp500 * sp500Baseline,  // Actual S&P 500 price
+      actualSnobol: item.snobol * snobolBaseline // Actual Snobol price
     };
   });
 };
