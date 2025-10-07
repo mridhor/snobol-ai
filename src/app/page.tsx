@@ -31,6 +31,7 @@ interface SimpleLineChartProps {
 const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.49 }: SimpleLineChartProps) {
   const [sp500Price, setSp500Price] = useState<number>(3.30);
   const [snobolPrice, setSnobolPrice] = useState<number>(currentPrice);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [chartData, setChartData] = useState<ChartData[]>(() => {
     // Initialize with default data from chartData.ts
@@ -39,6 +40,8 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
 
   // Fetch real-time S&P 500 price and Snobol price, then update chart data
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchPrices = async () => {
       try {
         // Fetch S&P 500 price
@@ -73,11 +76,17 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
           };
         });
         
-        setChartData(updatedFormattedData);
-        setSnobolPrice(priceData.currentPrice);
+        if (isMounted) {
+          setChartData(updatedFormattedData);
+          setSnobolPrice(priceData.currentPrice);
+          setIsInitialLoad(false);
+        }
       } catch (error) {
         console.error('Failed to fetch prices:', error);
         // Keep the default data if fetch fails
+        if (isMounted) {
+          setIsInitialLoad(false);
+        }
       }
     };
 
@@ -113,6 +122,7 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
     
     // Cleanup listeners on unmount
     return () => {
+      isMounted = false;
       channel.close();
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('priceUpdated', handlePriceUpdate);
