@@ -1,71 +1,41 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
 
 // Default fallback values
 const DEFAULT_PRICE = 18.49;
 const DEFAULT_SP500_PRICE = 3.30;
 
-// File path to store prices
-const PRICE_FILE_PATH = path.join(process.cwd(), 'data', 'current-price.json');
-
-// Ensure data directory exists
-function ensureDataDirectory() {
-  const dataDir = path.join(process.cwd(), 'data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-}
-
-// Read prices from file
-function readPrices() {
-  try {
-    ensureDataDirectory();
-    if (fs.existsSync(PRICE_FILE_PATH)) {
-      const data = fs.readFileSync(PRICE_FILE_PATH, 'utf-8');
-      return JSON.parse(data);
-    }
-  } catch (error) {
-    console.error('Error reading price file:', error);
-  }
-  return {
-    currentPrice: DEFAULT_PRICE,
-    currentSP500Price: DEFAULT_SP500_PRICE,
-    updatedAt: new Date().toISOString()
-  };
-}
-
-// Write prices to file
-function writePrices(currentPrice: number, currentSP500Price: number) {
-  try {
-    ensureDataDirectory();
-    const data = {
-      currentPrice,
-      currentSP500Price,
-      updatedAt: new Date().toISOString()
-    };
-    fs.writeFileSync(PRICE_FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
-    return true;
-  } catch (error) {
-    console.error('Error writing price file:', error);
-    return false;
-  }
-}
-
 export async function GET() {
   try {
-    const prices = readPrices();
+    // Fetch current prices from Supabase
+    const { data, error } = await supabase
+      .from('snobol_current_price')
+      .select('*')
+      .order('id', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      console.log('No price data found, returning defaults');
+      return NextResponse.json({
+        success: true,
+        currentPrice: DEFAULT_PRICE,
+        currentSP500Price: DEFAULT_SP500_PRICE
+      });
+    }
+
     return NextResponse.json({
       success: true,
-      currentPrice: prices.currentPrice,
-      currentSP500Price: prices.currentSP500Price
+      currentPrice: data.current_price || DEFAULT_PRICE,
+      currentSP500Price: data.current_sp500_price || DEFAULT_SP500_PRICE
     });
   } catch (error) {
     console.error('Error fetching price data:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch price data' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: true,
+      currentPrice: DEFAULT_PRICE,
+      currentSP500Price: DEFAULT_SP500_PRICE
+    });
   }
 }
 
@@ -82,12 +52,42 @@ export async function POST(request: NextRequest) {
       ? (newSP500Price === 0 ? 0.01 : newSP500Price) 
       : DEFAULT_SP500_PRICE;
 
-    // Write to file
-    const success = writePrices(validatedPrice, validatedSP500Price);
-    
-    if (!success) {
+    // Check if a record exists
+    const { data: existingData, error: fetchError } = await supabase
+      .from('snobol_current_price')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let result;
+    if (existingData && !fetchError) {
+      // Update existing record
+      result = await supabase
+        .from('snobol_current_price')
+        .update({
+          current_price: validatedPrice,
+          current_sp500_price: validatedSP500Price,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingData.id)
+        .select();
+    } else {
+      // Insert new record
+      result = await supabase
+        .from('snobol_current_price')
+        .insert({
+          current_price: validatedPrice,
+          current_sp500_price: validatedSP500Price,
+          updated_at: new Date().toISOString()
+        })
+        .select();
+    }
+
+    if (result.error) {
+      console.error('Supabase error:', result.error);
       return NextResponse.json(
-        { error: 'Failed to update price' },
+        { error: 'Failed to update price in database' },
         { status: 500 }
       );
     }
