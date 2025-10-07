@@ -60,7 +60,7 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
             snobol: item.snobol,      // Normalized Snobol growth  
             totalSnobol: item.snobol, // Same as snobol for chart display
             actualSp500: item.sp500 * 1697.48,  // Actual S&P 500 price
-            actualSnobol: item.snobol            // Actual Snobol price
+            actualSnobol: item.snobol * 1        // Actual Snobol price (normalized * baseline)
           };
         });
         
@@ -72,7 +72,30 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
       }
     };
 
+    // Fetch immediately on mount
     fetchPrices();
+    
+    // Listen for storage events from other tabs/windows (e.g., admin panel)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'priceUpdate') {
+        // Price was updated in admin panel, refresh immediately
+        fetchPrices();
+      }
+    };
+    
+    // Listen for custom event from same tab
+    const handlePriceUpdate = () => {
+      fetchPrices();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('priceUpdated', handlePriceUpdate);
+    
+    // Cleanup listeners on unmount
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('priceUpdated', handlePriceUpdate);
+    };
   }, []);
 
   // Data is now static - no state or effects needed

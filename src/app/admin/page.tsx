@@ -143,7 +143,14 @@ export default function AdminDashboard() {
         // Show success message briefly
         setPriceError('');
         setHasUnsavedChanges(false);
-        // You could add a success state here if needed
+        
+        // Trigger event to notify main page of price update
+        // Use localStorage to notify other tabs/windows
+        localStorage.setItem('priceUpdate', Date.now().toString());
+        localStorage.removeItem('priceUpdate'); // Clean up immediately
+        
+        // Dispatch custom event for same tab
+        window.dispatchEvent(new Event('priceUpdated'));
       } else {
         setPriceError(data.error || 'Failed to update prices');
       }
