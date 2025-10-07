@@ -31,7 +31,6 @@ interface SimpleLineChartProps {
 const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.49 }: SimpleLineChartProps) {
   const [sp500Price, setSp500Price] = useState<number>(3.30);
   const [snobolPrice, setSnobolPrice] = useState<number>(currentPrice);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [chartData, setChartData] = useState<ChartData[]>(() => {
     // Initialize with default data from chartData.ts
@@ -44,13 +43,16 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
     
     const fetchPrices = async () => {
       try {
-        // Fetch S&P 500 price
-        const sp500Response = await fetch('/api/sp500-price');
-        const sp500Data = await sp500Response.json();
+        // Fetch both APIs in parallel for faster loading
+        const [sp500Response, priceResponse] = await Promise.all([
+          fetch('/api/sp500-price'),
+          fetch('/api/price')
+        ]);
         
-        // Fetch current Snobol price from admin panel
-        const priceResponse = await fetch('/api/price');
-        const priceData = await priceResponse.json();
+        const [sp500Data, priceData] = await Promise.all([
+          sp500Response.json(),
+          priceResponse.json()
+        ]);
         
         // Use the updated data from the API (which includes today's data)
         // The API has already updated chartData.ts via addTodayData()
@@ -79,14 +81,10 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
         if (isMounted) {
           setChartData(updatedFormattedData);
           setSnobolPrice(priceData.currentPrice);
-          setIsInitialLoad(false);
         }
       } catch (error) {
         console.error('Failed to fetch prices:', error);
         // Keep the default data if fetch fails
-        if (isMounted) {
-          setIsInitialLoad(false);
-        }
       }
     };
 
@@ -198,7 +196,7 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
             activeDot={{ r: 4.5, fill: "white", stroke: "black", strokeWidth: 3.1 }}
           />
         </LineChart>
-      </ResponsiveContainer>
+      </ResponsiveContainer>ß
     </div>
   );
 });
