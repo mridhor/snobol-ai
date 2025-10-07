@@ -89,21 +89,25 @@ export const checkAndRecordYearlyData = (latestPrice: number, sp500: number) => 
 };
 
 export const formatAreaChartData = (): ChartData[] => {
+  // Snobol baseline is $1 (Aug 8, 2013)
+  const snobolBaseline = 1;
+  // S&P 500 baseline is $1697.48 (Aug 8, 2013)
+  const sp500Baseline = 1697.48;
+  
   return financialData.map(item => {
     const year = item.date.split(", ")[1];
-    // Snobol baseline is $1 (Aug 8, 2013)
-    const snobolBaseline = 1;
-    // S&P 500 baseline is $1697.48 (Aug 8, 2013)
-    const sp500Baseline = 1697.48;
+    // Calculate actual prices from normalized values
+    const actualSp500 = item.sp500 * sp500Baseline;
+    const actualSnobol = item.snobol * snobolBaseline;
     
     return {
       date: year,
       fullDate: item.date,
-      sp500: item.sp500,        // Normalized S&P 500 growth
-      snobol: item.snobol,      // Normalized Snobol growth
-      totalSnobol: item.snobol, // Same as snobol for chart display
-      actualSp500: item.sp500 * sp500Baseline,  // Actual S&P 500 price
-      actualSnobol: item.snobol * snobolBaseline // Actual Snobol price
+      sp500: actualSp500 / sp500Baseline,  // Normalized S&P 500 for chart line
+      snobol: item.snobol,                  // Normalized Snobol growth
+      totalSnobol: item.snobol,             // Same as snobol for chart display
+      actualSp500: actualSp500,             // Actual S&P 500 price for tooltip
+      actualSnobol: actualSnobol            // Actual Snobol price for tooltip
     };
   });
 };
