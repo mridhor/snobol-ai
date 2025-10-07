@@ -11,6 +11,8 @@ export interface ChartData {
   sp500: number;
   snobol: number;
   totalSnobol?: number; // Optional field for total Snobol price
+  actualSp500?: number; // Actual S&P 500 price
+  actualSnobol?: number; // Actual Snobol price
 }
 
 export const financialData: FinancialData[] = (() => {
@@ -84,9 +86,11 @@ export const formatAreaChartData = (): ChartData[] => {
     return {
       date: year,
       fullDate: item.date,
-      sp500: item.sp500,
-      snobol: item.snobol - item.sp500,
-      totalSnobol: item.snobol // Add totalSnobol for historical data
+      sp500: item.sp500,        // Normalized S&P 500 growth
+      snobol: item.snobol,      // Normalized Snobol growth
+      totalSnobol: item.snobol, // Same as snobol for chart display
+      actualSp500: item.sp500 * 1697.48,  // Actual S&P 500 price
+      actualSnobol: item.snobol           // Actual Snobol price (already in actual format)
     };
   });
 };

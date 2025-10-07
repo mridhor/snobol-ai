@@ -28,25 +28,45 @@ interface SimpleLineChartProps {
   currentSP500Price?: number;
 }
 
-const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.49, currentSP500Price = 3.30 }: SimpleLineChartProps) {
-  const chartData = (() => {
-    // Initialize chart data only once during component creation
-    const formattedData = formatAreaChartData();
-    
-    // Create static date values to prevent continuous re-renders
-    const currentDate = 'Oct 4, 2025'; // Static date to prevent re-renders
-    const currentYear = '2025'; // Static year to prevent re-renders
-    
-    formattedData.push({
-      date: currentYear,
-      fullDate: currentDate,
-      sp500: currentSP500Price,
-      snobol: currentPrice - currentSP500Price,
-      totalSnobol: currentPrice
-    });
-    
-    return formattedData;
-  })();
+const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.49 }: SimpleLineChartProps) {
+  const [sp500Price, setSp500Price] = useState<number>(3.30);
+
+  const [chartData, setChartData] = useState<ChartData[]>(() => {
+    // Initialize with default data from chartData.ts
+    return formatAreaChartData();
+  });
+
+  // Fetch real-time S&P 500 price and update chart data
+  useEffect(() => {
+    const fetchSP500Price = async () => {
+      try {
+        const response = await fetch('/api/sp500-price');
+        const data = await response.json();
+        
+        // Use the updated data from the API (which includes today's data)
+        // The API has already updated chartData.ts via addTodayData()
+        const updatedFormattedData = data.updatedData.map((item: { date: string; sp500: number; snobol: number }) => {
+          const year = item.date.split(", ")[1];
+          return {
+            date: year,
+            fullDate: item.date,
+            sp500: item.sp500,        // Normalized S&P 500 growth
+            snobol: item.snobol,      // Normalized Snobol growth  
+            totalSnobol: item.snobol, // Same as snobol for chart display
+            actualSp500: item.sp500 * 1697.48,  // Actual S&P 500 price
+            actualSnobol: item.snobol            // Actual Snobol price
+          };
+        });
+        
+        setChartData(updatedFormattedData);
+      } catch (error) {
+        console.error('Failed to fetch S&P 500 price:', error);
+        // Keep the default data if fetch fails
+      }
+    };
+
+    fetchSP500Price();
+  }, []);
 
   // Data is now static - no state or effects needed
 
@@ -74,10 +94,28 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
                 const data = payload[0].payload;
+                // For the latest data point (today), always show today's date
+                const isLatestPoint = data === chartData[chartData.length - 1];
+                const displayDate = isLatestPoint ? 
+                  new Date().toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  }) : data.fullDate;
+                
                 return (
-                  <div className="bg-white p-2 rounded shadow-sm border text-xs">
-                    <p className="text-gray-600">{data.fullDate}</p>
-                    <p className="font-semibold">${data.totalSnobol?.toFixed(2)}</p>
+                  <div className="bg-white p-3 rounded shadow-sm border text-xs min-w-[200px]">
+                    <p className="text-gray-600 font-medium mb-2">{displayDate}</p>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-700">Snobol:</span>
+                        <span className="font-semibold">${data.actualSnobol?.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-700">S&P 500:</span>
+                        <span className="font-semibold">${data.actualSp500?.toFixed(2)}</span>
+                      </div>
+                    </div>
                   </div>
                 );
               }
@@ -369,7 +407,7 @@ export default function Homepage() {
               <div className="flex-1 w-full max-w-4xl lg:max-w-none mb-2 md:mb-8 lg:mb-[-2em] xl:mb-[-4em]">
                 <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-74 md:h-[40vh] pb-2 mt-[-1em] items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
                   <div className="h-full w-full max-w-7xl relative outline-none focus:outline-none focus-visible:outline-none select-none">
-                    <SimpleLineChart currentPrice={priceData.currentPrice} currentSP500Price={priceData.currentSP500Price} />
+                    <SimpleLineChart currentPrice={priceData.currentPrice} />
                   </div>
                 </div>
               </div>
@@ -395,9 +433,9 @@ export default function Homepage() {
                           </button>
                         </div>
                       ) : (
-                        <input 
-                          type="email" 
-                          placeholder="Insert email." 
+                  <input 
+                    type="email" 
+                    placeholder="Insert email." 
                           className="email-input"
                         ref={(input) => {
                           if (input) {
@@ -517,7 +555,7 @@ export default function Homepage() {
                     </div>
                     {/* Submit button that appears when email is valid */}
                     {!isSent && isEmailValid && (
-                      <button
+                  <button 
                         type="button"
                         className={`email-submit-btn ${isEmailLoading ? 'loading' : ''}`}
                         onClick={() => !isEmailLoading && handleEmailSubmit(emailValue)}
@@ -528,7 +566,7 @@ export default function Homepage() {
                         ) : (
                           <ArrowRight className="h-4 w-4" />
                         )}
-                      </button>
+                  </button>
                     )}
                   </div>
                   {/* Error/Success message */}
@@ -549,9 +587,9 @@ export default function Homepage() {
             </div>
           </div>
         
-      </div>
+        </div>
 
-      {/* Footer with Manifesto Link */}
+        {/* Footer with Manifesto Link */}
       <div className="text-center pb-8" id="manifesto-footer">
             <p className="text-sm sm:text-lg mb-2" style={{ fontFamily: 'Avenir Light', fontWeight: 300 }}>SNOBOL - HUMANITARIAN AI FUND MANAGER</p>
           <a 
@@ -669,9 +707,9 @@ export default function Homepage() {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
                 </svg>
-              </a>
-            </div>
-            
+            </a>
+          </div>
+          
             {/* Company Tagline */}
             <div className="company-tagline">
               <p>SNOBOL - HUMANITARIAN AI FUND MANAGER</p>
@@ -687,5 +725,5 @@ export default function Homepage() {
         {/* Sticky Chatbot Pill */}
         {/* <ChatbotPill ref={chatbotRef} /> */}
       </div>
-    );
+  );
 }
