@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { ArrowRight, Loader2, X } from "lucide-react";
 import {
   LineChart,
@@ -111,12 +111,30 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
 export default function Homepage() {
  // const chatbotRef = useRef<ChatbotPillRef>(null);
   const [emailError, setEmailError] = useState(false);
+  const [priceData, setPriceData] = useState({ currentPrice: 18.49, currentSP500Price: 3.30 });
   const [errorMessage, setErrorMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [isEmailValid, setIsEmailValid] = useState(false);
   const [emailValue, setEmailValue] = useState('');
+
+  // Fetch price data on component mount
+  useEffect(() => {
+    const fetchPriceData = async () => {
+      try {
+        const response = await fetch('/api/price');
+        const data = await response.json();
+        if (response.ok) {
+          setPriceData(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch price data:', error);
+      }
+    };
+    
+    fetchPriceData();
+  }, []);
 
 //  const handleOpenChat = () => {
 //    chatbotRef.current?.open();
@@ -351,7 +369,7 @@ export default function Homepage() {
               <div className="flex-1 w-full max-w-4xl lg:max-w-none mb-2 md:mb-8 lg:mb-[-2em] xl:mb-[-4em]">
                 <div className=" bg-clip-padding border-0 border-[transparent] border-solid box-border content-stretch flex h-74 md:h-[40vh] pb-2 mt-[-1em] items-center justify-center relative w-full outline-none focus:outline-none focus-visible:outline-none">
                   <div className="h-full w-full max-w-7xl relative outline-none focus:outline-none focus-visible:outline-none select-none">
-                    <SimpleLineChart currentPrice={18.49} currentSP500Price={3.30} />
+                    <SimpleLineChart currentPrice={priceData.currentPrice} currentSP500Price={priceData.currentSP500Price} />
                   </div>
                 </div>
               </div>

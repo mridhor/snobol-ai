@@ -2,6 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 
 interface Subscriber {
   id: string;
@@ -9,11 +13,20 @@ interface Subscriber {
   subscribed_at: string;
 }
 
+interface PriceData {
+  currentPrice: number | string;
+  currentSP500Price: number | string;
+}
+
 export default function AdminDashboard() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [total, setTotal] = useState(0);
+  const [priceData, setPriceData] = useState<PriceData>({ currentPrice: 18.49, currentSP500Price: 3.30 });
+  const [priceLoading, setPriceLoading] = useState(false);
+  const [priceError, setPriceError] = useState('');
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const router = useRouter();
 
   const fetchSubscribers = useCallback(async () => {
@@ -40,9 +53,112 @@ export default function AdminDashboard() {
     }
   }, [router]);
 
+  const fetchPriceData = useCallback(async () => {
+    try {
+      const response = await fetch('/api/price');
+      const data = await response.json();
+      
+      if (response.ok) {
+        setPriceData(data);
+      } else {
+        setPriceError(data.error || 'Failed to fetch price data');
+      }
+    } catch {
+      setPriceError('Failed to fetch price data');
+    }
+  }, []);
+
+  const updatePrice = async (field: 'currentPrice' | 'currentSP500Price', value: number) => {
+    setPriceLoading(true);
+    setPriceError('');
+    
+    try {
+      const response = await fetch('/api/price', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          [field]: value
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setPriceData(prev => ({ ...prev, [field]: value }));
+      } else {
+        setPriceError(data.error || 'Failed to update price');
+      }
+    } catch {
+      setPriceError('Failed to update price');
+    } finally {
+      setPriceLoading(false);
+    }
+  };
+
+  const handlePriceChange = (field: 'currentPrice' | 'currentSP500Price', value: string) => {
+    // Allow typing any value, including empty string and partial numbers
+    // Don't convert to number immediately - let user type freely
+    setPriceData(prev => ({ ...prev, [field]: value }));
+    setHasUnsavedChanges(true);
+  };
+
+  const handlePriceBlur = (field: 'currentPrice' | 'currentSP500Price') => {
+    // Format to 2 decimal places when user finishes typing
+    const currentValue = priceData[field];
+    const numValue = typeof currentValue === 'string' ? parseFloat(currentValue) || 0 : currentValue;
+    
+    // If value is 0, set to minimum of 0.01
+    const finalValue = numValue === 0 ? 0.01 : numValue;
+    const formattedValue = parseFloat(finalValue.toFixed(2));
+    setPriceData(prev => ({ ...prev, [field]: formattedValue }));
+  };
+
+  const handleSaveChanges = async () => {
+    setPriceLoading(true);
+    setPriceError('');
+    
+    try {
+      const response = await fetch('/api/price', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPrice: (() => {
+            const value = typeof priceData.currentPrice === 'string' ? parseFloat(priceData.currentPrice) || 0 : priceData.currentPrice;
+            return value === 0 ? 0.01 : value;
+          })(),
+          currentSP500Price: (() => {
+            const value = typeof priceData.currentSP500Price === 'string' ? parseFloat(priceData.currentSP500Price) || 0 : priceData.currentSP500Price;
+            return value === 0 ? 0.01 : value;
+          })()
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Show success message briefly
+        setPriceError('');
+        setHasUnsavedChanges(false);
+        // You could add a success state here if needed
+      } else {
+        setPriceError(data.error || 'Failed to update prices');
+      }
+    } catch {
+      setPriceError('Failed to update prices');
+    } finally {
+      setPriceLoading(false);
+    }
+  };
+
+
   useEffect(() => {
     fetchSubscribers();
-  }, [fetchSubscribers]);
+    fetchPriceData();
+  }, [fetchSubscribers, fetchPriceData]);
 
   const handleLogout = async () => {
     try {
@@ -85,70 +201,160 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Email Subscribers</h1>
-            <p className="mt-2 text-gray-600">Total: {total} subscribers</p>
+            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
           </div>
           <div className="flex gap-4">
-            <button
+            <Button
               onClick={exportCSV}
-              className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              variant="outline"
+              className="bg-white border-gray-200 cursor-pointer shadow-xs font-semibold"
+              size="sm"
             >
               Export CSV
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleLogout}
-              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              className="cursor-pointer font-semibold"
+              variant="destructive"
+              size="sm"
             >
               Logout
-            </button>
+            </Button>
           </div>
         </div>
 
+        {/* Price Management Section */}
+        <Card className="mb-8 overflow-hidden border-gray-200 bg-white">
+          <CardHeader className="bg-white">
+            <CardTitle className="text-xl font-bold">Price Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {priceError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 font-medium">
+                {priceError}
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Current Price */}
+              <div className="space-y-2 border-gray-200 border-sm rounded">
+                <Label htmlFor="currentPrice" className="font-semibold">Snobol Current Price</Label>
+                <Input
+                  id="currentPrice"
+                  className="bg-white border-gray-200 border-sm rounded font-semibold"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="9999.99"
+                  value={typeof priceData.currentPrice === 'string' ? priceData.currentPrice : (priceData.currentPrice === 0 ? '' : priceData.currentPrice.toFixed(2))}
+                  onChange={(e) => handlePriceChange('currentPrice', e.target.value)}
+                  onBlur={() => handlePriceBlur('currentPrice')}
+                  disabled={priceLoading}
+                  placeholder="18.49"
+                />
+                <p className="text-xs text-muted-foreground font-medium">Type the price value (min: 0.01, max: 9999.99)</p>
+              </div>
+
+              {/* SP500 Price */}
+              <div className="space-y-2 border-gray-200 border-sm rounded">
+                <Label htmlFor="currentSP500Price" className="font-semibold">S&P 500 Current Price</Label>
+                <Input
+                  id="currentSP500Price"
+                  className="bg-white border-gray-200 border-sm rounded font-semibold"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="9999.99"
+                  value={typeof priceData.currentSP500Price === 'string' ? priceData.currentSP500Price : (priceData.currentSP500Price === 0 ? '' : priceData.currentSP500Price.toFixed(2))}
+                  onChange={(e) => handlePriceChange('currentSP500Price', e.target.value)}
+                  onBlur={() => handlePriceBlur('currentSP500Price')}
+                  disabled={priceLoading}
+                  placeholder="3.30"
+                />
+                <p className="text-xs text-muted-foreground font-medium">Type the price value (min: 0.01, max: 9999.99)</p>
+              </div>
+            </div>
+            
+            {/* Save Changes Button */}
+            <div className="mt-6 flex justify-end">
+                <Button
+                  onClick={handleSaveChanges}
+                  disabled={priceLoading || !hasUnsavedChanges}
+                  variant={hasUnsavedChanges ? "default" : "secondary"}
+                  className="min-w-[120px] font-semibold"
+                >
+                {priceLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                    Saving...
+                  </>
+                ) : hasUnsavedChanges ? (
+                  'Save Changes'
+                ) : (
+                  'Saved'
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6 font-medium">
             {error}
           </div>
         )}
 
         {/* Subscribers Table */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
-          {subscribers.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">No subscribers found</p>
-            </div>
-          ) : (
-            <ul className="divide-y divide-gray-200">
-              {subscribers.map((subscriber) => (
-                <li key={subscriber.id} className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {subscriber.email}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        Subscribed: {new Date(subscriber.subscribed_at).toLocaleString()}
-                      </p>
+        <Card className="overflow-hidden border-gray-200 bg-white">
+          <CardHeader className="border-b border-gray-200 bg-white flex flex-row justify-between items-center">
+            <CardTitle className="text-lg font-bold">Email Subscribers</CardTitle>
+            <p className="text-gray-600 font-medium">Total: {total} subscribers</p>
+          </CardHeader>
+          <CardContent className="p-0">
+            {subscribers.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg font-semibold">No subscribers found</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {subscribers.map((subscriber, index) => (
+                  <div 
+                    key={subscriber.id} 
+                    className={`px-6 py-4 hover:bg-gray-50 transition-colors ${
+                      index === 0 ? 'border-t-0' : ''
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <p className="text-md font-semibold text-gray-900">
+                          {subscriber.email}
+                        </p>
+                        <p className="text-sm text-gray-500 mt-1 font-medium">
+                          Subscribed: {new Date(subscriber.subscribed_at).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Refresh Button */}
         <div className="mt-6 text-center">
-          <button
+          <Button
             onClick={fetchSubscribers}
-            className="bg-black hover:bg-gray-800 text-white px-6 py-2 rounded-md text-sm font-medium"
+            variant="outline"
+            className="font-semibold"
           >
             Refresh
-          </button>
+          </Button>
         </div>
       </div>
     </div>
