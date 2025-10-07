@@ -210,14 +210,6 @@ export default function AdminDashboard() {
           </div>
           <div className="flex gap-4">
             <Button
-              onClick={exportCSV}
-              variant="outline"
-              className="bg-white border-gray-200 cursor-pointer shadow-xs font-semibold"
-              size="sm"
-            >
-              Export CSV
-            </Button>
-            <Button
               onClick={handleLogout}
               className="cursor-pointer font-semibold"
               variant="destructive"
@@ -281,25 +273,25 @@ export default function AdminDashboard() {
             </div>
             
             {/* Save Changes Button */}
-            <div className="mt-6 flex justify-end">
-                <Button
-                  onClick={handleSaveChanges}
-                  disabled={priceLoading || !hasUnsavedChanges}
-                  variant={hasUnsavedChanges ? "default" : "secondary"}
-                  className="min-w-[120px] font-semibold"
-                >
-                {priceLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
-                    Saving...
-                  </>
-                ) : hasUnsavedChanges ? (
-                  'Save Changes'
-                ) : (
-                  'Saved'
-                )}
-              </Button>
-            </div>
+            {hasUnsavedChanges && (
+              <div className="mt-6 flex justify-end">
+                  <Button
+                    onClick={handleSaveChanges}
+                    disabled={priceLoading}
+                    variant="default"
+                    className="min-w-[120px] font-semibold bg-black text-white hover:bg-gray-800"
+                  >
+                  {priceLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
+                  </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -312,8 +304,17 @@ export default function AdminDashboard() {
         {/* Subscribers Table */}
         <Card className="overflow-hidden border-gray-200 bg-white">
           <CardHeader className="border-b border-gray-200 bg-white flex flex-row justify-between items-center">
-            <CardTitle className="text-lg font-bold">Email Subscribers</CardTitle>
-            <p className="text-gray-600 font-medium">Total: {total} subscribers</p>
+            <CardTitle className="text-lg font-bold">Email Subscribers ({total})</CardTitle>
+            <div className="flex flex-row gap-2">
+            <Button
+              onClick={exportCSV}
+              variant="outline"
+              className="bg-white border-gray-200 cursor-pointer shadow-xs font-semibold"
+              size="sm"
+            >
+              Export CSV
+            </Button>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             {subscribers.length === 0 ? (
