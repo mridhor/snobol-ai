@@ -144,13 +144,23 @@ export default function AdminDashboard() {
         setPriceError('');
         setHasUnsavedChanges(false);
         
-        // Trigger event to notify main page of price update
-        // Use localStorage to notify other tabs/windows
-        localStorage.setItem('priceUpdate', Date.now().toString());
-        localStorage.removeItem('priceUpdate'); // Clean up immediately
+        // Notify main page of price update using BroadcastChannel
+        try {
+          const channel = new BroadcastChannel('price-updates');
+          channel.postMessage('price-changed');
+          channel.close();
+          console.log('Price update notification sent via BroadcastChannel');
+        } catch (error) {
+          console.log('BroadcastChannel not supported, using fallback');
+        }
         
-        // Dispatch custom event for same tab
+        // Fallback: Use localStorage to notify other tabs/windows
+        localStorage.setItem('priceUpdate', Date.now().toString());
+        localStorage.removeItem('priceUpdate');
+        
+        // Fallback: Dispatch custom event for same tab
         window.dispatchEvent(new Event('priceUpdated'));
+        console.log('Price update notification sent via fallback methods');
       } else {
         setPriceError(data.error || 'Failed to update prices');
       }

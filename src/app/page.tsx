@@ -75,16 +75,27 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
     // Fetch immediately on mount
     fetchPrices();
     
-    // Listen for storage events from other tabs/windows (e.g., admin panel)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'priceUpdate') {
-        // Price was updated in admin panel, refresh immediately
+    // Create BroadcastChannel for cross-tab/same-tab communication
+    const channel = new BroadcastChannel('price-updates');
+    
+    channel.onmessage = (event) => {
+      if (event.data === 'price-changed') {
+        console.log('Price update received, refreshing chart...');
         fetchPrices();
       }
     };
     
-    // Listen for custom event from same tab
+    // Fallback: Listen for storage events from other tabs/windows
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'priceUpdate') {
+        console.log('Storage event received, refreshing chart...');
+        fetchPrices();
+      }
+    };
+    
+    // Fallback: Listen for custom event
     const handlePriceUpdate = () => {
+      console.log('Custom event received, refreshing chart...');
       fetchPrices();
     };
     
@@ -93,6 +104,7 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
     
     // Cleanup listeners on unmount
     return () => {
+      channel.close();
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('priceUpdated', handlePriceUpdate);
     };
