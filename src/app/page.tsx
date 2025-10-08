@@ -196,7 +196,7 @@ const SimpleLineChart = React.memo(function SimpleLineChart({ currentPrice = 18.
             activeDot={{ r: 4.5, fill: "white", stroke: "black", strokeWidth: 3.1 }}
           />
         </LineChart>
-      </ResponsiveContainer>ß
+      </ResponsiveContainer>
     </div>
   );
 });
