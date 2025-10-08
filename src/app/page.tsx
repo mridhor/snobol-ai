@@ -741,7 +741,7 @@ export default function Homepage() {
           
           {/* Copyright */}
           <div className="copyright">
-            <p>© Snobol Inc. 2025</p>
+            <p>© Snobol Inc. {new Date().getFullYear()}</p>
           </div>
           
           {/* Footer with Social Media and Contact */}
